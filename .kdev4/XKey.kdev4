@@ -9,7 +9,7 @@ ProjectRootRelative=./
 
 [CMake][CMake Build Directory 0]
 Build Directory Path=file:///home/janphilip/Development/XKey/build
-Build Type=Debug
+Build Type=Release
 CMake Binary=file:///usr/bin/cmake
 Environment Profile=
 Extra Arguments=
@@ -35,6 +35,12 @@ Project Target=XKey,XKey
 Use External Terminal=false
 Working Directory=
 isExecutable=false
+
+[MakeBuilder]
+Number Of Jobs=5
+
+[Project]
+VersionControlSupport=kdevgit
 
 [SourceFileTemplates]
 LastUsedTemplate=/home/janphilip/.kde4/share/apps/kdevfiletemplates/template_descriptions/cpp_basic.desktop

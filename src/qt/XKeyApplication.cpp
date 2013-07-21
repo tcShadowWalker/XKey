@@ -1,9 +1,9 @@
-#include "XKey.h"
+#include "XKeyApplication.h"
 #include "KeyListModel.h"
 #include <ui_Main.h>
 #include <QFileDialog>
 
-XKey::XKey()
+XKeyApplication::XKeyApplication()
 	: mUi(0)
 {
 	mUi = new Ui::MainWindow;
@@ -17,43 +17,45 @@ XKey::XKey()
 	connect (mUi->actionOpen, SIGNAL(triggered()), this, SLOT(showOpenFile()));
 	connect (mUi->actionSave_As, SIGNAL(triggered()), this, SLOT(showSaveAsFile()));
 	connect (mUi->actionSave, SIGNAL(triggered()), this, SLOT(save()));
+	
+	// TODO: addWidget LineEdit and PushButton to qToolbar!
 }
 
-XKey::~XKey() {
+XKeyApplication::~XKeyApplication() {
 	mMain.close();
 	delete mUi;
 	delete mKeys;
 }
 
-void XKey::show() {
+void XKeyApplication::show() {
 	mMain.show();
 }
 
 // 
 
-void XKey::openFile (const QString &filename) {
+void XKeyApplication::openFile (const QString &filename) {
 	
 }
 
-void XKey::saveFile (const QString &filename) {
+void XKeyApplication::saveFile (const QString &filename) {
 	
 }
 
 // Ui actions:
 
-void XKey::showOpenFile () {
+void XKeyApplication::showOpenFile () {
 	 QString fileName = QFileDialog::getOpenFileName(&mMain, tr("Open Keystore"), "~", tr("Keystore Files (*.xkey)"));
 	 if (!fileName.isEmpty()) {
 		 openFile(fileName);
 	 }
 }
-void XKey::showSaveAsFile () {
+void XKeyApplication::showSaveAsFile () {
 	 QString fileName = QFileDialog::getSaveFileName(&mMain, tr("Save Keystore"), "~", tr("Keystore Files (*.xkey)"));
 	 if (!fileName.isEmpty()) {
 		 saveFile(fileName);
 	 }
 }
-void XKey::save () {
+void XKeyApplication::save () {
 	
 }
 

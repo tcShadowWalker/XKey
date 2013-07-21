@@ -13,15 +13,18 @@ namespace XKey {
 class Entry
 {
 public:
+	// TODO title, comment!
 	inline Entry (const std::string &user, const std::string &url, const std::string &pwd);
 	
 	inline const std::string&			username() const { return _username; }
 	inline const std::string&			url() const { return _url; }
 	inline const std::string&			password() const { return _password; }
 private:
+	std::string _title;
 	std::string _username;
 	std::string _url;
 	std::string _password;
+	std::string _comment;
 };
 
 class Folder

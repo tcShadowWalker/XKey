@@ -115,6 +115,11 @@ int main (int argc, char** argv) {
 		currentSearchPathComponent = searchPathComponents.begin();
 	}
 	
+	if (input_file.size() < 0) {
+		std::cerr << "Input file is required!\n";
+		return -1;
+	}
+	
 	XKey::Folder rootKeyFolder;
 
 	try {

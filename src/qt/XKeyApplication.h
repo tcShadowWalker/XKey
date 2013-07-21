@@ -1,5 +1,5 @@
-#ifndef XKEY_H
-#define XKEY_H
+#ifndef XKEY_APP_H
+#define XKEY_APP_H
 
 #include <QtGui/QMainWindow>
 
@@ -9,14 +9,14 @@ class MainWindow;
 }
 
 
-class XKey
+class XKeyApplication
 	: public QObject
 {
 Q_OBJECT
 
 public:
-	XKey();
-	~XKey();
+	XKeyApplication();
+	~XKeyApplication();
 	
 	void openFile (const QString &filename);
 	void saveFile (const QString &filename);
