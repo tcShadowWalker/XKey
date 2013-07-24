@@ -34,8 +34,12 @@ public:
 	Folder (const std::string &name, Folder *parent);
 
 	inline const std::string&			name() const { return _name; }
+	inline Folder*						parent() const { return _parent; }
 	
 	std::string							fullPath() const;
+	
+	/// Recursively counts subfolders
+	int 								countSubfolders () const;
 	
 	void 								addEntry (Entry entry);
 	Folder *							createSubfolder (const std::string &name);

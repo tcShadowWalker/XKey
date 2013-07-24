@@ -2,8 +2,11 @@
 #define XKEY_APP_H
 
 #include <QtGui/QMainWindow>
+#include "../XKey.h"
+
 
 class KeyListModel;
+class FolderListModel;
 namespace Ui {
 class MainWindow;
 }
@@ -28,10 +31,14 @@ public slots:
 	
 	void save ();
 	
+	void askClose ();
+	
 private:
 	QMainWindow mMain;
 	Ui::MainWindow *mUi;
+	FolderListModel *mFolders;
 	KeyListModel *mKeys;
+	XKey::Folder mRoot;
 };
 
 #endif

@@ -47,7 +47,7 @@ CryptStream::CryptStream (const std::string &filename, std::string key, Operatio
 			BIO_read(_bio_chain, buf, 32);
 			// 9, 11, 12, 14
 			if (strncmp(buf, "*167110*", 8) != 0 || buf[9] != 'c' || buf[12] != 'e') {
-				throw std::runtime_error ("Invalid file header");
+				throw std::runtime_error ("Invalid file header. The file is probably not a valid XKey keystore.");
 			}
 			useEncryption = buf[1];
 			useBase64Encode = buf[14];
@@ -72,25 +72,25 @@ CryptStream::CryptStream (const std::string &filename, std::string key, Operatio
 }
 
 CryptStream::~CryptStream () {
-	
 	sync();
 	//
 	if (_crypt_bio) {
-		if (_mode == WRITE);
+		if (_mode == WRITE)
 			BIO_flush(_crypt_bio);
 		BIO_pop(_crypt_bio);
 		BIO_vfree(_crypt_bio);
 	}
 	if (_base64_bio) {
-		if (_mode == WRITE);
+		if (_mode == WRITE)
 			BIO_flush(_base64_bio);
 		BIO_pop(_base64_bio);
 		BIO_vfree(_base64_bio);
 	}
-	if (_mode == WRITE);
+	if (_mode == WRITE)
 		BIO_flush(_file_bio);
 	BIO_pop(_file_bio);
 	BIO_vfree(_file_bio);
+	std::cout << "6\n";
 }
 
 bool CryptStream::isEncrypted () const {
@@ -117,12 +117,15 @@ void CryptStream::setEncryptionKey (std::string key) {
 	BIO_set_cipher (_crypt_bio, ciph, (const unsigned char*)key.c_str(), iv, enc);
 	_bio_chain = BIO_push(_crypt_bio, _bio_chain);
 	
+	
 	const std::string encBuffer ("-- FILE -- 85gxk9d7 --");
 	if (_mode == WRITE) {
 		BIO_write(_bio_chain, encBuffer.data(), encBuffer.size());
 	} else {
+		
 		std::string rBuffer (encBuffer.size(), '\0');
 		int r = BIO_read(_bio_chain, &rBuffer[0], encBuffer.size());
+		
 		if (r != encBuffer.size())
 			throw std::runtime_error ("Unexpected file read error");
 		if (encBuffer != rBuffer)
@@ -161,7 +164,7 @@ CryptStream::int_type CryptStream::underflow() {
 
 CryptStream::int_type CryptStream::overflow (int_type ch) {
 	if (_mode != WRITE)
-		throw std::logic_error ("underflow unexpected on write-only CryptStream");
+		throw std::logic_error ("Underflow unexpected on write-only CryptStream");
 	
 	if (ch != traits_type::eof()) {
 		*pptr() = ch;

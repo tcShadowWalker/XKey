@@ -24,6 +24,14 @@ std::string	Folder::fullPath () const {
 	return fp;
 }
 
+int Folder::countSubfolders () const {
+	int n = this->_subfolders.size();
+	for (const auto &it : _subfolders) {
+		n += it.countSubfolders();
+	}
+	return n;
+}
+
 void Folder::addEntry (Entry entry) {
 	_entries.insert (_entries.end(), std::move(entry));
 }

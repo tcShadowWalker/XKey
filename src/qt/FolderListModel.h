@@ -1,5 +1,5 @@
-#ifndef KEYLISTMODEL_H
-#define KEYLISTMODEL_H
+#ifndef FOLDERLISTMODEL_H
+#define FOLDERLISTMODEL_H
 
 #include <qabstractitemmodel.h>
 
@@ -7,23 +7,23 @@ namespace XKey {
 	class Folder;
 }
 
-class KeyListModel
+class FolderListModel
 	: public QAbstractTableModel
 {
 	Q_OBJECT
 public:
-	KeyListModel(QObject *parent);
-	~KeyListModel();
+	FolderListModel(QObject *parent);
+	~FolderListModel();
 
 	int rowCount(const QModelIndex &parent = QModelIndex()) const;
 	int columnCount(const QModelIndex &parent = QModelIndex()) const;
 	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 	
-	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
+	QModelIndex index ( int row, int column, const QModelIndex &parent = QModelIndex()) const;
 	
-	void setCurrentFolder (XKey::Folder *r);
+	void setRootFolder (XKey::Folder *r);
 private:
-	XKey::Folder *folder;
+	XKey::Folder *root;
 };
 
 #endif
