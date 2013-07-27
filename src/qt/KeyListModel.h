@@ -21,6 +21,8 @@ public:
 	
 	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 	
+	Qt::ItemFlags flags ( const QModelIndex & index ) const;
+	
 	void setCurrentFolder (XKey::Folder *r);
 private:
 	XKey::Folder *folder;

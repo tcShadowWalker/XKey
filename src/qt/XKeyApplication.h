@@ -4,6 +4,7 @@
 #include <QtGui/QMainWindow>
 #include "../XKey.h"
 
+class QItemSelection;
 
 class KeyListModel;
 class FolderListModel;
@@ -32,6 +33,8 @@ public slots:
 	void save ();
 	
 	void askClose ();
+	
+	void folderSelectionChanged (const QItemSelection &, const QItemSelection &);
 	
 private:
 	QMainWindow mMain;

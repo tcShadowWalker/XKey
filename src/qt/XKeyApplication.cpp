@@ -4,6 +4,7 @@
 #include "../CryptStream.h"
 #include <QFileDialog>
 #include <QMessageBox>
+#include <cassert>
 // UIs
 #include <ui_Main.h>
 #include <ui_OpenKeystorePassphrase.h>
@@ -27,6 +28,11 @@ XKeyApplication::XKeyApplication()
 	connect (mUi->actionSave, SIGNAL(triggered()), this, SLOT(save()));
 	
 	// TODO: addWidget LineEdit and PushButton to qToolbar!
+	mUi->keyTree->setSelectionMode (QAbstractItemView::SingleSelection);
+	connect (mUi->keyTree->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(folderSelectionChanged(const QItemSelection &, const QItemSelection &)));
+	
+	mUi->keyTable->setSelectionMode (QAbstractItemView::SingleSelection);
+	mUi->keyTable->setSelectionBehavior (QAbstractItemView::SelectRows);
 }
 
 XKeyApplication::~XKeyApplication() {
@@ -80,6 +86,13 @@ void XKeyApplication::saveFile (const QString &filename) {
 }
 
 // Ui actions:
+
+void XKeyApplication::folderSelectionChanged (const QItemSelection &l, const QItemSelection &) {
+	QModelIndexList indexes = l.indexes();
+	assert (indexes.size() == 1);
+	XKey::Folder *f = static_cast<XKey::Folder *> (indexes.at(0).internalPointer());
+	mKeys->setCurrentFolder(f);
+}
 
 void XKeyApplication::showOpenFile () {
 	 QString fileName = QFileDialog::getOpenFileName(&mMain, tr("Open Keystore"), "", tr("Keystore Files (*.xkey)"));

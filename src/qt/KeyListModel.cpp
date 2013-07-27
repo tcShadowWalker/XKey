@@ -30,6 +30,10 @@ QVariant KeyListModel::headerData (int section, Qt::Orientation orientation,  in
 	return QVariant();
 }
 
+Qt::ItemFlags KeyListModel::flags ( const QModelIndex &) const {
+	return Qt::ItemIsSelectable;
+}
+
 int KeyListModel::rowCount (const QModelIndex &) const {
 	if (!folder)
 		return 0;
@@ -41,6 +45,15 @@ int KeyListModel::columnCount (const QModelIndex &) const {
 }
 
 QVariant KeyListModel::data (const QModelIndex &index, int role) const {
-	return QString("Hallo");
+	if (role == Qt::DisplayRole) {
+		const XKey::Entry &entry = folder->entries().at(index.row());
+		if (index.column() == 0)
+			return QString::fromStdString ( entry.username() );
+		else if (index.column() == 0)
+			return QString( "**********" );
+		else
+			return QString::fromStdString( entry.url() );
+	} else
+		return QVariant();
 }
 
