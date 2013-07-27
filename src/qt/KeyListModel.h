@@ -5,6 +5,7 @@
 
 namespace XKey {
 	class Folder;
+	class Entry;
 }
 
 class KeyListModel
@@ -21,11 +22,15 @@ public:
 	
 	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 	
+	void addEntry (XKey::Entry entry);
+	
 	Qt::ItemFlags flags ( const QModelIndex & index ) const;
 	
 	void setCurrentFolder (XKey::Folder *r);
+	
+	inline XKey::Folder *folder () const { return _folder; }
 private:
-	XKey::Folder *folder;
+	XKey::Folder *_folder;
 };
 
 #endif

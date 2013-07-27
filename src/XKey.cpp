@@ -58,6 +58,10 @@ int Folder::row() const {
 	return 0;
 }
 
+void Folder::setName (const std::string &name) {
+	this->_name = name;
+}
+
 // Parser:
 
 bool Parser::readFile (std::istream &stream, Folder *new_folder_root) {
@@ -85,11 +89,14 @@ const std::string &Parser::error () const {
 }
 
 void Parser::parse_key (const Json::Value &key_entry, Folder *parent) {
-	Json::Value user = key_entry.get("username", Json::Value::null),
-		url = key_entry.get("url", Json::Value::null), pwd = key_entry.get("password", Json::Value::null);
-	if (!user.isString() || !url.isString() || !pwd.isString())
+	Json::Value title = key_entry.get("title", Json::Value::null),
+		user = key_entry.get("username", Json::Value::null),
+		url = key_entry.get("url", Json::Value::null),
+		pwd = key_entry.get("password", Json::Value::null),
+		comment = key_entry.get("comment", Json::Value::null);
+	if (!title.isString() || !user.isString() || !url.isString() || !pwd.isString() || !comment.isString())
 		throw std::runtime_error ("Could not parse key entry: Missing field");
-	Entry ent (user.asString(), url.asString(), pwd.asString());
+	Entry ent (title.asString(), user.asString(), url.asString(), pwd.asString(), comment.asString());
 	parent->addEntry (std::move(ent));
 }
 
@@ -99,7 +106,6 @@ void Parser::parse_folder (const Json::Value &folder, Folder *parent) {
 		throw std::runtime_error ("Invalid subfolder entry: missing name");
 	// Create info
 	Folder *f = parent->createSubfolder(name.asString());
-	//Folder f (name.asString());
 	Json::Value keys = folder.get("keys", Json::Value::null);
 	if (keys.isArray()) {
 		for (const auto &it : keys) {
@@ -156,9 +162,11 @@ void Writer::serialize_folder (Json::Value &parent, const Folder &folder) {
 		Json::Value keys (Json::arrayValue);
 		for (const auto &it : folder.entries()) {
 			Json::Value key;
+			key["title"] = it.title();
 			key["username"] = it.username();
 			key["url"] = it.url();
 			key["password"] = it.password();
+			key["comment"] = it.comment();
 			keys.append(key);
 		}
 		parent["keys"] = keys;

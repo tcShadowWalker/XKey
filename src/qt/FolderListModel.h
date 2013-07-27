@@ -19,8 +19,14 @@ public:
 	int columnCount(const QModelIndex &parent = QModelIndex()) const;
 	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 	
+	Qt::ItemFlags flags ( const QModelIndex & index ) const;
 	QModelIndex index ( int row, int column, const QModelIndex &parent = QModelIndex()) const;
 	QModelIndex parent (const QModelIndex &index) const;
+	
+	bool insertRow (int row, const QModelIndex &parent = QModelIndex());
+	bool removeRows ( int row, int count, const QModelIndex & parent = QModelIndex() );
+	
+	bool setData (const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
 	
 	void setRootFolder (XKey::Folder *r);
 private:

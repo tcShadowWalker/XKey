@@ -14,11 +14,14 @@ class Entry
 {
 public:
 	// TODO title, comment!
-	inline Entry (const std::string &user, const std::string &url, const std::string &pwd);
+	inline Entry () { }
+	inline Entry (const std::string &title, const std::string &user, const std::string &url, const std::string &pwd, const std::string &comment);
 	
+	inline const std::string&			title() const { return _title; }
 	inline const std::string&			username() const { return _username; }
 	inline const std::string&			url() const { return _url; }
 	inline const std::string&			password() const { return _password; }
+	inline const std::string&			comment() const { return _comment; }
 private:
 	std::string _title;
 	std::string _username;
@@ -36,6 +39,8 @@ public:
 	inline const std::string&			name() const { return _name; }
 	inline Folder*						parent() const { return _parent; }
 	
+	void 								setName (const std::string &name);
+	
 	std::string							fullPath() const;
 	
 	
@@ -48,6 +53,9 @@ public:
 	
 	inline const std::deque<Folder>&	subfolders () const { return _subfolders; }
 	inline const std::deque<Entry>&		entries () const { return _entries; }
+	
+	inline std::deque<Folder>&			subfolders () { return _subfolders; }
+	inline std::deque<Entry>&			entries () { return _entries; }
 	
 	 int 								row() const;
 private:
@@ -90,8 +98,8 @@ private:
 
 // Impl
 
-Entry::Entry (const std::string &user, const std::string &url, const std::string &pwd) 
-	: _username (user), _url(url), _password (pwd)
+Entry::Entry (const std::string &title, const std::string &user, const std::string &url, const std::string &pwd, const std::string &comment) 
+	: _title(title), _username (user), _url(url), _password (pwd), _comment (comment)
 {}
 
 }

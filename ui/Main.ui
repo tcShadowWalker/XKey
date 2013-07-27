@@ -46,7 +46,13 @@
         </size>
        </property>
        <property name="editTriggers">
-        <set>QAbstractItemView::NoEditTriggers</set>
+        <set>QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
+       </property>
+       <property name="dragDropMode">
+        <enum>QAbstractItemView::DragDrop</enum>
+       </property>
+       <property name="autoExpandDelay">
+        <number>0</number>
        </property>
        <property name="itemsExpandable">
         <bool>true</bool>
@@ -56,6 +62,9 @@
        </property>
        <property name="headerHidden">
         <bool>true</bool>
+       </property>
+       <property name="expandsOnDoubleClick">
+        <bool>false</bool>
        </property>
       </widget>
       <widget class="QTableView" name="keyTable">
@@ -129,7 +138,7 @@
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
-    <string>toolBar</string>
+    <string>Toolbar</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -141,8 +150,12 @@
    <addaction name="actionOpen"/>
    <addaction name="actionSave"/>
    <addaction name="separator"/>
+   <addaction name="actionAddFolder"/>
+   <addaction name="actionDeleteFolder"/>
+   <addaction name="separator"/>
    <addaction name="actionAddEntry"/>
-   <addaction name="actionEdit_Entry"/>
+   <addaction name="actionEditEntry"/>
+   <addaction name="actionDeleteEntry"/>
    <addaction name="separator"/>
   </widget>
   <action name="actionNew">
@@ -183,12 +196,30 @@
     <string>Add new entry</string>
    </property>
   </action>
-  <action name="actionEdit_Entry">
+  <action name="actionEditEntry">
    <property name="text">
     <string>Edit Entry</string>
    </property>
    <property name="toolTip">
     <string>Edit current entry</string>
+   </property>
+  </action>
+  <action name="actionAddFolder">
+   <property name="text">
+    <string>Add Folder</string>
+   </property>
+  </action>
+  <action name="actionDeleteFolder">
+   <property name="text">
+    <string>Delete Folder</string>
+   </property>
+  </action>
+  <action name="actionDeleteEntry">
+   <property name="text">
+    <string>Delete Entry</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete current Entry</string>
    </property>
   </action>
  </widget>

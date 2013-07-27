@@ -2,8 +2,11 @@
 #define XKEY_APP_H
 
 #include <QtGui/QMainWindow>
+#include <boost/concept_check.hpp>
 #include "../XKey.h"
 
+class QModelIndex;
+class QLineEdit;
 class QItemSelection;
 
 class KeyListModel;
@@ -27,6 +30,7 @@ public:
 	
 	void show ();
 public slots:
+	void newFile ();
 	void showOpenFile ();
 	void showSaveAsFile ();
 	
@@ -35,6 +39,16 @@ public slots:
 	void askClose ();
 	
 	void folderSelectionChanged (const QItemSelection &, const QItemSelection &);
+	void editKey (const QModelIndex & index);
+	void startSearch ();
+	
+	//
+	void addFolderClicked ();
+	void deleteFolderClicked ();
+	
+	void addEntryClicked ();
+	void editEntryClicked ();
+	void deleteEntryClicked ();
 	
 private:
 	QMainWindow mMain;
@@ -42,6 +56,9 @@ private:
 	FolderListModel *mFolders;
 	KeyListModel *mKeys;
 	XKey::Folder mRoot;
+	QLineEdit *mSearchBar;
+	
+	void setEnabled (bool enabled);
 };
 
 #endif
