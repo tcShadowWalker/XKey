@@ -17,25 +17,38 @@ FolderListModel::~FolderListModel() {
 
 void FolderListModel::setRootFolder (XKey::Folder *r) {
 	this->root = r;
+	std::cout << "root: " << r << "\n";
 	beginResetModel();
 	endResetModel();
+}
+
+QModelIndex FolderListModel::parent (const QModelIndex &index) const {
+	if (!index.isValid())
+		return QModelIndex();
+	const XKey::Folder *childItem = static_cast<const XKey::Folder*> (index.internalPointer());
+	assert (childItem);
+	const XKey::Folder *parentItem = childItem->parent();
+
+	if (parentItem == 0)
+		return QModelIndex();
+	return createIndex(parentItem->row(), 0, (void*)parentItem);
 }
 
 QModelIndex FolderListModel::index ( int row, int column, const QModelIndex &parent) const {
 	const XKey::Folder *parentItem;
 	if (!parent.isValid()) {
 		parentItem = root;
+		//return createIndex(row, 0, (void*)root );
 	} else {
 		assert (parent.internalPointer());
 		parentItem = static_cast<const XKey::Folder *> (parent.internalPointer());
 	}
 	if (row >= parentItem->subfolders().size()) {
-		std::cout << "creat INVALID ind " << row << ", parent: " << parentItem->name() << "\n";
 		return QModelIndex();
 	}
 	const XKey::Folder *f = &parentItem->subfolders().at(row);
-	//std::cout << "creat ind " << row << ", "  << f->name() << ", parent: " << parentItem << "\n";
-	return createIndex(row, 0, (void*)f );
+	QModelIndex ind = createIndex(row, 0, (void*)f );
+	return ind;
 }
 
 int FolderListModel::rowCount (const QModelIndex &parent) const {
@@ -44,9 +57,9 @@ int FolderListModel::rowCount (const QModelIndex &parent) const {
 	if (parent.column() > 0)
 		return 0;
 	if (!parent.isValid())
+		//return 1;
 		return root->subfolders().size();
 	const XKey::Folder *parentItem = static_cast<const XKey::Folder *> (parent.internalPointer());
-	std::cout << "rc: "  << parent.row() << ", " << parentItem->name() << ", " << parentItem << ": " << parentItem->subfolders().size() << "\n";
 	return parentItem->subfolders().size();
 }
 

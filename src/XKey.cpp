@@ -2,8 +2,10 @@
 
 #include <json/json.h>
 #include <fstream>
+#include <algorithm>
 #include <stdexcept>
 #include <memory>
+#include <cassert>
 #include <json/writer.h>
 
 namespace XKey {
@@ -43,6 +45,17 @@ void Folder::addEntry (Entry entry) {
 Folder *Folder::createSubfolder (const std::string &name) {
 	_subfolders.emplace_back (name, this);
 	return &_subfolders.back();
+}
+
+int Folder::row() const {
+	if (_parent) {
+		std::deque<Folder>::const_iterator it = std::find_if(_parent->_subfolders.begin(), _parent->_subfolders.end(), [this] (const XKey::Folder &f) {
+												return (&f == this);
+											} );
+		assert (it != _parent->_subfolders.end());
+		return it - _parent->_subfolders.begin();
+	}
+	return 0;
 }
 
 // Parser:

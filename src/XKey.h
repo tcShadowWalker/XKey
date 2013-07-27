@@ -38,6 +38,7 @@ public:
 	
 	std::string							fullPath() const;
 	
+	
 	/// Recursively counts subfolders
 	int 								countSubfolders () const;
 	
@@ -47,6 +48,8 @@ public:
 	
 	inline const std::deque<Folder>&	subfolders () const { return _subfolders; }
 	inline const std::deque<Entry>&		entries () const { return _entries; }
+	
+	 int 								row() const;
 private:
 	std::string _name;
 	std::deque<Folder> _subfolders;
