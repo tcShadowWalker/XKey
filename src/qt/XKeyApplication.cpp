@@ -84,6 +84,7 @@ void XKeyApplication::openFile (const QString &filename) {
 	askClose();
 	QString errorMsg;
 	bool success = false;
+	QString password;
 	try {
 		XKey::Parser p;
 		XKey::CryptStream crypt_source (filename.toStdString(), std::string(), XKey::CryptStream::READ);
@@ -93,11 +94,15 @@ void XKeyApplication::openFile (const QString &filename) {
 			opd.setupUi (&diag);
 			if (diag.exec() != QDialog::Accepted || opd.passphraseEdit->text().isEmpty())
 				return;
-			crypt_source.setEncryptionKey(opd.passphraseEdit->text().toStdString());
+			password = opd.passphraseEdit->text();
+			crypt_source.setEncryptionKey(password.toStdString());
 		}
 		std::istream isource (&crypt_source);
 		if (p.readFile(isource, &mRoot)) {
 			success = true;
+			// Set attributes:
+			currentFileName = filename;
+			currentFilePassword = password;
 			this->mFolders->setRootFolder(&mRoot);
 			this->mKeys->setCurrentFolder (&mRoot);
 			setEnabled(true);
@@ -113,7 +118,33 @@ void XKeyApplication::openFile (const QString &filename) {
 }
 
 void XKeyApplication::saveFile (const QString &filename) {
-	
+	QString errorMsg;
+	bool success = false;
+	try {
+		XKey::Writer w;
+		XKey::CryptStream crypt_source (filename.toStdString(), std::string(), XKey::CryptStream::WRITE);
+		// TODO: Ask for password
+		QString password;
+		QDialog diag;
+		Ui::OpenFilePassphraseDialog  opd;
+		opd.setupUi (&diag);
+		if (diag.exec() != QDialog::Accepted || opd.passphraseEdit->text().isEmpty())
+			return;
+		password = opd.passphraseEdit->text();
+		crypt_source.setEncryptionKey(password.toStdString());
+		// 
+		std::ostream isource (&crypt_source);
+		if (w.writeFile(isource, mRoot, false)) {
+			success = true;
+		} else {
+			errorMsg = QString::fromStdString(p.error());
+		}
+	} catch (const std::exception &e) {
+		errorMsg = e.what();
+	}
+	if (!success) {
+		QMessageBox::critical (&mMain, tr("Saving keystore failed"), tr("Saving the keystore file failed:\n%1").arg(errorMsg));
+	}
 }
 
 // Ui actions:
@@ -155,7 +186,8 @@ void XKeyApplication::showSaveAsFile () {
 	 }
 }
 void XKeyApplication::save () {
-	
+	if (!currentFileName.isEmpty())
+		saveFile(currentFileName);
 }
 
 void XKeyApplication::addFolderClicked () {

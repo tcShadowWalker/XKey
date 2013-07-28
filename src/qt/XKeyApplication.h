@@ -57,6 +57,9 @@ private:
 	KeyListModel *mKeys;
 	XKey::Folder mRoot;
 	QLineEdit *mSearchBar;
+	// Open file:
+	QString currentFilePassword;
+	QString currentFileName;
 	
 	void setEnabled (bool enabled);
 };
