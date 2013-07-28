@@ -9,19 +9,6 @@
 #include <openssl/evp.h>
 #include <boost/program_options.hpp>
 
-std::vector<std::string> searchPathComponents;
-std::vector<std::string>::const_iterator currentSearchPathComponent;
-
-void tokenize (const std::string &str, std::vector<std::string> *tokens, const char delimiters) {
-	std::string::size_type lastPos = str.find_first_not_of (delimiters, 0);
-	std::string::size_type pos = str.find_first_of (delimiters, lastPos);
-	while (pos != std::string::npos || lastPos != std::string::npos) {
-		tokens->push_back (str.substr(lastPos, pos - lastPos));
-		lastPos = str.find_first_not_of(delimiters, pos);
-		pos = str.find_first_of(delimiters, lastPos);
-	}
-}
-
 void print_folder (const XKey::Folder &f, int depth = 0) {
 	if (depth != 0)
 		std::cout << std::string(depth, '-') << " " << f.name() << "\n";
@@ -31,25 +18,6 @@ void print_folder (const XKey::Folder &f, int depth = 0) {
 	for (const auto &it : f.subfolders()) {
 		print_folder(it, depth+1);
 	}
-}
-
-const XKey::Folder *search_folder (const XKey::Folder &f) {
-	const std::string &next_path = *(currentSearchPathComponent++);
-	
-	const auto &it = std::find_if (f.subfolders().begin(), f.subfolders().end(), [&next_path] (const XKey::Folder &p) {
-		return (p.name() == next_path);
-	});
-
-	if (it != f.subfolders().end()) {
-		// This is the last level:
-		if (currentSearchPathComponent == searchPathComponents.end())
-			return &*it;
-		else
-			// Look one level deeper:
-			return search_folder (*it);
-	}
-	
-	return 0;
 }
 
 std::string input_file, output_file, search_path, key_file;
@@ -110,11 +78,6 @@ int main (int argc, char** argv) {
 	
 	OpenSSL_add_all_ciphers();
 	
-	if (search_path.size() > 0) {
-		tokenize(search_path, &searchPathComponents, '/');
-		currentSearchPathComponent = searchPathComponents.begin();
-	}
-	
 	if (input_file.size() < 0) {
 		std::cerr << "Input file is required!\n";
 		return -1;
@@ -141,9 +104,9 @@ int main (int argc, char** argv) {
 		}
 		
 		const XKey::Folder *f = &rootKeyFolder;
-		if (currentSearchPathComponent != searchPathComponents.end()) {
+		if (search_path.size() > 0) {
 			// Search path specified:
-			f = search_folder (rootKeyFolder);
+			f = XKey::search_folder (&rootKeyFolder, search_path);
 		}
 		if (!f) {
 			std::cerr << "Requested path not found.\n";

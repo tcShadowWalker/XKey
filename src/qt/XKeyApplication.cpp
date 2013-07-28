@@ -24,6 +24,10 @@ XKeyApplication::XKeyApplication()
 	//
 	mUi->keyTable->setModel(mKeys);
 	mUi->keyTree->setModel(mFolders);
+	mUi->keyTree->setDragDropMode(QAbstractItemView::DragDrop);
+	mUi->keyTree->setDragDropOverwriteMode(true);
+	mUi->keyTree->setDragEnabled(true);
+	mUi->keyTree->setDefaultDropAction(Qt::MoveAction);
 	// Signals
 	connect (mUi->actionNew, SIGNAL(triggered()), this, SLOT(newFile()));
 	connect (mUi->actionOpen, SIGNAL(triggered()), this, SLOT(showOpenFile()));

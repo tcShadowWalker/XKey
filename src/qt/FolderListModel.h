@@ -27,8 +27,15 @@ public:
 	bool removeRows ( int row, int count, const QModelIndex & parent = QModelIndex() );
 	
 	bool setData (const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
+
+	QStringList mimeTypes () const;
+	QMimeData *mimeData (const QModelIndexList &indexes) const;
+	bool dropMimeData ( const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent );
 	
 	void setRootFolder (XKey::Folder *r);
+protected:
+	Qt::DropActions supportedDropActions () const;
+	
 private:
 	XKey::Folder *root;
 };

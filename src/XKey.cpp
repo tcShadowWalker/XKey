@@ -10,6 +10,32 @@
 
 namespace XKey {
 
+static void tokenize (const std::string &str, std::vector<std::string> *tokens, const char delimiters) {
+	std::string::size_type lastPos = str.find_first_not_of (delimiters, 0);
+	std::string::size_type pos = str.find_first_of (delimiters, lastPos);
+	while (pos != std::string::npos || lastPos != std::string::npos) {
+		tokens->push_back (str.substr(lastPos, pos - lastPos));
+		lastPos = str.find_first_not_of(delimiters, pos);
+		pos = str.find_first_of(delimiters, lastPos);
+	}
+}
+
+const XKey::Folder *search_folder (const XKey::Folder *root, const std::string &search_path) {
+	std::vector<std::string> searchPathComponents;
+	std::vector<std::string>::const_iterator currentSearchPathComponent;
+	if (search_path.size() > 0) {
+		tokenize(search_path, &searchPathComponents, '/');
+		currentSearchPathComponent = searchPathComponents.begin();
+	}
+	const XKey::Folder *current = root;
+	while (currentSearchPathComponent != searchPathComponents.end() && current) {
+		current = current->getSubfolder(*currentSearchPathComponent++);
+	}
+	return current;
+}
+
+// Folder:
+
 Folder::Folder () :_parent(0) { }
 
 Folder::Folder (const std::string &name, Folder *par) : _name(name), _parent(par) {}
@@ -38,13 +64,22 @@ void Folder::addEntry (Entry entry) {
 	_entries.insert (_entries.end(), std::move(entry));
 }
 
-/*void Folder::addSubfolder (Folder folder) {
-	_subfolders.insert (_subfolders.end(), std::move(folder));
-}*/
-
 Folder *Folder::createSubfolder (const std::string &name) {
+	if (getSubfolder(name))
+		throw std::logic_error ("Can not create a second folder with the same name within the same parent");
 	_subfolders.emplace_back (name, this);
 	return &_subfolders.back();
+}
+
+Folder *Folder::getSubfolder (const std::string &name) {
+	return const_cast<Folder*> ( ((const Folder*)this)->getSubfolder(name) );
+}
+
+const Folder *Folder::getSubfolder (const std::string &name) const {
+	std::deque<Folder>::const_iterator it = std::find_if(_subfolders.begin(), _subfolders.end(), [name] (const XKey::Folder &f) {
+												return (f.name() == name);
+											} );
+	return (it == _subfolders.end()) ? 0 : &*it;
 }
 
 int Folder::row() const {

@@ -49,7 +49,9 @@ public:
 	
 	void 								addEntry (Entry entry);
 	Folder *							createSubfolder (const std::string &name);
-	//void 								addSubfolder (Folder folder);
+	
+	Folder * 							getSubfolder (const std::string &name);
+	const Folder * 						getSubfolder (const std::string &name) const;
 	
 	inline const std::deque<Folder>&	subfolders () const { return _subfolders; }
 	inline const std::deque<Entry>&		entries () const { return _entries; }
@@ -64,6 +66,14 @@ private:
 	std::deque<Entry> _entries;
 	Folder *_parent;
 };
+
+/**
+ * @brief Search folder by name in a folder hierarchy.
+ * @param root The root object of the hierarchy to search
+ * @param search_path Search path to follow, must begin with a slash. Example: "/test1/Folder 2"
+ * @return 0 if the folder was not found.
+ */
+const XKey::Folder *search_folder (const XKey::Folder *root, const std::string &search_path);
 
 // Reader:
 

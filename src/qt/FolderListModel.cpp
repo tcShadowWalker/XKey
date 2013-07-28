@@ -2,13 +2,17 @@
 #include "../XKey.h"
 #include <algorithm>
 #include <cassert>
-#include <qstringlist.h>
+#include <QStringList>
+#include <QMimeData>
+#include <QDropEvent>
+#include <QMessageBox>
 
 #include <iostream>
 
 FolderListModel::FolderListModel(QObject *parent)
 	: QAbstractTableModel(parent), root(0)
 {
+	
 }
 
 FolderListModel::~FolderListModel() {
@@ -69,11 +73,16 @@ int FolderListModel::columnCount (const QModelIndex &parent) const {
 bool FolderListModel::insertRow (int row, const QModelIndex &parent) {
 	XKey::Folder *parentItem = (!parent.isValid()) ? root : static_cast<XKey::Folder *> (parent.internalPointer());
 	assert (parentItem);
-	std::cout << "insert: " << parentItem->subfolders().size() << "\n";
 	beginInsertRows(parent, parentItem->subfolders().size(), parentItem->subfolders().size()+1);
-	parentItem->createSubfolder("New Folder");
+	const int num = parentItem->subfolders().size();
+	XKey::Folder *created = 0;
+	for (int i = 1; !created && i <= 3; ++i) {
+		try {
+			created = parentItem->createSubfolder( QString("New Folder %1").arg(num+i).toStdString() );
+		} catch (const std::exception&) { }
+	}
 	endInsertRows();
-	return true;
+	return (created != 0);
 }
 
 bool FolderListModel::removeRows (int row, int count, const QModelIndex &parent) {
@@ -82,7 +91,6 @@ bool FolderListModel::removeRows (int row, int count, const QModelIndex &parent)
 	try {
 		beginRemoveRows(parent, row, row+count);
 		int m = std::min ((int)parentItem->subfolders().size(), count + row);
-		std::cout << "del: " << row << ", " << m << "\n";
 		parentItem->subfolders().erase (parentItem->subfolders().begin() + row, parentItem->subfolders().begin() + m);
 		endRemoveRows();
 	} catch (const std::exception &e) {
@@ -95,8 +103,8 @@ bool FolderListModel::removeRows (int row, int count, const QModelIndex &parent)
 
 Qt::ItemFlags FolderListModel::flags ( const QModelIndex & index ) const {
 	if (!index.isValid())
-		return Qt::NoItemFlags;
-	return Qt::ItemIsEditable | Qt::ItemIsDragEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+		return Qt::ItemIsDropEnabled | Qt::ItemIsSelectable;
+	return Qt::ItemIsEditable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
 }
 
 QVariant FolderListModel::data (const QModelIndex &index, int role) const {
@@ -119,3 +127,51 @@ bool FolderListModel::setData (const QModelIndex & index, const QVariant & value
 	}
 	return true;
 }
+
+QMimeData *FolderListModel::mimeData (const QModelIndexList &indexes) const {
+	if (indexes.size() == 1) {
+		const XKey::Folder *item = static_cast<const XKey::Folder *> (indexes.at(0).internalPointer());
+		QMimeData *data = new QMimeData;
+		data->setText(QString::fromStdString(item->fullPath()));
+		return data;
+	} else
+		return 0;
+}
+
+QStringList FolderListModel::mimeTypes () const {
+	return QStringList("text/plain");
+}
+
+Qt::DropActions FolderListModel::supportedDropActions () const {
+	return Qt::MoveAction;
+}
+
+bool FolderListModel::dropMimeData (const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) {
+	XKey::Folder *parentItem = 0;
+	if (!parent.isValid()) {
+		parentItem = root;
+	} else {
+		parentItem = static_cast<XKey::Folder *> (parent.internalPointer());
+	}
+	if (!parentItem)
+		return false;
+	if (row < 0 || row > parentItem->subfolders().size())
+		row = parentItem->subfolders().size();
+	QString fullPath = data->text();
+	XKey::Folder *oldFolder = const_cast<XKey::Folder *> (XKey::search_folder(root, fullPath.toStdString())),
+		*oldParent = (oldFolder) ? oldFolder->parent() : 0;
+	if (!oldFolder || !oldParent)
+		return false;
+	try {
+		std::cout << "Drop: " << fullPath.toStdString() << ", o: " << oldFolder << ", " << oldParent << "\n";
+		beginInsertRows(parent, parentItem->subfolders().size(), parentItem->subfolders().size()+1);
+		XKey::Folder *newFolder = parentItem->createSubfolder(oldFolder->name());
+		*newFolder = std::move(*oldFolder);
+		endInsertRows();
+	} catch (const std::exception &e) {
+		QMessageBox::warning (0, tr("Error"), tr("Failed to move folders: %1").arg(QString(e.what())) );
+		return false;
+	}
+	return true;
+}
+
