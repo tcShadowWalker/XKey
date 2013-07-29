@@ -5,6 +5,7 @@
 #include <boost/concept_check.hpp>
 #include "../XKey.h"
 
+struct SaveFileOptions;
 class QModelIndex;
 class QLineEdit;
 class QItemSelection;
@@ -26,7 +27,7 @@ public:
 	~XKeyApplication();
 	
 	void openFile (const QString &filename);
-	void saveFile (const QString &filename);
+	void saveFile (const QString &filename, SaveFileOptions sopt);
 	
 	void show ();
 public slots:

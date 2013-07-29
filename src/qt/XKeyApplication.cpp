@@ -2,14 +2,16 @@
 #include "KeyListModel.h"
 #include "FolderListModel.h"
 #include "KeyEditDialog.h"
+#include "FileDialog.h"
 #include "../CryptStream.h"
 #include <QFileDialog>
 #include <QPushButton>
 #include <QMessageBox>
+#include <QLineEdit>
 #include <cassert>
 // UIs
 #include <ui_Main.h>
-#include <ui_OpenKeystorePassphrase.h>
+
 
 #include <iostream>
 
@@ -89,13 +91,10 @@ void XKeyApplication::openFile (const QString &filename) {
 		XKey::Parser p;
 		XKey::CryptStream crypt_source (filename.toStdString(), std::string(), XKey::CryptStream::READ);
 		if (crypt_source.isEncrypted()) {
-			QDialog diag;
-			Ui::OpenFilePassphraseDialog  opd;
-			opd.setupUi (&diag);
-			if (diag.exec() != QDialog::Accepted || opd.passphraseEdit->text().isEmpty())
+			FilePasswordDialog pwdDiag (FilePasswordDialog::READ, &mMain);
+			if (pwdDiag.exec() != QDialog::Accepted)
 				return;
-			password = opd.passphraseEdit->text();
-			crypt_source.setEncryptionKey(password.toStdString());
+			crypt_source.setEncryptionKey(pwdDiag.password().toStdString());
 		}
 		std::istream isource (&crypt_source);
 		if (p.readFile(isource, &mRoot)) {
@@ -117,27 +116,29 @@ void XKeyApplication::openFile (const QString &filename) {
 	}
 }
 
-void XKeyApplication::saveFile (const QString &filename) {
+void XKeyApplication::saveFile (const QString &filename, SaveFileOptions sopt) {
 	QString errorMsg;
 	bool success = false;
 	try {
+		QString passwd;
+		int cmode = 0;
+		cmode |= (sopt.use_encoding) ? XKey::BASE64_ENCODED : 0;
+		cmode |= (sopt.write_header) ? XKey::EVALUATE_FILE_HEADER : 0;
+		if (sopt.use_encryption) {
+			FilePasswordDialog pwdDiag (FilePasswordDialog::WRITE, &mMain);
+			if (pwdDiag.exec() != QDialog::Accepted)
+				return;
+			passwd = pwdDiag.password();
+			cmode |= XKey::USE_ENCRYPTION;
+		}
 		XKey::Writer w;
-		XKey::CryptStream crypt_source (filename.toStdString(), std::string(), XKey::CryptStream::WRITE);
-		// TODO: Ask for password
-		QString password;
-		QDialog diag;
-		Ui::OpenFilePassphraseDialog  opd;
-		opd.setupUi (&diag);
-		if (diag.exec() != QDialog::Accepted || opd.passphraseEdit->text().isEmpty())
-			return;
-		password = opd.passphraseEdit->text();
-		crypt_source.setEncryptionKey(password.toStdString());
+		XKey::CryptStream crypt_source (filename.toStdString(), passwd.toStdString(), XKey::CryptStream::WRITE, cmode);
 		// 
 		std::ostream isource (&crypt_source);
 		if (w.writeFile(isource, mRoot, false)) {
 			success = true;
 		} else {
-			errorMsg = QString::fromStdString(p.error());
+			errorMsg = QString::fromStdString(w.error());
 		}
 	} catch (const std::exception &e) {
 		errorMsg = e.what();
@@ -180,14 +181,15 @@ void XKeyApplication::showOpenFile () {
 	 }
 }
 void XKeyApplication::showSaveAsFile () {
-	 QString fileName = QFileDialog::getSaveFileName(&mMain, tr("Save Keystore"), "", tr("Keystore Files (*.xkey)"));
-	 if (!fileName.isEmpty()) {
-		 saveFile(fileName);
-	 }
+	SaveFileDialog saveDiag (&mMain);
+	if (saveDiag.exec () != QDialog::Accepted || saveDiag.selectedFiles().size() == 0)
+		return;
+	saveFile(saveDiag.selectedFilter().at(0), saveDiag.saveFileOptions());
 }
+
 void XKeyApplication::save () {
 	if (!currentFileName.isEmpty())
-		saveFile(currentFileName);
+		saveFile(currentFileName, SaveFileOptions());
 }
 
 void XKeyApplication::addFolderClicked () {
@@ -221,7 +223,7 @@ void XKeyApplication::setEnabled (bool enabled) {
 	QWidget *widgetList[] = { mUi->keyTable, mUi->keyTree, mMain.findChild<QPushButton*> ("searchButton"), mSearchBar
 	};
 	QAction *actionList[] = { mUi->actionSave, mUi->actionSave_As,
-		mUi->actionAddEntry, mUi->actionEditEntry, mUi->actionAddFolder, mUi->actionDeleteFolder
+		mUi->actionAddEntry, mUi->actionEditEntry, mUi->actionDeleteEntry, mUi->actionAddFolder, mUi->actionDeleteFolder
 	};
 	for (QWidget *w : widgetList) {
 		w->setEnabled(enabled);
