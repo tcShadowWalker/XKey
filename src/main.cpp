@@ -22,6 +22,7 @@ void print_folder (const XKey::Folder &f, int depth = 0) {
 
 std::string input_file, output_file, search_path, key_file;
 bool output_no_encrypt = false, output_no_encode = false, output_no_header = false;
+bool input_no_header = false, input_not_encoded = false;
 
 int parse_commandline (int argc, char** argv) {
 	namespace po = boost::program_options; 
@@ -40,7 +41,9 @@ int parse_commandline (int argc, char** argv) {
 				"On ther other hand, if you open the file again, XKey won't be able to guess wich encryption and encoding you used "
 				"to encrypt the file, so you have to specify those manually\n"
 				"(Default: Yes)"
-		);
+		)
+		("in-no-header", po::bool_switch(&input_no_header), "The input file does not have an XKey header (Default: Yes)")
+		("in-not-encoded", po::bool_switch(&input_not_encoded), "The input file is not base64-encoded (Default: Yes)");
 		//("out-params,p", po::value<std::vector<std::string>>(&out_options), "Output database options");
 		
 	po::positional_options_description positionalOptions; 
@@ -83,10 +86,13 @@ int main (int argc, char** argv) {
 		return -1;
 	}
 	
-	XKey::Folder rootKeyFolder;
+	XKey::RootFolder_Ptr rootKeyFolder = XKey::create_root_folder();
 
 	try {
-		XKey::CryptStream crypt_streambuf (input_file, std::string(), XKey::CryptStream::READ);
+		int m = XKey::USE_ENCRYPTION | XKey::BASE64_ENCODED;
+		if (!input_no_header)
+			m |= XKey::EVALUATE_FILE_HEADER;
+		XKey::CryptStream crypt_streambuf (input_file, std::string(), XKey::CryptStream::READ, m);
 		
 		std::string key;
 		
@@ -98,15 +104,15 @@ int main (int argc, char** argv) {
 
 		std::istream stream (&crypt_streambuf);
 		XKey::Parser pars;
-		if (!pars.readFile (stream, &rootKeyFolder)) {
+		if (!pars.readFile (stream, &*rootKeyFolder)) {
 			std::cerr << "Could not parse keystore file " << input_file << ": " << pars.error() << "\n";
 			return -1;
 		}
 		
-		const XKey::Folder *f = &rootKeyFolder;
+		const XKey::Folder *f = &*rootKeyFolder;
 		if (search_path.size() > 0) {
 			// Search path specified:
-			f = XKey::search_folder (&rootKeyFolder, search_path);
+			f = XKey::search_folder (&*rootKeyFolder, search_path);
 		}
 		if (!f) {
 			std::cerr << "Requested path not found.\n";

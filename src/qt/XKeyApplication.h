@@ -5,7 +5,9 @@
 #include <boost/concept_check.hpp>
 #include "../XKey.h"
 #include "../XKeyGenerator.h"
+#include "FileDialog.h"
 
+class QSettings;
 struct SaveFileOptions;
 class QModelIndex;
 class QLineEdit;
@@ -24,11 +26,11 @@ class XKeyApplication
 Q_OBJECT
 
 public:
-	XKeyApplication();
+	XKeyApplication(QSettings *settings);
 	~XKeyApplication();
 	
 	void openFile (const QString &filename);
-	void saveFile (const QString &filename, SaveFileOptions sopt);
+	void saveFile (const QString &filename, const SaveFileOptions &sopt);
 	
 	void show ();
 public slots:
@@ -47,6 +49,8 @@ public slots:
 	void editKey (const QModelIndex & index);
 	void startSearch ();
 	
+	void showSettingsDialog ();
+	
 	//
 	void addFolderClicked ();
 	void deleteFolderClicked ();
@@ -57,16 +61,18 @@ public slots:
 	
 private:
 	QMainWindow mMain;
+	QSettings *mSettings;
 	Ui::MainWindow *mUi;
 	FolderListModel *mFolders;
 	KeyListModel *mKeys;
-	XKey::Folder mRoot;
+	XKey::RootFolder_Ptr mRoot;
 	QLineEdit *mSearchBar;
 	// Open file:
 	QString currentFilePassword;
 	QString currentFileName;
 	bool madeChanges;
 	XKey::PassphraseGenerator mGenerator;
+	SaveFileOptions mSaveOptions;
 	
 	void setEnabled (bool enabled);
 };

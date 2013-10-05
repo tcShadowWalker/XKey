@@ -40,6 +40,15 @@ Folder::Folder () :_parent(0) { }
 
 Folder::Folder (const std::string &name, Folder *par) : _name(name), _parent(par) {}
 
+void Folder::operator= (Folder &&o) {
+	_name = std::move(o._name);
+	_parent = o._parent;
+	_entries = std::move(o._entries);
+	_subfolders = std::move(o._subfolders);
+	for (auto &it : _subfolders)
+		it._parent = this;
+}
+
 std::string	Folder::fullPath () const {
 	std::string fp;
 	const Folder *p = this;

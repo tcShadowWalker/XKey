@@ -3,6 +3,7 @@
 #include "FolderListModel.h"
 #include "KeyEditDialog.h"
 #include "FileDialog.h"
+#include "SettingsDialog.h"
 #include "../CryptStream.h"
 #include <QFileDialog>
 #include <QPushButton>
@@ -15,8 +16,8 @@
 
 #include <iostream>
 
-XKeyApplication::XKeyApplication()
-	: mUi(0), mFolders(0), mKeys(0), madeChanges(false)
+XKeyApplication::XKeyApplication(QSettings *sett)
+	: mSettings(sett), mUi(0), mFolders(0), mKeys(0), madeChanges(false)
 {
 	mUi = new Ui::MainWindow;
 	mUi->setupUi(&mMain);
@@ -33,6 +34,8 @@ XKeyApplication::XKeyApplication()
 	mUi->keyTree->setDragEnabled(true);
 	mUi->keyTree->setDefaultDropAction(Qt::MoveAction);
 	// Signals
+	connect (mUi->actionSettings, SIGNAL(triggered()), this, SLOT(showSettingsDialog()));
+	
 	connect (mUi->actionNew, SIGNAL(triggered()), this, SLOT(newFile()));
 	connect (mUi->actionOpen, SIGNAL(triggered()), this, SLOT(showOpenFile()));
 	connect (mUi->actionSave_As, SIGNAL(triggered()), this, SLOT(showSaveAsFile()));
@@ -86,9 +89,9 @@ bool XKeyApplication::askClose () {
 void XKeyApplication::newFile () {
 	if (!askClose())
 		return;
-	mRoot = XKey::Folder();
-	this->mFolders->setRootFolder(&mRoot);
-	this->mKeys->setCurrentFolder (&mRoot);
+	this->mRoot = XKey::create_root_folder();
+	this->mFolders->setRootFolder(&*mRoot);
+	this->mKeys->setCurrentFolder (&*mRoot);
 	madeChanges = false;
 	setEnabled(true);
 }
@@ -109,13 +112,15 @@ void XKeyApplication::openFile (const QString &filename) {
 			crypt_source.setEncryptionKey(pwdDiag.password().toStdString());
 		}
 		std::istream isource (&crypt_source);
-		if (p.readFile(isource, &mRoot)) {
+		XKey::RootFolder_Ptr newRoot = XKey::create_root_folder();
+		if (p.readFile(isource, &*newRoot)) {
 			success = true;
 			// Set attributes:
+			this->mRoot = std::move(newRoot);
 			currentFileName = filename;
 			currentFilePassword = password;
-			this->mFolders->setRootFolder(&mRoot);
-			this->mKeys->setCurrentFolder (&mRoot);
+			this->mFolders->setRootFolder(&*mRoot);
+			this->mKeys->setCurrentFolder (&*mRoot);
 			madeChanges = false;
 			setEnabled(true);
 		} else {
@@ -129,26 +134,22 @@ void XKeyApplication::openFile (const QString &filename) {
 	}
 }
 
-void XKeyApplication::saveFile (const QString &filename, SaveFileOptions sopt) {
+void XKeyApplication::saveFile (const QString &filename, const SaveFileOptions &sopt) {
 	QString errorMsg;
 	bool success = false;
 	try {
 		QString passwd;
-		int cmode = 0;
-		cmode |= (sopt.use_encoding) ? XKey::BASE64_ENCODED : 0;
-		cmode |= (sopt.write_header) ? XKey::EVALUATE_FILE_HEADER : 0;
 		if (sopt.use_encryption) {
 			FilePasswordDialog pwdDiag (FilePasswordDialog::WRITE, &mMain);
 			if (pwdDiag.exec() != QDialog::Accepted)
 				return;
 			passwd = pwdDiag.password();
-			cmode |= XKey::USE_ENCRYPTION;
 		}
 		XKey::Writer w;
-		XKey::CryptStream crypt_source (filename.toStdString(), passwd.toStdString(), XKey::CryptStream::WRITE, cmode);
+		XKey::CryptStream crypt_source (filename.toStdString(), passwd.toStdString(), XKey::CryptStream::WRITE, sopt.makeCryptStreamMode());
 		// 
 		std::ostream isource (&crypt_source);
-		if (w.writeFile(isource, mRoot, false)) {
+		if (w.writeFile(isource, *mRoot, false)) {
 			success = true;
 			madeChanges = false;
 		} else {
@@ -196,7 +197,7 @@ void XKeyApplication::showOpenFile () {
 	 }
 }
 void XKeyApplication::showSaveAsFile () {
-	SaveFileDialog saveDiag (&mMain);
+	SaveFileDialog saveDiag (&mMain, mSaveOptions);
 	if (saveDiag.exec () != QDialog::Accepted || saveDiag.selectedFiles().size() == 0)
 		return;
 	saveFile(saveDiag.selectedFiles().at(0), saveDiag.saveFileOptions());
@@ -204,14 +205,14 @@ void XKeyApplication::showSaveAsFile () {
 
 void XKeyApplication::save () {
 	if (!currentFileName.isEmpty())
-		saveFile(currentFileName, SaveFileOptions());
+		saveFile(currentFileName, mSaveOptions);
 }
 
 void XKeyApplication::addFolderClicked () {
 	QModelIndexList indexes = mUi->keyTree->selectionModel()->selectedRows();
 	if (indexes.size() == 0) {
 		// Add new folder at root level:
-		mFolders->insertRow(mRoot.subfolders().size(), QModelIndex());
+		mFolders->insertRow(mRoot->subfolders().size(), QModelIndex());
 	} else if (indexes.size() == 1) {
 		QModelIndex parent = indexes.at(0);
 		mFolders->insertRow(0, parent);
@@ -279,5 +280,21 @@ void XKeyApplication::deleteEntryClicked () {
 		this->mKeys->removeEntry(row);
 	}
 	madeChanges = true;
+}
+
+void XKeyApplication::showSettingsDialog () {
+	SettingsDialog diag (mSettings, &mGenerator, &mSaveOptions, &mMain);
+	diag.exec();
+}
+
+int SaveFileOptions::makeCryptStreamMode () const {
+	int m = 0;
+	if (use_encoding)
+		m |= XKey::BASE64_ENCODED;
+	if (write_header)
+		m |= XKey::EVALUATE_FILE_HEADER;
+	if (use_encryption)
+		m |= XKey::USE_ENCRYPTION;
+	return m;
 }
 

@@ -3,12 +3,15 @@
 
 #include <string>
 #include <deque>
+#include <memory>
 
 namespace Json {
 	class Value;
 }
 
 namespace XKey {
+
+class Folder;
 
 class Entry
 {
@@ -29,12 +32,16 @@ private:
 	std::string _comment;
 };
 
+typedef std::unique_ptr<Folder> RootFolder_Ptr;
+
 class Folder
 {
 public:
 	Folder ();
 	Folder (const std::string &name, Folder *parent);
-
+	
+	void operator= (Folder &&);
+	
 	inline const std::string&			name() const { return _name; }
 	inline Folder*						parent() const { return _parent; }
 	
@@ -61,7 +68,21 @@ private:
 	std::deque<Folder> _subfolders;
 	std::deque<Entry> _entries;
 	Folder *_parent;
+	// Disallow copying
+	Folder (const Folder &) = delete;
+	Folder &operator= (const Folder &) = delete;
+
+	friend RootFolder_Ptr create_root_folder ();
 };
+
+/**
+ * @brief Create a new root folder for a folder hierarchy
+ * 
+ * This method is necessary, because folders must NOT be allocated on the stack.
+ */
+inline RootFolder_Ptr create_root_folder () {
+	return RootFolder_Ptr (new Folder());
+}
 
 /**
  * @brief Search folder by name in a folder hierarchy.

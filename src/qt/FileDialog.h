@@ -15,6 +15,8 @@ struct SaveFileOptions {
 	bool use_encoding;
 	bool write_header;
 	
+	int makeCryptStreamMode () const;
+	
 	inline SaveFileOptions() : use_encryption(true), cipherType(AES_256), use_encoding(true), write_header(true) { }
 };
 
@@ -23,7 +25,7 @@ class SaveFileDialog
 {
 	Q_OBJECT
 public:
-	SaveFileDialog (QWidget *parent);
+	SaveFileDialog (QWidget *parent, SaveFileOptions options = SaveFileOptions());
 	
 	inline const SaveFileOptions &saveFileOptions () const  { return mSaveOpt; }
 	
