@@ -253,6 +253,10 @@ void XKeyApplication::editEntryClicked () {
 }
 
 void XKeyApplication::deleteEntryClicked () {
-	// TOOD
+	QModelIndexList indexes = mUi->keyTable->selectionModel()->selectedRows();
+	if (indexes.size() == 1) {
+		const int row = indexes.at(0).row();
+		this->mKeys->removeEntry(row);
+	}
 }
 

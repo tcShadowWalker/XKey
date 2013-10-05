@@ -69,3 +69,11 @@ void KeyListModel::addEntry (XKey::Entry entry) {
 	endInsertRows();
 }
 
+void KeyListModel::removeEntry (int index) {
+	if (!_folder)
+		return;
+	beginRemoveRows(QModelIndex(), index, index);
+	_folder->removeEntry(index);
+	endRemoveRows();
+}
+

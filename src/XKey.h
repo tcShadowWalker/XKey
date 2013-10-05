@@ -13,7 +13,6 @@ namespace XKey {
 class Entry
 {
 public:
-	// TODO title, comment!
 	inline Entry () { }
 	inline Entry (const std::string &title, const std::string &user, const std::string &url, const std::string &pwd, const std::string &comment);
 	
@@ -43,11 +42,8 @@ public:
 	
 	std::string							fullPath() const;
 	
-	
-	/// Recursively counts subfolders
-	int 								countSubfolders () const;
-	
 	void 								addEntry (Entry entry);
+	void								removeEntry (int index);
 	Folder *							createSubfolder (const std::string &name);
 	
 	Folder * 							getSubfolder (const std::string &name);

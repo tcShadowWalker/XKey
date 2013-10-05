@@ -23,6 +23,7 @@ public:
 	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 	
 	void addEntry (XKey::Entry entry);
+	void removeEntry (int index);
 	
 	Qt::ItemFlags flags ( const QModelIndex & index ) const;
 	
