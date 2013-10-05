@@ -20,12 +20,15 @@ set(JsonDir ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/json/lib_json)
 set(TP_Json_SRCS ${JsonDir}/json_reader.cpp ${JsonDir}/json_value.cpp ${JsonDir}/json_writer.cpp) 
 
 set(SrcDir ${CMAKE_CURRENT_SOURCE_DIR}/src )
-set(XKey_SRCS ${SrcDir}/XKey.cpp ${SrcDir}/CryptStream.cpp )
+set(XKey_SRCS ${SrcDir}/XKey.cpp ${SrcDir}/CryptStream.cpp ${SrcDir}/XKeyGenerator.cpp )
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )
 
 add_executable(XKey ${SrcDir}/main.cpp ${XKey_SRCS} ${TP_Json_SRCS} )
 target_link_libraries(XKey ${XKeyLibraries} ${Boost_PROGRAM_OPTIONS_LIBRARY}  )
 install(TARGETS XKey RUNTIME DESTINATION bin)
+
+add_executable(XTest ${SrcDir}/test.cpp ${XKey_SRCS} ${TP_Json_SRCS} )
+target_link_libraries(XTest ${XKeyLibraries} ${Boost_PROGRAM_OPTIONS_LIBRARY}  )
 
 add_subdirectory(src/qt)

@@ -18,6 +18,8 @@ class KeyEditDialog
 public:
 	KeyEditDialog (XKey::Entry *r, QWidget *parent);
 	~KeyEditDialog();
+	
+	QString generatePassphrase ();
 
 public slots:
 	void setPasswordHidden (bool hidden);

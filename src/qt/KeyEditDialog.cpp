@@ -32,3 +32,7 @@ void KeyEditDialog::makeChanges () {
 		mUi->passwordEdit->text().toStdString(), mUi->commentEdit->toPlainText().toStdString()
 	);
 }
+
+QString KeyEditDialog::generatePassphrase () {
+	
+}

@@ -4,13 +4,25 @@
 #include <string>
 #include <cstring>
 
+#include "XKeyGenerator.h"
+
 #include <openssl/evp.h>
 
 int main (int argc, char** argv) {
-	if (argc < 2) {
+	XKey::PassphraseGenerator gen;
+	
+	std::string pwphrase;
+	
+	gen.generatePassphrase (&pwphrase);
+	
+	std::cout << pwphrase << "\n";
+	
+	/*if (argc < 2) {
 		std::cerr << "Usage: XKey keystore_file\n";
 		return -1;
 	}
+	
+	
 	
 	OpenSSL_add_all_ciphers();
 
@@ -37,7 +49,7 @@ int main (int argc, char** argv) {
 	if (!w.writeFile(stream, root)) {
 		std::cerr << "Error: " << w.error() << "\n";
 		return -1;
-	}
+	}*/
 
 	return 0;
 }
