@@ -55,13 +55,16 @@ QModelIndex FolderListModel::index ( int row, int column, const QModelIndex &par
 }
 
 int FolderListModel::rowCount (const QModelIndex &parent) const {
-	if (!root)
+	if (!root) {
 		return 0;
-	if (parent.column() > 0)
+	}
+	if (parent.column() > 0) {
 		return 0;
-	if (!parent.isValid())
+	}
+	if (!parent.isValid()) {
 		//return 1;
 		return root->subfolders().size();
+	}
 	const XKey::Folder *parentItem = static_cast<const XKey::Folder *> (parent.internalPointer());
 	return parentItem->subfolders().size();
 }
@@ -73,8 +76,8 @@ int FolderListModel::columnCount (const QModelIndex &parent) const {
 bool FolderListModel::insertRow (int row, const QModelIndex &parent) {
 	XKey::Folder *parentItem = (!parent.isValid()) ? root : static_cast<XKey::Folder *> (parent.internalPointer());
 	assert (parentItem);
-	beginInsertRows(parent, parentItem->subfolders().size(), parentItem->subfolders().size()+1);
 	const int num = parentItem->subfolders().size();
+	beginInsertRows(parent, num, num);
 	XKey::Folder *created = 0;
 	for (int i = 1; !created && i <= 3; ++i) {
 		try {

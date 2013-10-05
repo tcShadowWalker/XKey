@@ -135,7 +135,7 @@ void CryptStream::setEncryptionKey (std::string key) {
 
 CryptStream::int_type CryptStream::underflow() {
 	if (_mode != READ)
-		throw std::logic_error ("underflow unexpected on read-only CryptStream");
+		throw std::logic_error ("underflow unexpected on write-only CryptStream");
 	if (gptr() < egptr()) // buffer not exhausted
         return traits_type::to_int_type(*gptr());
 
@@ -164,7 +164,7 @@ CryptStream::int_type CryptStream::underflow() {
 
 CryptStream::int_type CryptStream::overflow (int_type ch) {
 	if (_mode != WRITE)
-		throw std::logic_error ("Underflow unexpected on write-only CryptStream");
+		throw std::logic_error ("overflow unexpected on read-only CryptStream");
 	
 	if (ch != traits_type::eof()) {
 		*pptr() = ch;
