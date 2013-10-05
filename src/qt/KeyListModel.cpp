@@ -64,7 +64,7 @@ QVariant KeyListModel::data (const QModelIndex &index, int role) const {
 void KeyListModel::addEntry (XKey::Entry entry) {
 	if (!_folder)
 		return;
-	beginInsertRows(QModelIndex(), _folder->entries().size(), _folder->entries().size()+1);
+	beginInsertRows(QModelIndex(), _folder->entries().size(), _folder->entries().size());
 	_folder->addEntry(entry);
 	endInsertRows();
 }

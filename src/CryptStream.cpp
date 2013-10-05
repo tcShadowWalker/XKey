@@ -90,7 +90,6 @@ CryptStream::~CryptStream () {
 		BIO_flush(_file_bio);
 	BIO_pop(_file_bio);
 	BIO_vfree(_file_bio);
-	std::cout << "6\n";
 }
 
 bool CryptStream::isEncrypted () const {

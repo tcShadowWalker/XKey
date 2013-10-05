@@ -184,7 +184,7 @@ void XKeyApplication::showSaveAsFile () {
 	SaveFileDialog saveDiag (&mMain);
 	if (saveDiag.exec () != QDialog::Accepted || saveDiag.selectedFiles().size() == 0)
 		return;
-	saveFile(saveDiag.selectedFilter().at(0), saveDiag.saveFileOptions());
+	saveFile(saveDiag.selectedFiles().at(0), saveDiag.saveFileOptions());
 }
 
 void XKeyApplication::save () {

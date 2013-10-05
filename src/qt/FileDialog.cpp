@@ -3,8 +3,9 @@
 #include <ui_OpenKeystorePassphrase.h>
 
 SaveFileDialog::SaveFileDialog (QWidget *parent)
-	: QFileDialog(parent, tr("Save file"), tr("Save dd"), tr(".xkey"))
+	: QFileDialog(parent, tr("Save file"), tr("Keystore.xkey"), tr(".xkey"))
 {
+	setAcceptMode(AcceptSave);
 }
 
 
@@ -15,7 +16,8 @@ FilePasswordDialog::FilePasswordDialog (Operation op, QWidget *parent)
 {
 	ui->setupUi (this);
 	if (op == WRITE) {
-		
+		ui->headerLabel->setText(tr("Save file"));
+		ui->textLabel->setText(tr("Please enter the passphrase to encrypt the keystore:"));
 	}
 }
 
