@@ -1,10 +1,11 @@
 #include "KeyEditDialog.h"
 #include <../src/XKey.h>
+#include <../src/XKeyGenerator.h>
 
 #include <ui_Entry.h>
 
-KeyEditDialog::KeyEditDialog (XKey::Entry *r, QWidget *parent)
-	: QDialog(parent), mUi(0), mEntry(r)
+KeyEditDialog::KeyEditDialog (XKey::Entry *r, QWidget *parent, XKey::PassphraseGenerator *gen)
+	: QDialog(parent), mUi(0), mEntry(r), mGen(gen)
 {
 	mUi = new Ui::EditEntryDialog;
 	mUi->setupUi(this);
@@ -16,6 +17,7 @@ KeyEditDialog::KeyEditDialog (XKey::Entry *r, QWidget *parent)
 	mUi->passwordEdit->setText( QString::fromStdString(mEntry->password()) );
 	
 	connect (mUi->hiddenCheckbox, SIGNAL(toggled(bool)), this, SLOT(setPasswordHidden(bool)));
+	connect (mUi->generateButton, SIGNAL(clicked()), this, SLOT(generatePassphraseClicked()));
 }
 
 KeyEditDialog::~KeyEditDialog() {
@@ -27,6 +29,10 @@ void KeyEditDialog::setPasswordHidden (bool hidden) {
 	mUi->passwordEdit->setEchoMode (hidden ? QLineEdit::Password : QLineEdit::Normal);
 }
 
+void KeyEditDialog::generatePassphraseClicked () {
+	mUi->passwordEdit->setText( generatePassphrase() );
+}
+
 void KeyEditDialog::makeChanges () {
 	*mEntry = XKey::Entry ( mUi->titleEdit->text().toStdString(), mUi->usernameEdit->text().toStdString(), mUi->urlEdit->text().toStdString(),
 		mUi->passwordEdit->text().toStdString(), mUi->commentEdit->toPlainText().toStdString()
@@ -34,5 +40,12 @@ void KeyEditDialog::makeChanges () {
 }
 
 QString KeyEditDialog::generatePassphrase () {
-	
+	std::string password;
+	if (mGen) {
+		mGen->generatePassphrase(&password);
+	} else {
+		XKey::PassphraseGenerator gen;
+		gen.generatePassphrase(&password);
+	}
+	return QString::fromStdString(password);
 }

@@ -19,6 +19,7 @@ public:
 	PassphraseGenerator ();
 	
 	void setAllowedCharacters (int allowed_classes);
+	void disallowCharacterType (CharacterClass c);
 	
 	void setMinLength (int minLen);
 	void setMaxLength (int maxLen);

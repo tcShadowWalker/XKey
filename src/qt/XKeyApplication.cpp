@@ -20,6 +20,8 @@ XKeyApplication::XKeyApplication()
 {
 	mUi = new Ui::MainWindow;
 	mUi->setupUi(&mMain);
+	//
+	mGenerator.disallowCharacterType(XKey::PassphraseGenerator::CHAR_SPECIAL);
 	// 
 	mFolders = new FolderListModel (this);
 	mKeys = new KeyListModel (this);
@@ -180,7 +182,7 @@ void XKeyApplication::startSearch () {
 
 void XKeyApplication::editKey (const QModelIndex & index) {
 	XKey::Entry &entry = static_cast<XKey::Entry&> (mKeys->folder()->entries().at(index.row()));
-	KeyEditDialog diag (&entry, &mMain);
+	KeyEditDialog diag (&entry, &mMain, &mGenerator);
 	if (diag.exec () == QDialog::Accepted) {
 		diag.makeChanges ();
 		madeChanges = true;

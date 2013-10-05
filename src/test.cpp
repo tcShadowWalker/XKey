@@ -13,6 +13,7 @@ int main (int argc, char** argv) {
 	
 	std::string pwphrase;
 	
+	gen.disallowCharacterType(XKey::PassphraseGenerator::CHAR_SPECIAL);
 	gen.generatePassphrase (&pwphrase);
 	
 	std::cout << pwphrase << "\n";

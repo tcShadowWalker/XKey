@@ -4,6 +4,7 @@
 #include <QtGui/QMainWindow>
 #include <boost/concept_check.hpp>
 #include "../XKey.h"
+#include "../XKeyGenerator.h"
 
 struct SaveFileOptions;
 class QModelIndex;
@@ -65,6 +66,7 @@ private:
 	QString currentFilePassword;
 	QString currentFileName;
 	bool madeChanges;
+	XKey::PassphraseGenerator mGenerator;
 	
 	void setEnabled (bool enabled);
 };

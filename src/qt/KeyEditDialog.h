@@ -5,6 +5,7 @@
 
 namespace XKey {
 	class Entry;
+	class PassphraseGenerator;
 }
 
 namespace Ui {
@@ -16,19 +17,23 @@ class KeyEditDialog
 {
 	Q_OBJECT
 public:
-	KeyEditDialog (XKey::Entry *r, QWidget *parent);
+	KeyEditDialog (XKey::Entry *r, QWidget *parent, XKey::PassphraseGenerator *gen = 0);
 	~KeyEditDialog();
 	
-	QString generatePassphrase ();
+	
 
 public slots:
 	void setPasswordHidden (bool hidden);
+	void generatePassphraseClicked ();
 	
 	void makeChanges ();
 	
 private:
 	Ui::EditEntryDialog *mUi;
 	XKey::Entry *mEntry;
+	XKey::PassphraseGenerator *mGen;
+	
+	QString generatePassphrase ();
 };
 
 #endif

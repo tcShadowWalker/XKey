@@ -18,6 +18,15 @@ void PassphraseGenerator::setAllowedCharacters (int allowed_classes) {
 	this->mRegenerate = true;
 }
 
+void PassphraseGenerator::disallowCharacterType (CharacterClass c) {
+	assert (c == CHAR_ALPHA || c == CHAR_LOWER_UPPERCASE || c == CHAR_NUMERIC || c == CHAR_SPECIAL);
+	int new_mask = mAllowed & ~c;
+	if (new_mask != mAllowed) {
+		mAllowed = new_mask;
+		mRegenerate = true;
+	}
+}
+
 void PassphraseGenerator::setMinLength (int minLen) {
 	assert (minLen >= 0);
 	this->mMinLen = minLen;
@@ -38,10 +47,14 @@ void PassphraseGenerator::generatePassphrase (std::string *passphrase) {
 	const int numSpecialChars = specialChars.size();
 	std::random_device rd;
 	std::mt19937 rng (rd());
-	std::uniform_int_distribution<int> type_dist (0, 5);
+	std::uniform_int_distribution<int> type_dist (1,1);
+	// If special characters are allowed, we want them with a probability of 1/6
+	if (mAllowed & CHAR_SPECIAL)
+		type_dist = std::uniform_int_distribution<int> (0, 5);
 	std::uniform_int_distribution<int> char_dist (0, mCharPool.size()-1);
 	passphrase->resize( char_dist( rng, std::uniform_int_distribution<int>::param_type( mMinLen, mMaxLen ) ) );
 	for (auto &it : *passphrase) {
+		// If we got a 0 from the random generator, we want a special char
 		if (type_dist(rng) != 0) {
 			it = mCharPool[char_dist(rng)];
 		} else {
@@ -51,8 +64,8 @@ void PassphraseGenerator::generatePassphrase (std::string *passphrase) {
 }
 
 void PassphraseGenerator::_generateCharacterPool () {
+	// We do not include special chars into the pool
 	int size = 0;
-	// We do not include special chars into this pool
 	if (mAllowed & CHAR_ALPHA)
 		size += (mAllowed & CHAR_LOWER_UPPERCASE) ? 26 * 2 : 26;
 	if (mAllowed & CHAR_NUMERIC)

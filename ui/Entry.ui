@@ -72,6 +72,35 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QPushButton" name="generateButton">
+            <property name="text">
+             <string>Generate</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../src/qt/res.qrc">
+              <normaloff>:/icons/icons/generator.png</normaloff>:/icons/icons/generator.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>false</bool>
+            </property>
+            <property name="autoDefault">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
         <item row="4" column="0">
