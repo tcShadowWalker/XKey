@@ -140,6 +140,8 @@
     <addaction name="actionAddEntry"/>
     <addaction name="actionEditEntry"/>
     <addaction name="actionDeleteEntry"/>
+    <addaction name="separator"/>
+    <addaction name="actionClearSelection"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -284,6 +286,11 @@
   <action name="actionAdd_Folder">
    <property name="text">
     <string>Add Folder</string>
+   </property>
+  </action>
+  <action name="actionClearSelection">
+   <property name="text">
+    <string>Clear selection</string>
    </property>
   </action>
  </widget>

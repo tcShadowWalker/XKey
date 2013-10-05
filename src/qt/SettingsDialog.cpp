@@ -13,7 +13,7 @@ SettingsDialog::SettingsDialog (QSettings *s, XKey::PassphraseGenerator *gen, Sa
 	mUi->setupUi(this);
 	
 	connect ((const QObject*)mUi->buttonBox->button(QDialogButtonBox::Save), SIGNAL(clicked()), this, SLOT(trySave()));
-	readSettings();
+	readSettings(s, gen, saveOptions);
 	mUi->asciiArmorCheckBox->setChecked (set->value("keystore.base64_encode", QVariant(true)).toBool());
 	mUi->headerCheckBox->setChecked (set->value ("keystore.include_header", QVariant(true)).toBool());
 	// pwgen
@@ -28,7 +28,7 @@ SettingsDialog::~SettingsDialog() {
 	delete mUi;
 }
 
-void SettingsDialog::readSettings () {
+void SettingsDialog::readSettings (QSettings *set, XKey::PassphraseGenerator *mGen, SaveFileOptions *mSaveOpt) {
 	using namespace XKey;
 	// Pwgen
 	int allowed_chars = PassphraseGenerator::CHAR_ALPHA;
@@ -56,7 +56,7 @@ void SettingsDialog::saveSettings () {
 	set->setValue ("generation.min_length", mUi->minLengthSpinBox->value());
 	set->setValue ("generation.max_Length", mUi->maxLengthSpinBox->value());
 	set->sync();
-	readSettings();
+	readSettings(set, mGen, mSaveOpt);
 }
 
 void SettingsDialog::trySave () {

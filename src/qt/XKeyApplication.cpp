@@ -19,10 +19,11 @@
 XKeyApplication::XKeyApplication(QSettings *sett)
 	: mSettings(sett), mUi(0), mFolders(0), mKeys(0), madeChanges(false)
 {
+	// Read application settings from hard disk
+	SettingsDialog::readSettings(mSettings, &mGenerator, &mSaveOptions);
+	// Init Ui
 	mUi = new Ui::MainWindow;
 	mUi->setupUi(&mMain);
-	//
-	mGenerator.disallowCharacterType(XKey::PassphraseGenerator::CHAR_SPECIAL);
 	// 
 	mFolders = new FolderListModel (this);
 	mKeys = new KeyListModel (this);
@@ -46,6 +47,7 @@ XKeyApplication::XKeyApplication(QSettings *sett)
 	connect (mUi->actionEditEntry, SIGNAL(triggered()), this, SLOT(editEntryClicked()));
 	connect (mUi->actionAddFolder, SIGNAL(triggered()), this, SLOT(addFolderClicked()));
 	connect (mUi->actionDeleteFolder, SIGNAL(triggered()), this, SLOT(deleteFolderClicked()));
+	connect (mUi->actionClearSelection, SIGNAL(triggered()), this, SLOT(clearSelection()));
 	
 	mUi->keyTree->setSelectionMode (QAbstractItemView::SingleSelection);
 	connect (mUi->keyTree->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(folderSelectionChanged(const QItemSelection &, const QItemSelection &)));
@@ -286,6 +288,13 @@ void XKeyApplication::showSettingsDialog () {
 	SettingsDialog diag (mSettings, &mGenerator, &mSaveOptions, &mMain);
 	diag.exec();
 }
+
+void XKeyApplication::clearSelection () {
+	mUi->keyTable->clearSelection();
+	mUi->keyTree->clearSelection();
+}
+
+// SFO
 
 int SaveFileOptions::makeCryptStreamMode () const {
 	int m = 0;

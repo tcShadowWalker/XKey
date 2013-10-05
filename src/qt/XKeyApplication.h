@@ -54,6 +54,7 @@ public slots:
 	//
 	void addFolderClicked ();
 	void deleteFolderClicked ();
+	void clearSelection ();
 	
 	void addEntryClicked ();
 	void editEntryClicked ();

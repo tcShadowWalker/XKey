@@ -25,7 +25,7 @@ public:
 	/**
 	 * @brief Read saved settings from disk, if available
 	 */
-	void readSettings ();
+	static void readSettings (QSettings *settings, XKey::PassphraseGenerator *gen, SaveFileOptions *saveOptions);
 
 public slots:
 	void trySave ();
