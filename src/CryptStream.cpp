@@ -38,19 +38,20 @@ CryptStream::CryptStream (const std::string &filename, std::string key, Operatio
 	char buf[35];
 	if (m_info & EVALUATE_FILE_HEADER) {
 		if (_mode == WRITE) {
-			// Write directly to the file, without encoding or encryption
+			// Write this header directly to the file, without encoding or encryption
+			// Format: *167110*#c:[0,1]e:[0,1]
 			int r = snprintf (buf, 25, "*167110*#c:%.1ie:%.1i", useEncryption, useBase64Encode);
 			memset(buf+r, '*', 32-r);
 			buf[31] = '\n';
 			BIO_write(_bio_chain, buf, 32);
 		} else {
 			BIO_read(_bio_chain, buf, 32);
-			// 9, 11, 12, 14
+			// offsets: 9, 11, 12, 14
 			if (strncmp(buf, "*167110*", 8) != 0 || buf[9] != 'c' || buf[12] != 'e') {
 				throw std::runtime_error ("Invalid file header. The file is probably not a valid XKey keystore.");
 			}
-			useEncryption = buf[1];
-			useBase64Encode = buf[14];
+			useEncryption = (buf[11] == '1');
+			useBase64Encode = (buf[14] == '1');
 		}
 	}
 	
@@ -182,10 +183,9 @@ CryptStream::int_type CryptStream::overflow (int_type ch) {
 
 int CryptStream::sync () {
 	if (_mode == WRITE) {
-		return overflow(traits_type::eof()) ? 0 : -1;
-	} else {
-		return 0;
+		overflow(traits_type::eof());
 	}
+	return 0;
 }
 
 }

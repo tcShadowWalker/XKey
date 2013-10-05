@@ -16,7 +16,7 @@
 #include <iostream>
 
 XKeyApplication::XKeyApplication()
-	: mUi(0), mFolders(0), mKeys(0)
+	: mUi(0), mFolders(0), mKeys(0), madeChanges(false)
 {
 	mUi = new Ui::MainWindow;
 	mUi->setupUi(&mMain);
@@ -42,7 +42,6 @@ XKeyApplication::XKeyApplication()
 	connect (mUi->actionAddFolder, SIGNAL(triggered()), this, SLOT(addFolderClicked()));
 	connect (mUi->actionDeleteFolder, SIGNAL(triggered()), this, SLOT(deleteFolderClicked()));
 	
-	// TODO: addWidget LineEdit and PushButton to qToolbar!
 	mUi->keyTree->setSelectionMode (QAbstractItemView::SingleSelection);
 	connect (mUi->keyTree->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(folderSelectionChanged(const QItemSelection &, const QItemSelection &)));
 	
@@ -50,10 +49,12 @@ XKeyApplication::XKeyApplication()
 	mUi->keyTable->setSelectionBehavior (QAbstractItemView::SelectRows);
 	
 	connect (mUi->keyTable, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(editKey(QModelIndex)));
-	// Search bar:
+	// Search bar: (Currently disabled because not implemented)
 	mSearchBar = new QLineEdit (&mMain);
+	mSearchBar->setEnabled(false);
 	mUi->toolBar->addWidget(mSearchBar);
 	QPushButton *searchButton = new QPushButton (tr("Search"), &mMain);
+	searchButton->setEnabled(false);
 	searchButton->setObjectName("searchButton");
 	connect(searchButton, SIGNAL(clicked(bool)), this, SLOT(startSearch()));
 	mUi->toolBar->addWidget(searchButton);
@@ -71,19 +72,28 @@ void XKeyApplication::show() {
 
 // 
 
-void XKeyApplication::askClose () {
-	// TODO: Check if current keystore open then ask to save
+bool XKeyApplication::askClose () {
+	if (mFolders && madeChanges) {
+		int answer = QMessageBox::question(&mMain, tr("Close database"), tr("Are you sure you want to close the current database and discard all changes you may have made?"),
+				QMessageBox::Abort | QMessageBox::Yes);
+		return (answer == QMessageBox::Yes);
+	}
+	return true;
 }
 
 void XKeyApplication::newFile () {
+	if (!askClose())
+		return;
 	mRoot = XKey::Folder();
 	this->mFolders->setRootFolder(&mRoot);
 	this->mKeys->setCurrentFolder (&mRoot);
+	madeChanges = false;
 	setEnabled(true);
 }
 
 void XKeyApplication::openFile (const QString &filename) {
-	askClose();
+	if (!askClose())
+		return;
 	QString errorMsg;
 	bool success = false;
 	QString password;
@@ -104,6 +114,7 @@ void XKeyApplication::openFile (const QString &filename) {
 			currentFilePassword = password;
 			this->mFolders->setRootFolder(&mRoot);
 			this->mKeys->setCurrentFolder (&mRoot);
+			madeChanges = false;
 			setEnabled(true);
 		} else {
 			errorMsg = QString::fromStdString(p.error());
@@ -137,6 +148,7 @@ void XKeyApplication::saveFile (const QString &filename, SaveFileOptions sopt) {
 		std::ostream isource (&crypt_source);
 		if (w.writeFile(isource, mRoot, false)) {
 			success = true;
+			madeChanges = false;
 		} else {
 			errorMsg = QString::fromStdString(w.error());
 		}
@@ -171,6 +183,7 @@ void XKeyApplication::editKey (const QModelIndex & index) {
 	KeyEditDialog diag (&entry, &mMain);
 	if (diag.exec () == QDialog::Accepted) {
 		diag.makeChanges ();
+		madeChanges = true;
 	}
 }
 
@@ -201,6 +214,7 @@ void XKeyApplication::addFolderClicked () {
 		QModelIndex parent = indexes.at(0);
 		mFolders->insertRow(0, parent);
 	}
+	madeChanges = true;
 }
 
 void XKeyApplication::deleteFolderClicked () {
@@ -217,10 +231,12 @@ void XKeyApplication::deleteFolderClicked () {
 			}
 		}
 	}
+	madeChanges = true;
 }
 
 void XKeyApplication::setEnabled (bool enabled) {
-	QWidget *widgetList[] = { mUi->keyTable, mUi->keyTree, mMain.findChild<QPushButton*> ("searchButton"), mSearchBar
+	// mMain.findChild<QPushButton*> ("searchButton"), mSearchBar
+	QWidget *widgetList[] = { mUi->keyTable, mUi->keyTree
 	};
 	QAction *actionList[] = { mUi->actionSave, mUi->actionSave_As,
 		mUi->actionAddEntry, mUi->actionEditEntry, mUi->actionDeleteEntry, mUi->actionAddFolder, mUi->actionDeleteFolder
@@ -243,6 +259,7 @@ void XKeyApplication::addEntryClicked () {
 		diag.makeChanges ();
 		this->mKeys->addEntry(std::move(entry));
 	}
+	madeChanges = true;
 }
 
 void XKeyApplication::editEntryClicked () {
@@ -250,6 +267,7 @@ void XKeyApplication::editEntryClicked () {
 	if (indexes.size() == 1) {
 		editKey (indexes.at(0));
 	}
+	madeChanges = true;
 }
 
 void XKeyApplication::deleteEntryClicked () {
@@ -258,5 +276,6 @@ void XKeyApplication::deleteEntryClicked () {
 		const int row = indexes.at(0).row();
 		this->mKeys->removeEntry(row);
 	}
+	madeChanges = true;
 }
 

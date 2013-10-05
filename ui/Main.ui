@@ -6,12 +6,16 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1115</width>
-    <height>848</height>
+    <width>1030</width>
+    <height>704</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>XKey</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../src/qt/res.qrc">
+    <normaloff>:/icons/icons/XKey.png</normaloff>:/icons/icons/XKey.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -111,7 +115,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1115</width>
+     <width>1030</width>
      <height>20</height>
     </rect>
    </property>
@@ -130,6 +134,12 @@
     <property name="title">
      <string>Edit</string>
     </property>
+    <addaction name="actionAddFolder"/>
+    <addaction name="actionDeleteFolder"/>
+    <addaction name="separator"/>
+    <addaction name="actionAddEntry"/>
+    <addaction name="actionEditEntry"/>
+    <addaction name="actionDeleteEntry"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -145,6 +155,9 @@
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
     <string>Toolbar</string>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextBesideIcon</enum>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -165,26 +178,46 @@
    <addaction name="separator"/>
   </widget>
   <action name="actionNew">
+   <property name="icon">
+    <iconset resource="../src/qt/res.qrc">
+     <normaloff>:/icons/icons/document-new.png</normaloff>:/icons/icons/document-new.png</iconset>
+   </property>
    <property name="text">
     <string>New</string>
    </property>
   </action>
   <action name="actionOpen">
+   <property name="icon">
+    <iconset resource="../src/qt/res.qrc">
+     <normaloff>:/icons/icons/document-open.png</normaloff>:/icons/icons/document-open.png</iconset>
+   </property>
    <property name="text">
     <string>Open</string>
    </property>
   </action>
   <action name="actionSave">
+   <property name="icon">
+    <iconset resource="../src/qt/res.qrc">
+     <normaloff>:/icons/icons/document-save.png</normaloff>:/icons/icons/document-save.png</iconset>
+   </property>
    <property name="text">
     <string>Save</string>
    </property>
   </action>
   <action name="actionSave_As">
+   <property name="icon">
+    <iconset resource="../src/qt/res.qrc">
+     <normaloff>:/icons/icons/document-save-as.png</normaloff>:/icons/icons/document-save-as.png</iconset>
+   </property>
    <property name="text">
     <string>Save As</string>
    </property>
   </action>
   <action name="actionQuit">
+   <property name="icon">
+    <iconset resource="../src/qt/res.qrc">
+     <normaloff>:/icons/icons/application-exit.png</normaloff>:/icons/icons/application-exit.png</iconset>
+   </property>
    <property name="text">
     <string>Quit</string>
    </property>
@@ -195,6 +228,10 @@
    </property>
   </action>
   <action name="actionAddEntry">
+   <property name="icon">
+    <iconset resource="../src/qt/res.qrc">
+     <normaloff>:/icons/icons/list-add.png</normaloff>:/icons/icons/list-add.png</iconset>
+   </property>
    <property name="text">
     <string>Add Entry</string>
    </property>
@@ -203,6 +240,10 @@
    </property>
   </action>
   <action name="actionEditEntry">
+   <property name="icon">
+    <iconset resource="../src/qt/res.qrc">
+     <normaloff>:/icons/icons/document-edit.png</normaloff>:/icons/icons/document-edit.png</iconset>
+   </property>
    <property name="text">
     <string>Edit Entry</string>
    </property>
@@ -211,16 +252,28 @@
    </property>
   </action>
   <action name="actionAddFolder">
+   <property name="icon">
+    <iconset resource="../src/qt/res.qrc">
+     <normaloff>:/icons/icons/folder-new.png</normaloff>:/icons/icons/folder-new.png</iconset>
+   </property>
    <property name="text">
     <string>Add Folder</string>
    </property>
   </action>
   <action name="actionDeleteFolder">
+   <property name="icon">
+    <iconset resource="../src/qt/res.qrc">
+     <normaloff>:/icons/icons/folder-remove.png</normaloff>:/icons/icons/folder-remove.png</iconset>
+   </property>
    <property name="text">
     <string>Delete Folder</string>
    </property>
   </action>
   <action name="actionDeleteEntry">
+   <property name="icon">
+    <iconset resource="../src/qt/res.qrc">
+     <normaloff>:/icons/icons/edit-delete.png</normaloff>:/icons/icons/edit-delete.png</iconset>
+   </property>
    <property name="text">
     <string>Delete Entry</string>
    </property>
@@ -228,8 +281,15 @@
     <string>Delete current Entry</string>
    </property>
   </action>
+  <action name="actionAdd_Folder">
+   <property name="text">
+    <string>Add Folder</string>
+   </property>
+  </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="../src/qt/res.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>actionQuit</sender>

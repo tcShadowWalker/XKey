@@ -37,7 +37,10 @@ public slots:
 	
 	void save ();
 	
-	void askClose ();
+	/**
+	 * @return true if the current database shall be closed, false if it shall remain opened
+	 */
+	bool askClose ();
 	
 	void folderSelectionChanged (const QItemSelection &, const QItemSelection &);
 	void editKey (const QModelIndex & index);
@@ -61,6 +64,7 @@ private:
 	// Open file:
 	QString currentFilePassword;
 	QString currentFileName;
+	bool madeChanges;
 	
 	void setEnabled (bool enabled);
 };

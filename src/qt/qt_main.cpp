@@ -1,13 +1,12 @@
 #include <QtGui/QApplication>
 #include "XKeyApplication.h"
 
-
-int main(int argc, char** argv) {
+int main (int argc, char** argv) {
 	QApplication app (argc, argv);
 	XKeyApplication xkey;
-	// TODO: EVALUATE ARGC ARGV,
-	// xkey.openFile
-	//
+	if (argc >= 2) {
+		xkey.openFile (QString(argv[1]));
+	}
 	xkey.show();
 	return app.exec();
 }

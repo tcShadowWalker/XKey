@@ -1,0 +1,29 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>../../icons/XKey.png</file>
+    <file>../../icons/folder-remove.png</file>
+    <file>../../icons/application-exit.png</file>
+    <file>../../icons/object-locked.png</file>
+    <file>../../icons/document-save-as.png</file>
+    <file>../../icons/document-save.png</file>
+    <file>../../icons/flag-black.png</file>
+    <file>../../icons/edit-delete.png</file>
+    <file>../../icons/document-edit.png</file>
+    <file>../../icons/flag-blue.png</file>
+    <file>../../icons/flag-green.png</file>
+    <file>../../icons/flag-red.png</file>
+    <file>../../icons/dialog-password.png</file>
+    <file>../../icons/document-new.png</file>
+    <file>../../icons/document-open.png</file>
+    <file>../../icons/flag-yellow.png</file>
+    <file>../../icons/folder-new.png</file>
+    <file>../../icons/folder-open.png</file>
+    <file>../../icons/folder.png</file>
+    <file>../../icons/list-add.png</file>
+    <file>../../icons/list-remove.png</file>
+    <file>../../icons/mail-mark-notjunk.png</file>
+    <file>../../icons/security-high.png</file>
+    <file>../../icons/security-low.png</file>
+    <file>../../icons/security-medium.png</file>
+  </qresource>
+</RCC>

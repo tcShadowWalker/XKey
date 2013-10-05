@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Edit Entry</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../src/qt/res.qrc">
+    <normaloff>:/icons/icons/dialog-password.png</normaloff>:/icons/icons/dialog-password.png</iconset>
+  </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="1" column="0">
     <spacer name="horizontalSpacer">
@@ -168,7 +172,18 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <tabstops>
+  <tabstop>titleEdit</tabstop>
+  <tabstop>usernameEdit</tabstop>
+  <tabstop>passwordEdit</tabstop>
+  <tabstop>urlEdit</tabstop>
+  <tabstop>commentEdit</tabstop>
+  <tabstop>buttonBox</tabstop>
+  <tabstop>hiddenCheckbox</tabstop>
+ </tabstops>
+ <resources>
+  <include location="../src/qt/res.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

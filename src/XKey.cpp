@@ -128,7 +128,7 @@ void Parser::parse_key (const Json::Value &key_entry, Folder *parent) {
 		pwd = key_entry.get("password", Json::Value::null),
 		comment = key_entry.get("comment", Json::Value::null);
 	if (!title.isString() || !user.isString() || !url.isString() || !pwd.isString() || !comment.isString())
-		throw std::runtime_error ("Could not parse key entry: Missing field");
+		std::cerr << "Error when parsing key entry: Missing or invalid field\n";
 	Entry ent (title.asString(), user.asString(), url.asString(), pwd.asString(), comment.asString());
 	parent->addEntry (std::move(ent));
 }
