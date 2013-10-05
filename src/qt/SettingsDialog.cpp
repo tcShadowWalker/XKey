@@ -14,14 +14,15 @@ SettingsDialog::SettingsDialog (QSettings *s, XKey::PassphraseGenerator *gen, Sa
 	
 	connect ((const QObject*)mUi->buttonBox->button(QDialogButtonBox::Save), SIGNAL(clicked()), this, SLOT(trySave()));
 	readSettings(s, gen, saveOptions);
-	mUi->asciiArmorCheckBox->setChecked (set->value("keystore.base64_encode", QVariant(true)).toBool());
-	mUi->headerCheckBox->setChecked (set->value ("keystore.include_header", QVariant(true)).toBool());
+	mUi->encryptionCheckBox->setChecked (set->value("keystore/encrypt", QVariant(true)).toBool());
+	mUi->asciiArmorCheckBox->setChecked (set->value("keystore/base64_encode", QVariant(true)).toBool());
+	mUi->headerCheckBox->setChecked (set->value ("keystore/include_header", QVariant(true)).toBool());
 	// pwgen
-	mUi->specialCharCheckBox->setChecked( set->value ("generation.special_chars", QVariant(false)).toBool() );
-	mUi->numericsCheckBox->setChecked( set->value ("generation.numerics", QVariant(true)).toBool() );
-	mUi->uppercaseCheckBox->setChecked( set->value ("generation.mixed_case", QVariant(true)).toBool() );
-	mUi->minLengthSpinBox->setValue( set->value ("generation.min_length", QVariant(10)).toInt() );
-	mUi->maxLengthSpinBox->setValue( set->value ("generation.max_Length", QVariant(14)).toInt() );
+	mUi->specialCharCheckBox->setChecked( set->value ("generation/special_chars", QVariant(false)).toBool() );
+	mUi->numericsCheckBox->setChecked( set->value ("generation/numerics", QVariant(true)).toBool() );
+	mUi->uppercaseCheckBox->setChecked( set->value ("generation/mixed_case", QVariant(true)).toBool() );
+	mUi->minLengthSpinBox->setValue( set->value ("generation/min_length", QVariant(10)).toInt() );
+	mUi->maxLengthSpinBox->setValue( set->value ("generation/max_Length", QVariant(14)).toInt() );
 }
 
 SettingsDialog::~SettingsDialog() {
@@ -32,29 +33,31 @@ void SettingsDialog::readSettings (QSettings *set, XKey::PassphraseGenerator *mG
 	using namespace XKey;
 	// Pwgen
 	int allowed_chars = PassphraseGenerator::CHAR_ALPHA;
-	if (set->value ("generation.special_chars").toBool())
+	if (set->value ("generation/special_chars").toBool())
 		allowed_chars |= PassphraseGenerator::CHAR_SPECIAL;
-	if (set->value ("generation.numerics").toBool())
+	if (set->value ("generation/numerics").toBool())
 		allowed_chars |= PassphraseGenerator::CHAR_NUMERIC;
-	if (set->value ("generation.mixed_case").toBool())
+	if (set->value ("generation/mixed_case").toBool())
 		allowed_chars |= PassphraseGenerator::CHAR_LOWER_UPPERCASE;
 	mGen->setAllowedCharacters(allowed_chars);
-	mGen->setMinLength( set->value ("generation.min_length").toInt() );
-	mGen->setMaxLength( set->value ("generation.max_Length").toInt() );
+	mGen->setMinLength( set->value ("generation/min_length").toInt() );
+	mGen->setMaxLength( set->value ("generation/max_Length").toInt() );
 	//
-	mSaveOpt->use_encoding = set->value("keystore.base64_encode").toBool();
-	mSaveOpt->write_header = set->value("keystore.include_header").toBool();
+	mSaveOpt->use_encryption = set->value("keystore/encrypt").toBool();
+	mSaveOpt->use_encoding = set->value("keystore/base64_encode").toBool();
+	mSaveOpt->write_header = set->value("keystore/include_header").toBool();
 }
 
 void SettingsDialog::saveSettings () {
-	set->setValue ("generation.base64_encode", mUi->asciiArmorCheckBox->isChecked());
-	set->setValue ("generation.include_header", mUi->headerCheckBox->isChecked());
+	set->setValue ("keystore/encrypt", mUi->encryptionCheckBox->isChecked());
+	set->setValue ("keystore/base64_encode", mUi->asciiArmorCheckBox->isChecked());
+	set->setValue ("keystore/include_header", mUi->headerCheckBox->isChecked());
 	// pwgen
-	set->setValue ("generation.special_chars", mUi->specialCharCheckBox->isChecked());
-	set->setValue ("generation.numerics", mUi->numericsCheckBox->isChecked());
-	set->setValue ("generation.mixed_case", mUi->uppercaseCheckBox->isChecked());
-	set->setValue ("generation.min_length", mUi->minLengthSpinBox->value());
-	set->setValue ("generation.max_Length", mUi->maxLengthSpinBox->value());
+	set->setValue ("generation/special_chars", mUi->specialCharCheckBox->isChecked());
+	set->setValue ("generation/numerics", mUi->numericsCheckBox->isChecked());
+	set->setValue ("generation/mixed_case", mUi->uppercaseCheckBox->isChecked());
+	set->setValue ("generation/min_length", mUi->minLengthSpinBox->value());
+	set->setValue ("generation/max_Length", mUi->maxLengthSpinBox->value());
 	set->sync();
 	readSettings(set, mGen, mSaveOpt);
 }

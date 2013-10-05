@@ -6,18 +6,14 @@
 #include <QMimeData>
 #include <QDropEvent>
 #include <QMessageBox>
-
+#include <QIcon>
 #include <iostream>
 
 FolderListModel::FolderListModel(QObject *parent)
 	: QAbstractTableModel(parent), root(0)
-{
-	
-}
+{ }
 
-FolderListModel::~FolderListModel() {
-
-}
+FolderListModel::~FolderListModel() { }
 
 void FolderListModel::setRootFolder (XKey::Folder *r) {
 	this->root = r;
@@ -116,6 +112,8 @@ QVariant FolderListModel::data (const QModelIndex &index, int role) const {
 		return QString::fromStdString( parentItem->name() );
 	} else if (role == Qt::EditRole) {
 		return QString::fromStdString( parentItem->name() );
+	} else if (role == Qt::DecorationRole) {
+		return QIcon(tr(":/icons/folder.png", "Icon for opened folders in folder-tree"));
 	}
 	return QVariant();
 }
@@ -150,31 +148,43 @@ Qt::DropActions FolderListModel::supportedDropActions () const {
 }
 
 bool FolderListModel::dropMimeData (const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) {
-	XKey::Folder *parentItem = 0;
-	if (!parent.isValid()) {
-		parentItem = root;
-	} else {
-		parentItem = static_cast<XKey::Folder *> (parent.internalPointer());
+	
+	std::cout << "mime: " << data->formats().join(", ").toStdString() << "\n";
+	if (data->hasFormat("XKey/Folder")) {
+		// TODO: FIX FOLDER DRAG AND DROP!
+		std::cout << "Folder Drag and drop is currently disabled!\n";
+		return false;
+	
+		XKey::Folder *parentItem = 0;
+		if (!parent.isValid()) {
+			parentItem = root;
+		} else {
+			parentItem = static_cast<XKey::Folder *> (parent.internalPointer());
+		}
+		if (!parentItem)
+			return false;
+		if (row < 0 || row > parentItem->subfolders().size())
+			row = parentItem->subfolders().size();
+		QString fullPath = data->text();
+		XKey::Folder *oldFolder = const_cast<XKey::Folder *> (XKey::search_folder(root, fullPath.toStdString())),
+			*oldParent = (oldFolder) ? oldFolder->parent() : 0;
+		if (!oldFolder || !oldParent)
+			return false;
+		try {
+			std::cout << "Drop: " << fullPath.toStdString() << ", o: " << oldFolder << ", " << oldParent << "\n";
+			beginInsertRows(parent, parentItem->subfolders().size(), parentItem->subfolders().size()+1);
+			XKey::Folder *newFolder = parentItem->createSubfolder(oldFolder->name());
+			*newFolder = std::move(*oldFolder);
+			endInsertRows();
+			return true;
+		} catch (const std::exception &e) {
+			QMessageBox::warning (0, tr("Error"), tr("Failed to move folders: %1").arg(QString(e.what())) );
+			
+		}
+		
+	} else if (data->hasFormat("XKey/KeyEntry")) {
+		
 	}
-	if (!parentItem)
-		return false;
-	if (row < 0 || row > parentItem->subfolders().size())
-		row = parentItem->subfolders().size();
-	QString fullPath = data->text();
-	XKey::Folder *oldFolder = const_cast<XKey::Folder *> (XKey::search_folder(root, fullPath.toStdString())),
-		*oldParent = (oldFolder) ? oldFolder->parent() : 0;
-	if (!oldFolder || !oldParent)
-		return false;
-	try {
-		std::cout << "Drop: " << fullPath.toStdString() << ", o: " << oldFolder << ", " << oldParent << "\n";
-		beginInsertRows(parent, parentItem->subfolders().size(), parentItem->subfolders().size()+1);
-		XKey::Folder *newFolder = parentItem->createSubfolder(oldFolder->name());
-		*newFolder = std::move(*oldFolder);
-		endInsertRows();
-	} catch (const std::exception &e) {
-		QMessageBox::warning (0, tr("Error"), tr("Failed to move folders: %1").arg(QString(e.what())) );
-		return false;
-	}
-	return true;
+	return false;
 }
 

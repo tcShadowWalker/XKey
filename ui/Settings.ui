@@ -23,7 +23,7 @@
       <item>
        <widget class="QCheckBox" name="encryptionCheckBox">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="toolTip">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;XKeystore databases are always fully encrypted.&lt;br/&gt;This setting can not be deactivated.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>

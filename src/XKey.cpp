@@ -42,11 +42,15 @@ Folder::Folder (const std::string &name, Folder *par) : _name(name), _parent(par
 
 void Folder::operator= (Folder &&o) {
 	_name = std::move(o._name);
-	_parent = o._parent;
 	_entries = std::move(o._entries);
 	_subfolders = std::move(o._subfolders);
+	// Fix parents
 	for (auto &it : _subfolders)
 		it._parent = this;
+	if (o._parent) {
+		o._parent->_subfolders.erase (o._parent->_subfolders.begin()+o.row());
+	}
+	o._parent = 0;
 }
 
 std::string	Folder::fullPath () const {

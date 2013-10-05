@@ -8,16 +8,15 @@
 #include <QFileDialog>
 #include <QPushButton>
 #include <QMessageBox>
+#include <QSettings>
 #include <QLineEdit>
 #include <cassert>
 // UIs
 #include <ui_Main.h>
-
-
 #include <iostream>
 
 XKeyApplication::XKeyApplication(QSettings *sett)
-	: mSettings(sett), mUi(0), mFolders(0), mKeys(0), madeChanges(false)
+	: mSettings(sett), mUi(0), mFolders(0), mKeys(0), madeChanges(false), mRecentFiles(0)
 {
 	// Read application settings from hard disk
 	SettingsDialog::readSettings(mSettings, &mGenerator, &mSaveOptions);
@@ -29,6 +28,9 @@ XKeyApplication::XKeyApplication(QSettings *sett)
 	mKeys = new KeyListModel (this);
 	//
 	mUi->keyTable->setModel(mKeys);
+	mUi->keyTable->setDragDropMode(QAbstractItemView::DragOnly);
+	mUi->keyTable->setDragEnabled(true);
+	mUi->keyTable->setDefaultDropAction(Qt::MoveAction);
 	mUi->keyTree->setModel(mFolders);
 	mUi->keyTree->setDragDropMode(QAbstractItemView::DragDrop);
 	mUi->keyTree->setDragDropOverwriteMode(true);
@@ -65,6 +67,12 @@ XKeyApplication::XKeyApplication(QSettings *sett)
 	searchButton->setObjectName("searchButton");
 	connect(searchButton, SIGNAL(clicked(bool)), this, SLOT(startSearch()));
 	mUi->toolBar->addWidget(searchButton);
+	
+	mRecentFiles = new QMenu (tr("Open recent"), &mMain);
+	loadRecentFileList();
+	QAction *act = mUi->menuFile->insertMenu(mUi->actionOpen, mRecentFiles);
+	act->setIcon(QIcon(tr(":/icons/document-open.png", "Icon for recent documents submenu")));
+	
 	setEnabled(false);
 }
 
@@ -125,6 +133,14 @@ void XKeyApplication::openFile (const QString &filename) {
 			this->mKeys->setCurrentFolder (&*mRoot);
 			madeChanges = false;
 			setEnabled(true);
+			// Add to recent file list:
+			QStringList files = mSettings->value("ui/recentFileList").toStringList();
+			files.removeAll(filename);
+			files.prepend(filename);
+			while (files.size() > 10)
+				files.removeLast();
+			mSettings->setValue("ui/recentFileList", files);
+			loadRecentFileList ();
 		} else {
 			errorMsg = QString::fromStdString(p.error());
 		}
@@ -151,7 +167,9 @@ void XKeyApplication::saveFile (const QString &filename, const SaveFileOptions &
 		XKey::CryptStream crypt_source (filename.toStdString(), passwd.toStdString(), XKey::CryptStream::WRITE, sopt.makeCryptStreamMode());
 		// 
 		std::ostream isource (&crypt_source);
-		if (w.writeFile(isource, *mRoot, false)) {
+		// If we don't use encryption, we want to write formatted.
+		bool writeFormatted = (sopt.use_encryption == false);
+		if (w.writeFile(isource, *mRoot, writeFormatted)) {
 			success = true;
 			madeChanges = false;
 		} else {
@@ -292,6 +310,23 @@ void XKeyApplication::showSettingsDialog () {
 void XKeyApplication::clearSelection () {
 	mUi->keyTable->clearSelection();
 	mUi->keyTree->clearSelection();
+}
+
+void XKeyApplication::loadRecentFileList() {
+	QStringList files = mSettings->value("ui/recentFileList").toStringList();
+	for (const QString &file : files) {
+		QAction *act = mRecentFiles->addAction(file);
+		act->setData(file);
+		act->setIcon(QIcon(tr(":/icons/document-open.png", "Icon for opening recent documents")));
+		connect(act, SIGNAL(triggered()), this, SLOT(openRecentFile()));
+	}
+}
+
+void XKeyApplication::openRecentFile() {
+	QAction *action = qobject_cast<QAction *>(sender());
+	if (action) {
+		openFile(action->data().toString());
+	}
 }
 
 // SFO

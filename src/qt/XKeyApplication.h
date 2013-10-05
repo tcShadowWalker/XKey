@@ -7,6 +7,7 @@
 #include "../XKeyGenerator.h"
 #include "FileDialog.h"
 
+class QMenu;
 class QSettings;
 struct SaveFileOptions;
 class QModelIndex;
@@ -50,6 +51,7 @@ public slots:
 	void startSearch ();
 	
 	void showSettingsDialog ();
+	void openRecentFile ();
 	
 	//
 	void addFolderClicked ();
@@ -74,8 +76,10 @@ private:
 	bool madeChanges;
 	XKey::PassphraseGenerator mGenerator;
 	SaveFileOptions mSaveOptions;
+	QMenu *mRecentFiles;
 	
 	void setEnabled (bool enabled);
+	void loadRecentFileList ();
 };
 
 #endif

@@ -30,6 +30,9 @@ public:
 	void setCurrentFolder (XKey::Folder *r);
 	
 	inline XKey::Folder *folder () const { return _folder; }
+	
+	QStringList mimeTypes () const;
+	QMimeData *mimeData (const QModelIndexList &indexes) const;
 private:
 	XKey::Folder *_folder;
 };

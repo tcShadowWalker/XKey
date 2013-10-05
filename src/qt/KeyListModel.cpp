@@ -2,6 +2,7 @@
 #include "../XKey.h"
 
 #include <qstringlist.h>
+#include <QMimeData>
 
 #include <iostream>
 #include <boost/concept_check.hpp>
@@ -32,7 +33,7 @@ QVariant KeyListModel::headerData (int section, Qt::Orientation orientation,  in
 }
 
 Qt::ItemFlags KeyListModel::flags ( const QModelIndex &) const {
-	return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+	return Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled;
 }
 
 int KeyListModel::rowCount (const QModelIndex &) const {
@@ -76,4 +77,24 @@ void KeyListModel::removeEntry (int index) {
 	_folder->removeEntry(index);
 	endRemoveRows();
 }
+
+// Drag and drop
+
+QStringList KeyListModel::mimeTypes () const {
+	return QStringList(QString ("text/plain"));
+}
+
+QMimeData *KeyListModel::mimeData (const QModelIndexList &indexes) const {
+	QMimeData *data = new QMimeData;
+	QByteArray a;
+	QStringList rows;
+	for (QModelIndex ind : indexes) {
+		rows << QString::number(ind.row());
+	}
+	QString rowStr = rows.join(",");
+	data->setData ("folder", QString::fromStdString(_folder->fullPath()).toUtf8());
+	data->setData ("entries", rowStr.toUtf8() );
+	return data;
+}
+
 
