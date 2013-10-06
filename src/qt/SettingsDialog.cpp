@@ -4,6 +4,7 @@
 #include <../src/XKeyGenerator.h>
 
 #include <QSettings>
+#include <QMessageBox>
 #include <ui_Settings.h>
 
 SettingsDialog::SettingsDialog (QSettings *s, XKey::PassphraseGenerator *gen, SaveFileOptions *saveOptions, QWidget *parent)
@@ -63,7 +64,14 @@ void SettingsDialog::saveSettings () {
 }
 
 void SettingsDialog::trySave () {
-	if (true) {
+	int answer = QMessageBox::Yes;
+	// maybe we only want to check changes: add mSaveOpt->use_encryption &&
+	if (!mUi->encryptionCheckBox->isChecked()) {
+		answer = QMessageBox::question(this, tr("Deactivate encryption"), tr("<p>You have chosen to save all files<br /><b>WITHOUT ANY ENCRYPTION</b>.</p>"
+			"<p>After you confirm this action and save a key-database to disk, anyone who has access to those files can read all passwords stored in it</p>"
+			"<p>Are you sure you want to deactivate encryption?</p>"), QMessageBox::Yes | QMessageBox::Abort);
+	}
+	if (answer == QMessageBox::Yes) {
 		saveSettings();
 		this->accept();
 	}

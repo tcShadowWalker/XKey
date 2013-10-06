@@ -1,5 +1,6 @@
 <RCC>
   <qresource>
+    <file>../../icons/configure.png</file>
     <file>../../icons/generator.png</file>
     <file>../../icons/XKey.png</file>
     <file>../../icons/folder-remove.png</file>

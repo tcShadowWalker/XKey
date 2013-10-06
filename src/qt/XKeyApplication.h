@@ -35,27 +35,23 @@ public:
 	
 	void show ();
 public slots:
+	// Opening keystores
 	void newFile ();
 	void showOpenFile ();
-	void showSaveAsFile ();
-	
-	void save ();
-	
-	void aboutToExit ();
-	
-	/**
-	 * @return true if the current database shall be closed, false if it shall remain opened
-	 */
-	bool askClose ();
-	
-	void folderSelectionChanged (const QItemSelection &, const QItemSelection &);
-	void editKey (const QModelIndex & index);
-	void startSearch ();
-	
-	void showSettingsDialog ();
 	void openRecentFile ();
 	
-	//
+	// Saving
+	void showSaveAsFile ();
+	void save ();
+	
+	// Selection and editing
+	void folderSelectionChanged (const QItemSelection &, const QItemSelection &);
+	void editKey (const QModelIndex & index);
+	
+	void startSearch ();
+	void showSettingsDialog ();
+	
+	// Edit folders and entries
 	void addFolderClicked ();
 	void deleteFolderClicked ();
 	void clearSelection ();
@@ -85,6 +81,11 @@ private:
 	
 	void setEnabled (bool enabled);
 	void loadRecentFileList ();
+	
+	/// @return true if the current database shall be closed, false if it shall remain opened
+	bool askClose ();
+	
+	void saveApplicationState ();
 };
 
 #endif

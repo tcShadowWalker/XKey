@@ -20,11 +20,12 @@ static void tokenize (const std::string &str, std::vector<std::string> *tokens, 
 	}
 }
 
+static bool compareCaseInsensitive (char a, char b) {
+	return std::tolower(a) == std::tolower (b);
+}
+
 static inline bool match_in_string (const std::string &needle, const std::string &haystack) {
-	auto pred = [] (char a, char b) -> bool {
-		return std::tolower(a) == std::tolower (b);
-	};
-	return std::search(haystack.begin(), haystack.end(), needle.begin(), needle.end(), pred) != haystack.end();
+	return std::search(haystack.begin(), haystack.end(), needle.begin(), needle.end(), &compareCaseInsensitive) != haystack.end();
 }
 
 static SearchResult search_folder (const std::vector<std::string> &tokens, const Folder *f) {
@@ -63,7 +64,6 @@ static SearchResult search_up_recursive (const std::vector<std::string> &tokens,
 		if (e.hasMatch())
 			return e;
 	}
-	// TODO: Do we need to search in P ?
 	// Go up the hierarchy
 	if (p->parent())
 		return search_up_recursive (tokens, p);

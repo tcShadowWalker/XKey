@@ -14,8 +14,8 @@
    <string>XKey</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../src/qt/res.qrc">
-    <normaloff>:/icons/icons/XKey.png</normaloff>:/icons/icons/XKey.png</iconset>
+   <iconset>
+    <normaloff>:/icons/XKey.png</normaloff>:/icons/XKey.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -181,8 +181,8 @@
   </widget>
   <action name="actionNew">
    <property name="icon">
-    <iconset resource="../src/qt/res.qrc">
-     <normaloff>:/icons/icons/document-new.png</normaloff>:/icons/icons/document-new.png</iconset>
+    <iconset>
+     <normaloff>:/icons/document-new.png</normaloff>:/icons/document-new.png</iconset>
    </property>
    <property name="text">
     <string>New</string>
@@ -190,8 +190,8 @@
   </action>
   <action name="actionOpen">
    <property name="icon">
-    <iconset resource="../src/qt/res.qrc">
-     <normaloff>:/icons/icons/document-open.png</normaloff>:/icons/icons/document-open.png</iconset>
+    <iconset>
+     <normaloff>:/icons/document-open.png</normaloff>:/icons/document-open.png</iconset>
    </property>
    <property name="text">
     <string>Open</string>
@@ -199,8 +199,8 @@
   </action>
   <action name="actionSave">
    <property name="icon">
-    <iconset resource="../src/qt/res.qrc">
-     <normaloff>:/icons/icons/document-save.png</normaloff>:/icons/icons/document-save.png</iconset>
+    <iconset>
+     <normaloff>:/icons/document-save.png</normaloff>:/icons/document-save.png</iconset>
    </property>
    <property name="text">
     <string>Save</string>
@@ -208,8 +208,8 @@
   </action>
   <action name="actionSave_As">
    <property name="icon">
-    <iconset resource="../src/qt/res.qrc">
-     <normaloff>:/icons/icons/document-save-as.png</normaloff>:/icons/icons/document-save-as.png</iconset>
+    <iconset>
+     <normaloff>:/icons/document-save-as.png</normaloff>:/icons/document-save-as.png</iconset>
    </property>
    <property name="text">
     <string>Save As</string>
@@ -217,22 +217,26 @@
   </action>
   <action name="actionQuit">
    <property name="icon">
-    <iconset resource="../src/qt/res.qrc">
-     <normaloff>:/icons/icons/application-exit.png</normaloff>:/icons/icons/application-exit.png</iconset>
+    <iconset>
+     <normaloff>:/icons/application-exit.png</normaloff>:/icons/application-exit.png</iconset>
    </property>
    <property name="text">
     <string>Quit</string>
    </property>
   </action>
   <action name="actionSettings">
+   <property name="icon">
+    <iconset resource="../src/qt/res.qrc">
+     <normaloff>:/icons/configure.png</normaloff>:/icons/configure.png</iconset>
+   </property>
    <property name="text">
     <string>Settings</string>
    </property>
   </action>
   <action name="actionAddEntry">
    <property name="icon">
-    <iconset resource="../src/qt/res.qrc">
-     <normaloff>:/icons/icons/list-add.png</normaloff>:/icons/icons/list-add.png</iconset>
+    <iconset>
+     <normaloff>:/icons/list-add.png</normaloff>:/icons/list-add.png</iconset>
    </property>
    <property name="text">
     <string>Add Entry</string>
@@ -243,8 +247,8 @@
   </action>
   <action name="actionEditEntry">
    <property name="icon">
-    <iconset resource="../src/qt/res.qrc">
-     <normaloff>:/icons/icons/document-edit.png</normaloff>:/icons/icons/document-edit.png</iconset>
+    <iconset>
+     <normaloff>:/icons/document-edit.png</normaloff>:/icons/document-edit.png</iconset>
    </property>
    <property name="text">
     <string>Edit Entry</string>
@@ -255,8 +259,8 @@
   </action>
   <action name="actionAddFolder">
    <property name="icon">
-    <iconset resource="../src/qt/res.qrc">
-     <normaloff>:/icons/icons/folder-new.png</normaloff>:/icons/icons/folder-new.png</iconset>
+    <iconset>
+     <normaloff>:/icons/folder-new.png</normaloff>:/icons/folder-new.png</iconset>
    </property>
    <property name="text">
     <string>Add Folder</string>
@@ -264,8 +268,8 @@
   </action>
   <action name="actionDeleteFolder">
    <property name="icon">
-    <iconset resource="../src/qt/res.qrc">
-     <normaloff>:/icons/icons/folder-remove.png</normaloff>:/icons/icons/folder-remove.png</iconset>
+    <iconset>
+     <normaloff>:/icons/folder-remove.png</normaloff>:/icons/folder-remove.png</iconset>
    </property>
    <property name="text">
     <string>Delete Folder</string>
@@ -273,8 +277,8 @@
   </action>
   <action name="actionDeleteEntry">
    <property name="icon">
-    <iconset resource="../src/qt/res.qrc">
-     <normaloff>:/icons/icons/edit-delete.png</normaloff>:/icons/icons/edit-delete.png</iconset>
+    <iconset>
+     <normaloff>:/icons/edit-delete.png</normaloff>:/icons/edit-delete.png</iconset>
    </property>
    <property name="text">
     <string>Delete Entry</string>

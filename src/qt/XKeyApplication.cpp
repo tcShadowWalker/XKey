@@ -83,7 +83,7 @@ XKeyApplication::XKeyApplication(QSettings *sett)
 }
 
 XKeyApplication::~XKeyApplication() {
-	aboutToExit();
+	saveApplicationState();
 	mMain.close();
 	delete mUi;
 }
@@ -300,8 +300,11 @@ void XKeyApplication::setEnabled (bool enabled) {
 void XKeyApplication::addEntryClicked () {
 	if (!this->mKeys->folder())
 		return;
-	XKey::Entry entry ( tr("Example title", "NewKeyEntryTitle").toStdString(), tr("Your Username", "NewKeyEntryUser").toStdString(),
+	XKey::Entry entry;
+	if (mSettings->value("general/exampleData", true).toBool() == true) {
+		entry = XKey::Entry (tr("Example title", "NewKeyEntryTitle").toStdString(), tr("Your Username", "NewKeyEntryUser").toStdString(),
 						tr("example.org", "NewKeyEntryDomain").toStdString(), tr("", "NewKeyEntryPassword").toStdString(), tr("", "NewKeyEntryComment").toStdString() );
+	}
 	KeyEditDialog diag (&entry, &mMain);
 	if (diag.exec () == QDialog::Accepted) {
 		diag.makeChanges ();
@@ -332,7 +335,7 @@ void XKeyApplication::showSettingsDialog () {
 	diag.exec();
 }
 
-void XKeyApplication::aboutToExit () {
+void XKeyApplication::saveApplicationState () {
 	mSettings->setValue("ui/key_table", mUi->keyTable->horizontalHeader()->saveState());
 	mSettings->setValue("ui/key_tree", mUi->keyTree->header()->saveState());
 	mSettings->setValue("ui/main", mMain.saveGeometry());
