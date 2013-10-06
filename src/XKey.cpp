@@ -44,12 +44,12 @@ static SearchResult search_folder (const std::vector<std::string> &tokens, const
 static SearchResult search_down_recursive (const std::vector<std::string> &tokens, const Folder *startFolder) {
 	// First look through all entries in THIS folder
 	SearchResult e = search_folder (tokens, startFolder);
-	if (e.match)
+	if (e.hasMatch())
 		return e;
 	// Now look through all subfolders
 	for (const Folder &s : startFolder->subfolders()) {
 		SearchResult e = search_down_recursive(tokens, &s);
-		if (e.match)
+		if (e.hasMatch())
 			return e;
 	}
 	return SearchResult();
@@ -60,7 +60,7 @@ static SearchResult search_up_recursive (const std::vector<std::string> &tokens,
 	// Start with the first SIBLING of lastFolder
 	for (std::deque<Folder>::const_iterator folderIt = p->subfolders().begin() + lastFolder->row()+1; folderIt < p->subfolders().end(); ++folderIt) {
 		SearchResult e = search_down_recursive(tokens, &*folderIt);
-		if (e.match)
+		if (e.hasMatch())
 			return e;
 	}
 	// TODO: Do we need to search in P ?

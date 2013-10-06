@@ -85,19 +85,29 @@ inline RootFolder_Ptr create_root_folder () {
 }
 
 struct SearchResult {
-	const Entry *match;
+	
+	inline SearchResult () : _match(0), _lastFolder(0), _lastIndex(-1) { }
+	inline SearchResult (const Entry *e, const Folder *f, int ind) : _match(e), _lastFolder(f), _lastIndex(ind) { }
+	
+	inline const Entry *match () const {
+		return _match;
+	}
+	inline bool hasMatch () const { return _match != 0; }
+	
+	inline const Folder *parentFolder () const { return _lastFolder; }
+	
+	inline int index () const { return _lastIndex; }
+	
+	const Entry *_match;
 	const Folder *_lastFolder;
 	int _lastIndex;
-	
-	inline SearchResult () : match(0), _lastFolder(0), _lastIndex(-1) { }
-	inline SearchResult (const Entry *e, const Folder *f, int ind) : match(e), _lastFolder(f), _lastIndex(ind) { }
 };
 
 /**
  * @brief Search for entries in a folder hierarchy incrementally
- * @param searchString The string to search for. If it contains spaces, all words will be search
+ * @param searchString The string to search for. If it contains spaces, all words will be search independently
  * @param rootFolder Root-node of the hierarchy
- * @return NULL if no matching entry was found
+ * @return Empty SearchResult-set if no matching entry was found
  */
 SearchResult startSearch (const std::string &searchString, const Folder *rootFolder);
 SearchResult continueSearch (const std::string &searchString, const SearchResult &lastResult);

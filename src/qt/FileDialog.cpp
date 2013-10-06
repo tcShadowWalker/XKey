@@ -19,6 +19,7 @@ FilePasswordDialog::FilePasswordDialog (Operation op, QWidget *parent)
 		ui->headerLabel->setText(tr("Save file"));
 		ui->textLabel->setText(tr("Please enter the passphrase to encrypt the keystore:"));
 	}
+	ui->passphraseEdit->setFocus();
 }
 
 int FilePasswordDialog::exec () {

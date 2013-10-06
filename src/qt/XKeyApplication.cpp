@@ -10,10 +10,10 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <QLineEdit>
+#include <QShortcut>
 #include <cassert>
 // UIs
 #include <ui_Main.h>
-#include <iostream>
 
 XKeyApplication::XKeyApplication(QSettings *sett)
 	: mSettings(sett), mUi(0), mFolders(0), mKeys(0), madeChanges(false), mRecentFiles(0)
@@ -63,6 +63,11 @@ XKeyApplication::XKeyApplication(QSettings *sett)
 	mUi->toolBar->addWidget(mSearchBar);
 	QPushButton *searchButton = new QPushButton (tr("Search"), &mMain);
 	searchButton->setObjectName("searchButton");
+	QShortcut *shCut = new QShortcut(QKeySequence("Return"), mSearchBar, 0, 0, Qt::WidgetShortcut);
+	connect (shCut, SIGNAL(activated()), this, SLOT(startSearch()));
+	shCut = new QShortcut(QKeySequence("Enter"), mSearchBar, 0, 0, Qt::WidgetShortcut);
+	connect (shCut, SIGNAL(activated()), this, SLOT(startSearch()));
+	
 	connect(searchButton, SIGNAL(clicked(bool)), this, SLOT(startSearch()));
 	mUi->toolBar->addWidget(searchButton);
 	
@@ -205,10 +210,14 @@ void XKeyApplication::startSearch () {
 			lastSearchString = mSearchBar->text();
 			sr = XKey::startSearch(lastSearchString.toStdString(), &*mRoot);
 		}
-		if (sr.match) {
-			std::cout << "MATCH! " << sr.match->title() << ", " << sr.match->url() << "\n";
+		if (sr.match()) {
+			// Show all keys of this folder:
+			mKeys->setCurrentFolder( const_cast<XKey::Folder*> (sr.parentFolder()) );
+			mUi->keyTable->selectRow( sr.index() );
 		} else {
-			std::cout << "NO MATCH\n";
+			mUi->statusbar->showMessage(tr("No match was found for your search keywords"));
+			// Next time, start search over
+			lastSearchString = "";
 		}
 		lastSearchResult = sr;
 	}
