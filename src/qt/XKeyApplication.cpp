@@ -21,6 +21,7 @@ XKeyApplication::XKeyApplication(QSettings *sett)
 	// Read application settings from hard disk
 	SettingsDialog::readSettings(mSettings, &mGenerator, &mSaveOptions);
 	// Init Ui
+	mMain.restoreGeometry( mSettings->value("ui/main").toByteArray() );
 	mUi = new Ui::MainWindow;
 	mUi->setupUi(&mMain);
 	// 
@@ -31,11 +32,13 @@ XKeyApplication::XKeyApplication(QSettings *sett)
 	mUi->keyTable->setDragDropMode(QAbstractItemView::DragOnly);
 	mUi->keyTable->setDragEnabled(true);
 	mUi->keyTable->setDefaultDropAction(Qt::MoveAction);
+	mUi->keyTable->horizontalHeader()->restoreState( mSettings->value("ui/key_table").toByteArray() );
 	mUi->keyTree->setModel(mFolders);
 	mUi->keyTree->setDragDropMode(QAbstractItemView::DragDrop);
 	mUi->keyTree->setDragDropOverwriteMode(true);
 	mUi->keyTree->setDragEnabled(true);
 	mUi->keyTree->setDefaultDropAction(Qt::MoveAction);
+	mUi->keyTree->header()->restoreState( mSettings->value("ui/key_tree").toByteArray() );
 	// Signals
 	connect (mUi->actionSettings, SIGNAL(triggered()), this, SLOT(showSettingsDialog()));
 	
@@ -80,6 +83,7 @@ XKeyApplication::XKeyApplication(QSettings *sett)
 }
 
 XKeyApplication::~XKeyApplication() {
+	aboutToExit();
 	mMain.close();
 	delete mUi;
 }
@@ -326,6 +330,13 @@ void XKeyApplication::deleteEntryClicked () {
 void XKeyApplication::showSettingsDialog () {
 	SettingsDialog diag (mSettings, &mGenerator, &mSaveOptions, &mMain);
 	diag.exec();
+}
+
+void XKeyApplication::aboutToExit () {
+	mSettings->setValue("ui/key_table", mUi->keyTable->horizontalHeader()->saveState());
+	mSettings->setValue("ui/key_tree", mUi->keyTree->header()->saveState());
+	mSettings->setValue("ui/main", mMain.saveGeometry());
+	mSettings->sync();
 }
 
 void XKeyApplication::clearSelection () {

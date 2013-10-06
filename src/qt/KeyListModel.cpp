@@ -5,17 +5,15 @@
 #include <QMimeData>
 
 #include <iostream>
-#include <boost/concept_check.hpp>
 
 static const QStringList headerColumns {QObject::tr("Title"), QObject::tr("Username"), QObject::tr("URL"), QObject::tr("Password")};
 
 KeyListModel::KeyListModel(QObject *parent)
 	: QAbstractTableModel(parent), _folder(0)
-{
-}
+{ }
 
 KeyListModel::~KeyListModel() {
-
+	
 }
 
 void KeyListModel::setCurrentFolder (XKey::Folder *r) {

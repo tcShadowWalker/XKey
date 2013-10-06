@@ -41,6 +41,8 @@ public slots:
 	
 	void save ();
 	
+	void aboutToExit ();
+	
 	/**
 	 * @return true if the current database shall be closed, false if it shall remain opened
 	 */
