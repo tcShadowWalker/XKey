@@ -15,6 +15,10 @@ SettingsDialog::SettingsDialog (QSettings *s, XKey::PassphraseGenerator *gen, Sa
 	
 	connect ((const QObject*)mUi->buttonBox->button(QDialogButtonBox::Save), SIGNAL(clicked()), this, SLOT(trySave()));
 	readSettings(s, gen, saveOptions);
+	// ui
+	mUi->expandFoldersCheckBox->setChecked ( set->value ("ui/always_expand", false).toBool() );
+	mUi->exampleEntriesCheckBox->setChecked ( set->value ("ui/example_data", false).toBool() );
+	// keystore
 	mUi->encryptionCheckBox->setChecked (set->value("keystore/encrypt", QVariant(true)).toBool());
 	mUi->asciiArmorCheckBox->setChecked (set->value("keystore/base64_encode", QVariant(true)).toBool());
 	mUi->headerCheckBox->setChecked (set->value ("keystore/include_header", QVariant(true)).toBool());
@@ -24,6 +28,7 @@ SettingsDialog::SettingsDialog (QSettings *s, XKey::PassphraseGenerator *gen, Sa
 	mUi->uppercaseCheckBox->setChecked( set->value ("generation/mixed_case", QVariant(true)).toBool() );
 	mUi->minLengthSpinBox->setValue( set->value ("generation/min_length", QVariant(10)).toInt() );
 	mUi->maxLengthSpinBox->setValue( set->value ("generation/max_Length", QVariant(14)).toInt() );
+	
 }
 
 SettingsDialog::~SettingsDialog() {
@@ -47,9 +52,14 @@ void SettingsDialog::readSettings (QSettings *set, XKey::PassphraseGenerator *mG
 	mSaveOpt->use_encryption = set->value("keystore/encrypt").toBool();
 	mSaveOpt->use_encoding = set->value("keystore/base64_encode").toBool();
 	mSaveOpt->write_header = set->value("keystore/include_header").toBool();
+	//
 }
 
 void SettingsDialog::saveSettings () {
+	// ui
+	set->setValue ("ui/always_expand", mUi->expandFoldersCheckBox->isChecked());
+	set->setValue ("ui/example_data", mUi->exampleEntriesCheckBox->isChecked());
+	// keystore
 	set->setValue ("keystore/encrypt", mUi->encryptionCheckBox->isChecked());
 	set->setValue ("keystore/base64_encode", mUi->asciiArmorCheckBox->isChecked());
 	set->setValue ("keystore/include_header", mUi->headerCheckBox->isChecked());

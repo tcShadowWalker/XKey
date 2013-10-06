@@ -52,6 +52,7 @@ public:
 	void 								addEntry (Entry entry);
 	void								removeEntry (int index);
 	Folder *							createSubfolder (const std::string &name);
+	void								removeSubfolder (int index);
 	
 	Folder * 							getSubfolder (const std::string &name);
 	const Folder * 						getSubfolder (const std::string &name) const;

@@ -126,10 +126,6 @@ void Folder::operator= (Folder &&o) {
 	// Fix parents
 	for (auto &it : _subfolders)
 		it._parent = this;
-	if (o._parent) {
-		o._parent->_subfolders.erase (o._parent->_subfolders.begin()+o.row());
-	}
-	o._parent = 0;
 }
 
 std::string	Folder::fullPath () const {
@@ -159,6 +155,12 @@ Folder *Folder::createSubfolder (const std::string &name) {
 		throw std::logic_error ("Can not create a second folder with the same name within the same parent");
 	_subfolders.emplace_back (name, this);
 	return &_subfolders.back();
+}
+
+void Folder::removeSubfolder (int index) {
+	if (index < 0 || index >= subfolders().size())
+		throw std::logic_error ("Invalid subfolder index: Can not be removed");
+	_subfolders.erase(_subfolders.begin() + index);
 }
 
 Folder *Folder::getSubfolder (const std::string &name) {

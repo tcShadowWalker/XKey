@@ -88,9 +88,10 @@ bool FolderListModel::removeRows (int row, int count, const QModelIndex &parent)
 	XKey::Folder *parentItem = (!parent.isValid()) ? root : static_cast<XKey::Folder *> (parent.internalPointer());
 	assert (parentItem);
 	try {
-		beginRemoveRows(parent, row, row+count);
-		int m = std::min ((int)parentItem->subfolders().size(), count + row);
-		parentItem->subfolders().erase (parentItem->subfolders().begin() + row, parentItem->subfolders().begin() + m);
+		beginRemoveRows(parent, row, row+count-1);
+		for (int i = row+count-1; i >= row; --i ) {
+			parentItem->removeSubfolder(i);
+		}
 		endRemoveRows();
 	} catch (const std::exception &e) {
 		std::cout << "fail: " << e.what() << "\n";

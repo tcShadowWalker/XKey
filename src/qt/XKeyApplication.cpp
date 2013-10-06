@@ -148,6 +148,9 @@ void XKeyApplication::openFile (const QString &filename) {
 				files.removeLast();
 			mSettings->setValue("ui/recentFileList", files);
 			loadRecentFileList ();
+			if (mSettings->value ("ui/always_expand", false).toBool()) {
+				mUi->keyTree->expandAll();
+			}
 		} else {
 			errorMsg = QString::fromStdString(p.error());
 		}
@@ -262,6 +265,7 @@ void XKeyApplication::addFolderClicked () {
 	} else if (indexes.size() == 1) {
 		QModelIndex parent = indexes.at(0);
 		mFolders->insertRow(0, parent);
+		mUi->keyTree->expand(parent);
 	}
 	madeChanges = true;
 }
@@ -301,7 +305,7 @@ void XKeyApplication::addEntryClicked () {
 	if (!this->mKeys->folder())
 		return;
 	XKey::Entry entry;
-	if (mSettings->value("general/exampleData", true).toBool() == true) {
+	if (mSettings->value("ui/example_data", true).toBool() == true) {
 		entry = XKey::Entry (tr("Example title", "NewKeyEntryTitle").toStdString(), tr("Your Username", "NewKeyEntryUser").toStdString(),
 						tr("example.org", "NewKeyEntryDomain").toStdString(), tr("", "NewKeyEntryPassword").toStdString(), tr("", "NewKeyEntryComment").toStdString() );
 	}
