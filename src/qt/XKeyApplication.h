@@ -86,6 +86,8 @@ private:
 	bool askClose ();
 	
 	void saveApplicationState ();
+	
+	void addRecentFile (QString filename);
 };
 
 #endif

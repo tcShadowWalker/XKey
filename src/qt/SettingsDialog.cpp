@@ -17,7 +17,7 @@ SettingsDialog::SettingsDialog (QSettings *s, XKey::PassphraseGenerator *gen, Sa
 	readSettings(s, gen, saveOptions);
 	// ui
 	mUi->expandFoldersCheckBox->setChecked ( set->value ("ui/always_expand", false).toBool() );
-	mUi->exampleEntriesCheckBox->setChecked ( set->value ("ui/example_data", false).toBool() );
+	mUi->exampleEntriesCheckBox->setChecked ( set->value ("ui/example_data", true).toBool() );
 	// keystore
 	mUi->encryptionCheckBox->setChecked (set->value("keystore/encrypt", QVariant(true)).toBool());
 	mUi->asciiArmorCheckBox->setChecked (set->value("keystore/base64_encode", QVariant(true)).toBool());

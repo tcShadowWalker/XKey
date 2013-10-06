@@ -113,6 +113,17 @@ void XKeyApplication::newFile () {
 	setEnabled(true);
 }
 
+void XKeyApplication::addRecentFile (QString filename) {
+	// Add to recent file list:
+	QStringList files = mSettings->value("ui/recentFileList").toStringList();
+	files.removeAll(filename);
+	files.prepend(filename);
+	while (files.size() > 10)
+		files.removeLast();
+	mSettings->setValue("ui/recentFileList", files);
+	loadRecentFileList ();
+}
+
 void XKeyApplication::openFile (const QString &filename) {
 	if (!askClose())
 		return;
@@ -121,7 +132,7 @@ void XKeyApplication::openFile (const QString &filename) {
 	QString password;
 	try {
 		XKey::Parser p;
-		XKey::CryptStream crypt_source (filename.toStdString(), std::string(), XKey::CryptStream::READ);
+		XKey::CryptStream crypt_source (filename.toStdString(), std::string(), XKey::CryptStream::READ, mSaveOptions.makeCryptStreamMode());
 		if (crypt_source.isEncrypted()) {
 			FilePasswordDialog pwdDiag (FilePasswordDialog::READ, &mMain);
 			if (pwdDiag.exec() != QDialog::Accepted)
@@ -140,14 +151,7 @@ void XKeyApplication::openFile (const QString &filename) {
 			this->mKeys->setCurrentFolder (&*mRoot);
 			madeChanges = false;
 			setEnabled(true);
-			// Add to recent file list:
-			QStringList files = mSettings->value("ui/recentFileList").toStringList();
-			files.removeAll(filename);
-			files.prepend(filename);
-			while (files.size() > 10)
-				files.removeLast();
-			mSettings->setValue("ui/recentFileList", files);
-			loadRecentFileList ();
+			addRecentFile (filename);
 			if (mSettings->value ("ui/always_expand", false).toBool()) {
 				mUi->keyTree->expandAll();
 			}
@@ -182,6 +186,7 @@ void XKeyApplication::saveFile (const QString &filename, const SaveFileOptions &
 		if (w.writeFile(isource, *mRoot, writeFormatted)) {
 			success = true;
 			madeChanges = false;
+			addRecentFile (filename);
 		} else {
 			errorMsg = QString::fromStdString(w.error());
 		}

@@ -3,7 +3,7 @@
 #include <ui_OpenKeystorePassphrase.h>
 
 SaveFileDialog::SaveFileDialog (QWidget *parent, SaveFileOptions opt)
-	: QFileDialog(parent, tr("Save file"), tr("Keystore.xkey"), tr(".xkey")), mSaveOpt(opt)
+	: QFileDialog(parent, tr("Save file"), tr("Keystore.xkey"), tr("Keystore Files (*.xkey)")), mSaveOpt(opt)
 {
 	setAcceptMode(AcceptSave);
 }
