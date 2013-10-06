@@ -28,7 +28,7 @@ add_executable(XKey ${SrcDir}/main.cpp ${XKey_SRCS} ${TP_Json_SRCS} )
 target_link_libraries(XKey ${XKeyLibraries} ${Boost_PROGRAM_OPTIONS_LIBRARY}  )
 install(TARGETS XKey RUNTIME DESTINATION bin)
 
-add_executable(XTest ${SrcDir}/test.cpp ${XKey_SRCS} ${TP_Json_SRCS} )
+add_executable(XTest EXCLUDE_FROM_ALL ${SrcDir}/test.cpp ${XKey_SRCS} ${TP_Json_SRCS} )
 target_link_libraries(XTest ${XKeyLibraries} ${Boost_PROGRAM_OPTIONS_LIBRARY}  )
 
 add_subdirectory(src/qt)

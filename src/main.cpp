@@ -38,7 +38,7 @@ void print_folder (const XKey::Folder &f, int depth = 0) {
 
 std::string input_file, output_file, search_path, key_file;
 bool output_no_encrypt = false, output_no_encode = false, output_no_header = false;
-bool input_no_header = false, input_not_encoded = false;
+bool input_no_header = false, input_not_encoded = false, input_not_encrypted = false;
 
 int parse_commandline (int argc, char** argv) {
 	namespace po = boost::program_options; 
@@ -59,7 +59,8 @@ int parse_commandline (int argc, char** argv) {
 				"(Default: Yes)"
 		)
 		("in-no-header", po::bool_switch(&input_no_header), "The input file does not have an XKey header (Default: Yes)")
-		("in-not-encoded", po::bool_switch(&input_not_encoded), "The input file is not base64-encoded (Default: Yes)");
+		("in-not-encoded", po::bool_switch(&input_not_encoded), "The input file is not base64-encoded (Default: Yes)")
+		("in-not-encrypted", po::bool_switch(&input_not_encrypted), "The input file is in plaintext (Default: Yes)");
 		//("out-params,p", po::value<std::vector<std::string>>(&out_options), "Output database options");
 		
 	po::positional_options_description positionalOptions; 
@@ -105,9 +106,13 @@ int main (int argc, char** argv) {
 	XKey::RootFolder_Ptr rootKeyFolder = XKey::create_root_folder();
 
 	try {
-		int m = XKey::USE_ENCRYPTION | XKey::BASE64_ENCODED;
+		int m = 0;
 		if (!input_no_header)
 			m |= XKey::EVALUATE_FILE_HEADER;
+		if (!input_not_encrypted)
+			m |= XKey::USE_ENCRYPTION;
+		if (!input_not_encoded)
+			m |= XKey::BASE64_ENCODED;
 		XKey::CryptStream crypt_streambuf (input_file, std::string(), XKey::CryptStream::READ, m);
 		
 		std::string key;

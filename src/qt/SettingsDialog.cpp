@@ -39,19 +39,19 @@ void SettingsDialog::readSettings (QSettings *set, XKey::PassphraseGenerator *mG
 	using namespace XKey;
 	// Pwgen
 	int allowed_chars = PassphraseGenerator::CHAR_ALPHA;
-	if (set->value ("generation/special_chars").toBool())
+	if (set->value ("generation/special_chars", false).toBool())
 		allowed_chars |= PassphraseGenerator::CHAR_SPECIAL;
-	if (set->value ("generation/numerics").toBool())
+	if (set->value ("generation/numerics", true).toBool())
 		allowed_chars |= PassphraseGenerator::CHAR_NUMERIC;
-	if (set->value ("generation/mixed_case").toBool())
+	if (set->value ("generation/mixed_case", true).toBool())
 		allowed_chars |= PassphraseGenerator::CHAR_LOWER_UPPERCASE;
 	mGen->setAllowedCharacters(allowed_chars);
-	mGen->setMinLength( set->value ("generation/min_length").toInt() );
-	mGen->setMaxLength( set->value ("generation/max_Length").toInt() );
+	mGen->setMinLength( set->value ("generation/min_length", 10).toInt() );
+	mGen->setMaxLength( set->value ("generation/max_Length", 14).toInt() );
 	//
-	mSaveOpt->use_encryption = set->value("keystore/encrypt").toBool();
-	mSaveOpt->use_encoding = set->value("keystore/base64_encode").toBool();
-	mSaveOpt->write_header = set->value("keystore/include_header").toBool();
+	mSaveOpt->use_encryption = set->value("keystore/encrypt", true).toBool();
+	mSaveOpt->use_encoding = set->value("keystore/base64_encode", true).toBool();
+	mSaveOpt->write_header = set->value("keystore/include_header", true).toBool();
 	//
 }
 

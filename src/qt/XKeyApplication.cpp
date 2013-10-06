@@ -253,7 +253,9 @@ void XKeyApplication::showSaveAsFile () {
 }
 
 void XKeyApplication::save () {
-	if (!currentFileName.isEmpty())
+	if (currentFileName.isEmpty())
+		showSaveAsFile();
+	else
 		saveFile(currentFileName, mSaveOptions);
 }
 
@@ -302,7 +304,7 @@ void XKeyApplication::setEnabled (bool enabled) {
 }
 
 void XKeyApplication::addEntryClicked () {
-	if (!this->mKeys->folder())
+	if (!this->mKeys->folder() || this->mKeys->folder() == &*mRoot)
 		return;
 	XKey::Entry entry;
 	if (mSettings->value("ui/example_data", true).toBool() == true) {
