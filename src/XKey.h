@@ -84,13 +84,31 @@ inline RootFolder_Ptr create_root_folder () {
 	return RootFolder_Ptr (new Folder());
 }
 
+struct SearchResult {
+	const Entry *match;
+	const Folder *_lastFolder;
+	int _lastIndex;
+	
+	inline SearchResult () : match(0), _lastFolder(0), _lastIndex(-1) { }
+	inline SearchResult (const Entry *e, const Folder *f, int ind) : match(e), _lastFolder(f), _lastIndex(ind) { }
+};
+
+/**
+ * @brief Search for entries in a folder hierarchy incrementally
+ * @param searchString The string to search for. If it contains spaces, all words will be search
+ * @param rootFolder Root-node of the hierarchy
+ * @return NULL if no matching entry was found
+ */
+SearchResult startSearch (const std::string &searchString, const Folder *rootFolder);
+SearchResult continueSearch (const std::string &searchString, const SearchResult &lastResult);
+
 /**
  * @brief Search folder by name in a folder hierarchy.
  * @param root The root object of the hierarchy to search
  * @param search_path Search path to follow, must begin with a slash. Example: "/test1/Folder 2"
  * @return 0 if the folder was not found.
  */
-const XKey::Folder *search_folder (const XKey::Folder *root, const std::string &search_path);
+const Folder *get_folder_by_path (const Folder *root, const std::string &search_path);
 
 // Reader:
 

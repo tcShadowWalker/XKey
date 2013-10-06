@@ -58,12 +58,10 @@ XKeyApplication::XKeyApplication(QSettings *sett)
 	mUi->keyTable->setSelectionBehavior (QAbstractItemView::SelectRows);
 	
 	connect (mUi->keyTable, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(editKey(QModelIndex)));
-	// Search bar: (Currently disabled because not implemented)
+	// Search bar:
 	mSearchBar = new QLineEdit (&mMain);
-	mSearchBar->setEnabled(false);
 	mUi->toolBar->addWidget(mSearchBar);
 	QPushButton *searchButton = new QPushButton (tr("Search"), &mMain);
-	searchButton->setEnabled(false);
 	searchButton->setObjectName("searchButton");
 	connect(searchButton, SIGNAL(clicked(bool)), this, SLOT(startSearch()));
 	mUi->toolBar->addWidget(searchButton);
@@ -198,6 +196,21 @@ void XKeyApplication::folderSelectionChanged (const QItemSelection &l, const QIt
 void XKeyApplication::startSearch () {
 	if (!mSearchBar->text().isEmpty()) {
 		mUi->statusbar->showMessage(tr("Search: %1").arg(mSearchBar->text()));
+		XKey::SearchResult sr;
+		if (mSearchBar->text() == lastSearchString) {
+			// We continue an existing search
+			sr = XKey::continueSearch(lastSearchString.toStdString(), lastSearchResult);
+		} else {
+			// We start a new search
+			lastSearchString = mSearchBar->text();
+			sr = XKey::startSearch(lastSearchString.toStdString(), &*mRoot);
+		}
+		if (sr.match) {
+			std::cout << "MATCH! " << sr.match->title() << ", " << sr.match->url() << "\n";
+		} else {
+			std::cout << "NO MATCH\n";
+		}
+		lastSearchResult = sr;
 	}
 }
 
@@ -258,8 +271,7 @@ void XKeyApplication::deleteFolderClicked () {
 }
 
 void XKeyApplication::setEnabled (bool enabled) {
-	// mMain.findChild<QPushButton*> ("searchButton"), mSearchBar
-	QWidget *widgetList[] = { mUi->keyTable, mUi->keyTree
+	QWidget *widgetList[] = { mUi->keyTable, mUi->keyTree, mMain.findChild<QPushButton*> ("searchButton"), mSearchBar
 	};
 	QAction *actionList[] = { mUi->actionSave, mUi->actionSave_As,
 		mUi->actionAddEntry, mUi->actionEditEntry, mUi->actionDeleteEntry, mUi->actionAddFolder, mUi->actionDeleteFolder

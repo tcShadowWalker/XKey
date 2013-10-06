@@ -20,7 +20,86 @@ static void tokenize (const std::string &str, std::vector<std::string> *tokens, 
 	}
 }
 
-const XKey::Folder *search_folder (const XKey::Folder *root, const std::string &search_path) {
+static inline bool match_in_string (const std::string &needle, const std::string &haystack) {
+	auto pred = [] (char a, char b) -> bool {
+		return std::tolower(a) == std::tolower (b);
+	};
+	return std::search(haystack.begin(), haystack.end(), needle.begin(), needle.end(), pred) != haystack.end();
+}
+
+static SearchResult search_folder (const std::vector<std::string> &tokens, const Folder *f) {
+	int ind = 0;
+	for (const Entry &ent : f->entries()) {
+		for (const std::string &word : tokens) {
+			if (match_in_string (word, ent.title()) || match_in_string(word, ent.comment()) ||
+			  match_in_string(word, ent.url()) || match_in_string(word, ent.username()))
+				return SearchResult (&ent, f, ind);
+			
+		}
+		++ind;
+	}
+	return SearchResult();
+}
+
+static SearchResult search_down_recursive (const std::vector<std::string> &tokens, const Folder *startFolder) {
+	// First look through all entries in THIS folder
+	SearchResult e = search_folder (tokens, startFolder);
+	if (e.match)
+		return e;
+	// Now look through all subfolders
+	for (const Folder &s : startFolder->subfolders()) {
+		SearchResult e = search_down_recursive(tokens, &s);
+		if (e.match)
+			return e;
+	}
+	return SearchResult();
+}
+
+static SearchResult search_up_recursive (const std::vector<std::string> &tokens, const Folder *lastFolder) {
+	const XKey::Folder *p = lastFolder->parent();
+	// Start with the first SIBLING of lastFolder
+	for (std::deque<Folder>::const_iterator folderIt = p->subfolders().begin() + lastFolder->row()+1; folderIt < p->subfolders().end(); ++folderIt) {
+		SearchResult e = search_down_recursive(tokens, &*folderIt);
+		if (e.match)
+			return e;
+	}
+	// TODO: Do we need to search in P ?
+	// Go up the hierarchy
+	if (p->parent())
+		return search_up_recursive (tokens, p);
+	else
+		return SearchResult();
+}
+
+SearchResult continueSearch (const std::string &searchString, const SearchResult &lastResult) {
+	if (!lastResult._lastFolder)
+		return SearchResult();
+	std::vector<std::string> tokens;
+	tokenize (searchString, &tokens, ' ');
+	const XKey::Folder *startFolder = lastResult._lastFolder;
+	// Look for siblings from the first result
+	std::deque<Entry>::const_iterator ent = startFolder->entries().begin() + lastResult._lastIndex + 1;
+	int index = lastResult._lastIndex + 1;
+	for (; ent < startFolder->entries().end(); ++ent) {
+		for (const std::string &word : tokens) {
+			if (match_in_string (word, ent->title()) || match_in_string(word, ent->comment()) ||
+			  match_in_string(word, ent->url()) || match_in_string(word, ent->username()))
+				return SearchResult {&*ent, startFolder, index};
+		}
+		++index;
+	}
+	// Now look ABOVE this folder.
+	if (startFolder->parent())
+		return search_up_recursive (tokens, startFolder);
+}
+
+SearchResult startSearch (const std::string &searchString, const XKey::Folder *startFolder) {
+	std::vector<std::string> tokens;
+	tokenize (searchString, &tokens, ' ');
+	return search_down_recursive(tokens, startFolder);
+}
+
+const XKey::Folder *get_folder_by_path (const XKey::Folder *root, const std::string &search_path) {
 	std::vector<std::string> searchPathComponents;
 	std::vector<std::string>::const_iterator currentSearchPathComponent;
 	if (search_path.size() > 0) {

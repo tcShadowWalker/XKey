@@ -77,6 +77,9 @@ private:
 	XKey::PassphraseGenerator mGenerator;
 	SaveFileOptions mSaveOptions;
 	QMenu *mRecentFiles;
+	// Search
+	QString lastSearchString;
+	XKey::SearchResult lastSearchResult;
 	
 	void setEnabled (bool enabled);
 	void loadRecentFileList ();

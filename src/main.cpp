@@ -6,14 +6,30 @@
 #include <vector>
 #include <cstring>
 
+// Needed for no-echo password query
+#include <termios.h>
+#include <stdio.h>
+
 #include <openssl/evp.h>
 #include <boost/program_options.hpp>
 
+std::string get_password () {
+	std::string pwd;
+	struct termios t;
+	tcgetattr(STDIN_FILENO, &t);
+	t.c_lflag &= ~ECHO;
+	tcsetattr(STDIN_FILENO, TCSANOW, &t);
+	std::cin >> pwd;
+	t.c_lflag |= ECHO;
+	tcsetattr(STDIN_FILENO, TCSANOW, &t);
+	return pwd;
+}
+
 void print_folder (const XKey::Folder &f, int depth = 0) {
 	if (depth != 0)
-		std::cout << std::string(depth, '-') << " " << f.name() << "\n";
+		std::cout << std::string(depth*2, '-') << " " << f.name() << "\n";
 	for (const auto &it : f.entries()) {
-		std::cout << std::string(depth, '-') << "    # " << it.username() << "@" << it.url() << "\n";
+		std::cout << std::string(depth*2, '-') << "    # " << it.username() << " " << it.url() << "\n";
 	}
 	for (const auto &it : f.subfolders()) {
 		print_folder(it, depth+1);
@@ -81,7 +97,7 @@ int main (int argc, char** argv) {
 	
 	OpenSSL_add_all_ciphers();
 	
-	if (input_file.size() < 0) {
+	if (input_file.size() <= 0) {
 		std::cerr << "Input file is required!\n";
 		return -1;
 	}
@@ -98,7 +114,7 @@ int main (int argc, char** argv) {
 		
 		if (crypt_streambuf.isEncrypted()) {
 			std::cout << "Password: ";
-			std::cin >> key;
+			key = get_password();
 			crypt_streambuf.setEncryptionKey(key);
 		}
 
@@ -112,7 +128,7 @@ int main (int argc, char** argv) {
 		const XKey::Folder *f = &*rootKeyFolder;
 		if (search_path.size() > 0) {
 			// Search path specified:
-			f = XKey::search_folder (&*rootKeyFolder, search_path);
+			f = XKey::get_folder_by_path (&*rootKeyFolder, search_path);
 		}
 		if (!f) {
 			std::cerr << "Requested path not found.\n";

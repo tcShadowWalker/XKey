@@ -166,7 +166,7 @@ bool FolderListModel::dropMimeData (const QMimeData * data, Qt::DropAction actio
 		if (row < 0 || row > parentItem->subfolders().size())
 			row = parentItem->subfolders().size();
 		QString fullPath = data->text();
-		XKey::Folder *oldFolder = const_cast<XKey::Folder *> (XKey::search_folder(root, fullPath.toStdString())),
+		XKey::Folder *oldFolder = const_cast<XKey::Folder *> (XKey::get_folder_by_path(root, fullPath.toStdString())),
 			*oldParent = (oldFolder) ? oldFolder->parent() : 0;
 		if (!oldFolder || !oldParent)
 			return false;
