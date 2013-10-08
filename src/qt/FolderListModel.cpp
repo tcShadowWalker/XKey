@@ -16,8 +16,8 @@ FolderListModel::FolderListModel(QObject *parent)
 FolderListModel::~FolderListModel() { }
 
 void FolderListModel::setRootFolder (XKey::Folder *r) {
-	this->root = r;
 	beginResetModel();
+	this->root = r;
 	endResetModel();
 }
 
@@ -155,7 +155,7 @@ QMimeData *FolderListModel::mimeData (const QModelIndexList &indexes) const {
 }
 
 QStringList FolderListModel::mimeTypes () const {
-	return QStringList{"text/plain", "application/x-xkey-folder"};
+	return QStringList{"text/plain", "application/x-xkey-folder", "application/x-xkey-entry"};
 }
 
 Qt::DropActions FolderListModel::supportedDropActions () const {

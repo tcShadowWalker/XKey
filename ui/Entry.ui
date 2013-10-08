@@ -101,6 +101,29 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QPushButton" name="copyClipboardButton">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy password to clipboard.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Copy</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../src/qt/res.qrc">
+              <normaloff>:/icons/clipboard.png</normaloff>:/icons/clipboard.png</iconset>
+            </property>
+            <property name="checkable">
+             <bool>false</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
         <item row="4" column="0">
@@ -183,21 +206,24 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="2">
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeType">
-      <enum>QSizePolicy::Fixed</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
+   <item row="0" column="1" colspan="2">
+    <widget class="QLabel" name="headlineLabel">
+     <property name="minimumSize">
       <size>
-       <width>20</width>
-       <height>50</height>
+       <width>0</width>
+       <height>40</height>
       </size>
      </property>
-    </spacer>
+     <property name="font">
+      <font>
+       <pointsize>14</pointsize>
+       <italic>true</italic>
+      </font>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

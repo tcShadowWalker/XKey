@@ -5,6 +5,7 @@
 
 namespace XKey {
 	class Entry;
+	class Folder;
 	class PassphraseGenerator;
 }
 
@@ -17,7 +18,7 @@ class KeyEditDialog
 {
 	Q_OBJECT
 public:
-	KeyEditDialog (XKey::Entry *r, QWidget *parent, XKey::PassphraseGenerator *gen);
+	KeyEditDialog (XKey::Entry *r, XKey::Folder *folder, QWidget *parent, XKey::PassphraseGenerator *gen);
 	~KeyEditDialog();
 	
 	
@@ -27,6 +28,8 @@ public slots:
 	void generatePassphraseClicked ();
 	
 	void makeChanges ();
+	
+	void copyToClipboard ();
 	
 private:
 	Ui::EditEntryDialog *mUi;

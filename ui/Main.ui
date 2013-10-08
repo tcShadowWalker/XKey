@@ -14,7 +14,7 @@
    <string>XKey</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="../src/qt/res.qrc">
     <normaloff>:/icons/XKey.png</normaloff>:/icons/XKey.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -48,6 +48,9 @@
          <width>0</width>
          <height>0</height>
         </size>
+       </property>
+       <property name="acceptDrops">
+        <bool>true</bool>
        </property>
        <property name="editTriggers">
         <set>QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
@@ -86,6 +89,21 @@
        </property>
        <property name="editTriggers">
         <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
+       <property name="showDropIndicator" stdset="0">
+        <bool>false</bool>
+       </property>
+       <property name="dragEnabled">
+        <bool>true</bool>
+       </property>
+       <property name="dragDropOverwriteMode">
+        <bool>false</bool>
+       </property>
+       <property name="dragDropMode">
+        <enum>QAbstractItemView::DragOnly</enum>
+       </property>
+       <property name="defaultDropAction">
+        <enum>Qt::MoveAction</enum>
        </property>
        <property name="selectionMode">
         <enum>QAbstractItemView::SingleSelection</enum>
@@ -181,7 +199,7 @@
   </widget>
   <action name="actionNew">
    <property name="icon">
-    <iconset>
+    <iconset resource="../src/qt/res.qrc">
      <normaloff>:/icons/document-new.png</normaloff>:/icons/document-new.png</iconset>
    </property>
    <property name="text">
@@ -190,7 +208,7 @@
   </action>
   <action name="actionOpen">
    <property name="icon">
-    <iconset>
+    <iconset resource="../src/qt/res.qrc">
      <normaloff>:/icons/document-open.png</normaloff>:/icons/document-open.png</iconset>
    </property>
    <property name="text">
@@ -199,7 +217,7 @@
   </action>
   <action name="actionSave">
    <property name="icon">
-    <iconset>
+    <iconset resource="../src/qt/res.qrc">
      <normaloff>:/icons/document-save.png</normaloff>:/icons/document-save.png</iconset>
    </property>
    <property name="text">
@@ -208,7 +226,7 @@
   </action>
   <action name="actionSave_As">
    <property name="icon">
-    <iconset>
+    <iconset resource="../src/qt/res.qrc">
      <normaloff>:/icons/document-save-as.png</normaloff>:/icons/document-save-as.png</iconset>
    </property>
    <property name="text">
@@ -217,7 +235,7 @@
   </action>
   <action name="actionQuit">
    <property name="icon">
-    <iconset>
+    <iconset resource="../src/qt/res.qrc">
      <normaloff>:/icons/application-exit.png</normaloff>:/icons/application-exit.png</iconset>
    </property>
    <property name="text">
@@ -235,7 +253,7 @@
   </action>
   <action name="actionAddEntry">
    <property name="icon">
-    <iconset>
+    <iconset resource="../src/qt/res.qrc">
      <normaloff>:/icons/list-add.png</normaloff>:/icons/list-add.png</iconset>
    </property>
    <property name="text">
@@ -247,7 +265,7 @@
   </action>
   <action name="actionEditEntry">
    <property name="icon">
-    <iconset>
+    <iconset resource="../src/qt/res.qrc">
      <normaloff>:/icons/document-edit.png</normaloff>:/icons/document-edit.png</iconset>
    </property>
    <property name="text">
@@ -259,7 +277,7 @@
   </action>
   <action name="actionAddFolder">
    <property name="icon">
-    <iconset>
+    <iconset resource="../src/qt/res.qrc">
      <normaloff>:/icons/folder-new.png</normaloff>:/icons/folder-new.png</iconset>
    </property>
    <property name="text">
@@ -268,7 +286,7 @@
   </action>
   <action name="actionDeleteFolder">
    <property name="icon">
-    <iconset>
+    <iconset resource="../src/qt/res.qrc">
      <normaloff>:/icons/folder-remove.png</normaloff>:/icons/folder-remove.png</iconset>
    </property>
    <property name="text">
@@ -277,7 +295,7 @@
   </action>
   <action name="actionDeleteEntry">
    <property name="icon">
-    <iconset>
+    <iconset resource="../src/qt/res.qrc">
      <normaloff>:/icons/edit-delete.png</normaloff>:/icons/edit-delete.png</iconset>
    </property>
    <property name="text">

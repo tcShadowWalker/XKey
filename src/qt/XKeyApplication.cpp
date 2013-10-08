@@ -243,7 +243,7 @@ void XKeyApplication::startSearch () {
 
 void XKeyApplication::editKey (const QModelIndex & index) {
 	XKey::Entry &entry = static_cast<XKey::Entry&> (mKeys->folder()->entries().at(index.row()));
-	KeyEditDialog diag (&entry, &mMain, &mGenerator);
+	KeyEditDialog diag (&entry, mKeys->folder(), &mMain, &mGenerator);
 	if (diag.exec () == QDialog::Accepted) {
 		diag.makeChanges ();
 		madeChanges = true;
@@ -324,7 +324,7 @@ void XKeyApplication::addEntryClicked () {
 		entry = XKey::Entry (tr("Example title", "NewKeyEntryTitle").toStdString(), tr("Your Username", "NewKeyEntryUser").toStdString(),
 						tr("example.org", "NewKeyEntryDomain").toStdString(), tr("", "NewKeyEntryPassword").toStdString(), tr("", "NewKeyEntryComment").toStdString() );
 	}
-	KeyEditDialog diag (&entry, &mMain, &mGenerator);
+	KeyEditDialog diag (&entry, mKeys->folder(), &mMain, &mGenerator);
 	if (diag.exec () == QDialog::Accepted) {
 		diag.makeChanges ();
 		this->mKeys->addEntry(std::move(entry));
@@ -336,8 +336,8 @@ void XKeyApplication::editEntryClicked () {
 	QModelIndexList indexes = mUi->keyTable->selectionModel()->selectedRows();
 	if (indexes.size() == 1) {
 		editKey (indexes.at(0));
+		madeChanges = true;
 	}
-	madeChanges = true;
 }
 
 void XKeyApplication::deleteEntryClicked () {
@@ -345,8 +345,8 @@ void XKeyApplication::deleteEntryClicked () {
 	if (indexes.size() == 1) {
 		const int row = indexes.at(0).row();
 		this->mKeys->removeEntry(row);
+		madeChanges = true;
 	}
-	madeChanges = true;
 }
 
 void XKeyApplication::showSettingsDialog () {

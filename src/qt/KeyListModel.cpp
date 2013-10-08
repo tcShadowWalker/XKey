@@ -79,13 +79,13 @@ void KeyListModel::removeEntry (int index) {
 // Drag and drop
 
 QStringList KeyListModel::mimeTypes () const {
-	return QStringList(QString ("text/plain"));
+	return QStringList{"text/plain", "application/x-xkey-entry"};
 }
 
 QMimeData *KeyListModel::mimeData (const QModelIndexList &indexes) const {
 	QMimeData *data = new QMimeData;
 	QByteArray a;
-	QStringList rows;
+	QStringList rows ("XKey/Entry:");
 	for (QModelIndex ind : indexes) {
 		rows << QString::number(ind.row());
 	}

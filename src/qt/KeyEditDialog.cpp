@@ -3,8 +3,9 @@
 #include <../src/XKeyGenerator.h>
 
 #include <ui_Entry.h>
+#include <QClipboard>
 
-KeyEditDialog::KeyEditDialog (XKey::Entry *r, QWidget *parent, XKey::PassphraseGenerator *gen)
+KeyEditDialog::KeyEditDialog (XKey::Entry *r, XKey::Folder *folder, QWidget *parent, XKey::PassphraseGenerator *gen)
 	: QDialog(parent), mUi(0), mEntry(r), mGen(gen)
 {
 	mUi = new Ui::EditEntryDialog;
@@ -15,9 +16,11 @@ KeyEditDialog::KeyEditDialog (XKey::Entry *r, QWidget *parent, XKey::PassphraseG
 	mUi->commentEdit->setText( QString::fromStdString(mEntry->comment()) );
 	setPasswordHidden (true);
 	mUi->passwordEdit->setText( QString::fromStdString(mEntry->password()) );
+	mUi->headlineLabel->setText ( QString::fromStdString(folder->fullPath()) );
 	
 	connect (mUi->hiddenCheckbox, SIGNAL(toggled(bool)), this, SLOT(setPasswordHidden(bool)));
 	connect (mUi->generateButton, SIGNAL(clicked()), this, SLOT(generatePassphraseClicked()));
+	connect (mUi->copyClipboardButton, SIGNAL(clicked()), this, SLOT(copyToClipboard()));
 }
 
 KeyEditDialog::~KeyEditDialog() {
@@ -45,4 +48,9 @@ QString KeyEditDialog::generatePassphrase () {
 	std::string password;
 	mGen->generatePassphrase(&password);
 	return QString::fromStdString(password);
+}
+
+void KeyEditDialog::copyToClipboard () {
+	 QClipboard *clipboard = QApplication::clipboard();
+	 clipboard->setText (mUi->passwordEdit->text());
 }
