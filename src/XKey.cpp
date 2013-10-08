@@ -256,6 +256,16 @@ void Parser::parse_folder_list (const Json::Value &item, Folder *parent) {
 	}
 }
 
+Folder *moveFolder (Folder *oldFolder, Folder *newParent, int newPosition) {
+	Folder *oldParent = oldFolder->parent();
+	if (!oldParent)
+		return oldFolder;
+	XKey::Folder *newFolder = newParent->createSubfolder(oldFolder->name());
+	*newFolder = std::move(*oldFolder);
+	oldParent->removeSubfolder(oldFolder->row());
+	return newFolder;
+}
+
 // Writer
 
 bool Writer::writeFile (std::ostream &stream, const Folder &rootNode, bool write_formatted) {

@@ -50,6 +50,20 @@ QModelIndex FolderListModel::index ( int row, int column, const QModelIndex &par
 	return ind;
 }
 
+bool FolderListModel::getModelIndex (XKey::Folder *folder, QModelIndex *ind) {
+	QModelIndex parentIndex;
+	// Recursive up-call
+	if (folder->parent()) {
+		if (!getModelIndex (folder->parent(), &parentIndex))
+			return false;
+		*ind = index (folder->row(), 0, parentIndex);
+	} else if (folder == root) {
+		*ind = QModelIndex();
+	} else
+		return false;
+	return true;
+}
+
 int FolderListModel::rowCount (const QModelIndex &parent) const {
 	if (!root) {
 		return 0;
@@ -103,7 +117,7 @@ bool FolderListModel::removeRows (int row, int count, const QModelIndex &parent)
 
 Qt::ItemFlags FolderListModel::flags ( const QModelIndex & index ) const {
 	if (!index.isValid())
-		return Qt::ItemIsDropEnabled | Qt::ItemIsSelectable;
+		return Qt::ItemIsDropEnabled | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
 	return Qt::ItemIsEditable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
 }
 
@@ -134,14 +148,14 @@ QMimeData *FolderListModel::mimeData (const QModelIndexList &indexes) const {
 	if (indexes.size() == 1) {
 		const XKey::Folder *item = static_cast<const XKey::Folder *> (indexes.at(0).internalPointer());
 		QMimeData *data = new QMimeData;
-		data->setText(QString::fromStdString(item->fullPath()));
+		data->setText(QString ("XKey/Folder:") + QString::fromStdString(item->fullPath()));
 		return data;
 	} else
 		return 0;
 }
 
 QStringList FolderListModel::mimeTypes () const {
-	return QStringList("text/plain");
+	return QStringList{"text/plain", "application/x-xkey-folder"};
 }
 
 Qt::DropActions FolderListModel::supportedDropActions () const {
@@ -149,13 +163,9 @@ Qt::DropActions FolderListModel::supportedDropActions () const {
 }
 
 bool FolderListModel::dropMimeData (const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) {
-	
-	std::cout << "mime: " << data->formats().join(", ").toStdString() << "\n";
-	if (data->hasFormat("XKey/Folder")) {
-		// TODO: FIX FOLDER DRAG AND DROP!
-		std::cout << "Folder Drag and drop is currently disabled!\n";
-		return false;
-	
+	const QString text = data->text();
+	if (text.startsWith("XKey/Folder:")) {
+		QString fullPath = text.mid(12);
 		XKey::Folder *parentItem = 0;
 		if (!parent.isValid()) {
 			parentItem = root;
@@ -164,27 +174,35 @@ bool FolderListModel::dropMimeData (const QMimeData * data, Qt::DropAction actio
 		}
 		if (!parentItem)
 			return false;
-		if (row < 0 || row > parentItem->subfolders().size())
-			row = parentItem->subfolders().size();
-		QString fullPath = data->text();
+		if (row < -1 || row >= (int)parentItem->subfolders().size()) {
+			return false;
+		}
+		
 		XKey::Folder *oldFolder = const_cast<XKey::Folder *> (XKey::get_folder_by_path(root, fullPath.toStdString())),
 			*oldParent = (oldFolder) ? oldFolder->parent() : 0;
-		if (!oldFolder || !oldParent)
+		if (!oldFolder || !oldParent || oldParent == parentItem)
 			return false;
+		
 		try {
-			std::cout << "Drop: " << fullPath.toStdString() << ", o: " << oldFolder << ", " << oldParent << "\n";
+			QModelIndex oldIndex;
+			if (!getModelIndex (oldFolder, &oldIndex))
+				return false;
+			beginRemoveRows(oldIndex.parent(), oldIndex.row(), 1);
 			beginInsertRows(parent, parentItem->subfolders().size(), parentItem->subfolders().size()+1);
-			XKey::Folder *newFolder = parentItem->createSubfolder(oldFolder->name());
-			*newFolder = std::move(*oldFolder);
+			// move
+			XKey::moveFolder (oldFolder, parentItem, parentItem->subfolders().size());
+			//
 			endInsertRows();
+			endRemoveRows();
 			return true;
 		} catch (const std::exception &e) {
 			QMessageBox::warning (0, tr("Error"), tr("Failed to move folders: %1").arg(QString(e.what())) );
-			
+			endInsertRows();
+			endRemoveRows();
 		}
-		
-	} else if (data->hasFormat("XKey/KeyEntry")) {
-		
+	} else if (text.startsWith("XKey/Entry:")) {
+		QString fullPath = text.mid(11);
+		std::cout << "move entry: " << fullPath.toStdString() << "\n";
 	}
 	return false;
 }

@@ -36,6 +36,8 @@ public:
 protected:
 	Qt::DropActions supportedDropActions () const;
 	
+	bool getModelIndex (XKey::Folder *folder, QModelIndex *ind);
+	
 private:
 	XKey::Folder *root;
 };

@@ -121,6 +121,14 @@ SearchResult continueSearch (const std::string &searchString, const SearchResult
  */
 const Folder *get_folder_by_path (const Folder *root, const std::string &search_path);
 
+/**
+ * @brief Move a folder in the hierarchy
+ * @param oldFolder Folder to be moved. Shall not be the root folder
+ * @param newParent Parent folder to insert the folder to
+ * @param newPosition the new element is inserted BEFORE this position in the list of the new parents subfolder. 
+ */
+Folder *moveFolder (Folder *oldFolder, Folder *newParent, int newPosition);
+
 // Reader:
 
 class Parser
