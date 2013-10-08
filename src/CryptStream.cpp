@@ -12,7 +12,8 @@
 
 namespace XKey {
 
-const static int put_back_ = 8;
+static int CURRENT_XKEY_FORMAT_VERSION = 10;
+static const int put_back_ = 8;
 
 //unsigned char iv[EVP_MAX_IV_LENGTH];
 // Only the first 16 bytes (EVP_MAX_IV_LENGTH) get evaluated!
@@ -32,26 +33,29 @@ CryptStream::CryptStream (const std::string &filename, std::string key, Operatio
 	
 	_bio_chain = _file_bio;
 	
-	bool useBase64Encode = (m_info & BASE64_ENCODED), useEncryption = (m_info & USE_ENCRYPTION);
+	int useBase64Encode = (m_info & BASE64_ENCODED), useEncryption = (m_info & USE_ENCRYPTION);
 	
-	// File header
-	char buf[35];
+	// File header (in plaintext)
+	const int buf_size = 128;
+	char buf[buf_size+1];
 	if (m_info & EVALUATE_FILE_HEADER) {
 		if (_mode == WRITE) {
 			// Write this header directly to the file, without encoding or encryption
-			// Format: *167110*#c:[0,1]e:[0,1]
-			int r = snprintf (buf, 25, "*167110*#c:%.1ie:%.1i", useEncryption, useBase64Encode);
-			memset(buf+r, '*', 32-r);
-			buf[31] = '\n';
-			BIO_write(_bio_chain, buf, 32);
+			const int offset = buf_size;
+			int r = snprintf (buf, buf_size-1, "*167110* # v:%i # c:%.1i # e:%.1i # o:%i", CURRENT_XKEY_FORMAT_VERSION, useEncryption, useBase64Encode, offset);
+			memset(buf+r, '*', buf_size-r-1);
+			buf[buf_size-1] = '\n';
+			BIO_write(_bio_chain, buf, buf_size);
 		} else {
-			BIO_read(_bio_chain, buf, 32);
-			// offsets: 9, 11, 12, 14
-			if (strncmp(buf, "*167110*", 8) != 0 || buf[9] != 'c' || buf[12] != 'e') {
+			int r = BIO_read(_bio_chain, buf, buf_size);
+			buf[r] = '\0';
+			int version = 0;
+			int offset = 0;
+			if (r = sscanf (buf, "*167110* # v:%i # c:%i # e:%i # o:%i", &version, &useEncryption, &useBase64Encode, &offset) != 4) {
+				std::cout << "r: " << r << "\n";
 				throw std::runtime_error ("Invalid file header. The file is probably not a valid XKey keystore.");
 			}
-			useEncryption = (buf[11] == '1');
-			useBase64Encode = (buf[14] == '1');
+			BIO_seek (_bio_chain, offset);
 		}
 	}
 	
