@@ -14,7 +14,7 @@
    <string>Edit Entry</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../src/qt/res.qrc">
+   <iconset>
     <normaloff>:/icons/icons/dialog-password.png</normaloff>:/icons/icons/dialog-password.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
@@ -79,7 +79,7 @@
             </property>
             <property name="icon">
              <iconset resource="../src/qt/res.qrc">
-              <normaloff>:/icons/icons/generator.png</normaloff>:/icons/icons/generator.png</iconset>
+              <normaloff>:/icons/generator.png</normaloff>:/icons/generator.png</iconset>
             </property>
             <property name="iconSize">
              <size>

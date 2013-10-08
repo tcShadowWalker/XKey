@@ -8,6 +8,9 @@ SaveFileDialog::SaveFileDialog (QWidget *parent, SaveFileOptions opt)
 	setAcceptMode(AcceptSave);
 }
 
+void SaveFileDialog::setDefaultFile (const QString &filepath) {
+	setDirectory (filepath);
+}
 
 //
 

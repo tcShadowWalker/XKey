@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>477</width>
-    <height>262</height>
+    <width>509</width>
+    <height>286</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -131,7 +131,7 @@
    <item row="1" column="0">
     <widget class="QGroupBox" name="groupBox_2">
      <property name="title">
-      <string>Keystore settings</string>
+      <string>Advanced Keystore settings</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
@@ -219,6 +219,13 @@
       <string>Application settings</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
+      <item row="0" column="1">
+       <widget class="QCheckBox" name="expandFoldersCheckBox">
+        <property name="text">
+         <string>Folders always expanded</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="0">
        <widget class="QCheckBox" name="exampleEntriesCheckBox">
         <property name="toolTip">
@@ -232,10 +239,13 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QCheckBox" name="expandFoldersCheckBox">
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="alwaysAskPasswordCheckBox">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When activated, XKey will always ask for a password when saving a file.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;If keep this option deactivated, the password for your current keystore will be kept in memory and will be used again to save that file, when you use the quicksave option (e.g. 'Save' instead of 'Save As').&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Default: &lt;span style=&quot; font-weight:600;&quot;&gt;Off&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="text">
-         <string>Folders always expanded</string>
+         <string>Always ask for password</string>
         </property>
        </widget>
       </item>

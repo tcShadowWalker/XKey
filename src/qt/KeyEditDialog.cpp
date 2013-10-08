@@ -40,12 +40,9 @@ void KeyEditDialog::makeChanges () {
 }
 
 QString KeyEditDialog::generatePassphrase () {
+	if (!mGen)
+		return "";
 	std::string password;
-	if (mGen) {
-		mGen->generatePassphrase(&password);
-	} else {
-		XKey::PassphraseGenerator gen;
-		gen.generatePassphrase(&password);
-	}
+	mGen->generatePassphrase(&password);
 	return QString::fromStdString(password);
 }

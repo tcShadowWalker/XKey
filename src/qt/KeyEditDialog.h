@@ -17,7 +17,7 @@ class KeyEditDialog
 {
 	Q_OBJECT
 public:
-	KeyEditDialog (XKey::Entry *r, QWidget *parent, XKey::PassphraseGenerator *gen = 0);
+	KeyEditDialog (XKey::Entry *r, QWidget *parent, XKey::PassphraseGenerator *gen);
 	~KeyEditDialog();
 	
 	

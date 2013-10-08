@@ -18,6 +18,7 @@ SettingsDialog::SettingsDialog (QSettings *s, XKey::PassphraseGenerator *gen, Sa
 	// ui
 	mUi->expandFoldersCheckBox->setChecked ( set->value ("ui/always_expand", false).toBool() );
 	mUi->exampleEntriesCheckBox->setChecked ( set->value ("ui/example_data", true).toBool() );
+	mUi->alwaysAskPasswordCheckBox->setChecked ( set->value ("ui/always_ask_for_password", false).toBool() );
 	// keystore
 	mUi->encryptionCheckBox->setChecked (set->value("keystore/encrypt", QVariant(true)).toBool());
 	mUi->asciiArmorCheckBox->setChecked (set->value("keystore/base64_encode", QVariant(true)).toBool());
@@ -53,12 +54,14 @@ void SettingsDialog::readSettings (QSettings *set, XKey::PassphraseGenerator *mG
 	mSaveOpt->use_encoding = set->value("keystore/base64_encode", true).toBool();
 	mSaveOpt->write_header = set->value("keystore/include_header", true).toBool();
 	//
+	mSaveOpt->save_password = set->value("ui/always_ask_for_password", false).toBool();
 }
 
 void SettingsDialog::saveSettings () {
 	// ui
 	set->setValue ("ui/always_expand", mUi->expandFoldersCheckBox->isChecked());
 	set->setValue ("ui/example_data", mUi->exampleEntriesCheckBox->isChecked());
+	set->setValue ("ui/always_ask_for_password", mUi->alwaysAskPasswordCheckBox->isChecked());
 	// keystore
 	set->setValue ("keystore/encrypt", mUi->encryptionCheckBox->isChecked());
 	set->setValue ("keystore/base64_encode", mUi->asciiArmorCheckBox->isChecked());

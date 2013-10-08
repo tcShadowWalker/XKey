@@ -69,7 +69,6 @@ private:
 	XKey::RootFolder_Ptr mRoot;
 	QLineEdit *mSearchBar;
 	// Open file:
-	QString currentFilePassword;
 	QString currentFileName;
 	bool madeChanges;
 	XKey::PassphraseGenerator mGenerator;

@@ -110,6 +110,7 @@ void XKeyApplication::newFile () {
 	this->mFolders->setRootFolder(&*mRoot);
 	this->mKeys->setCurrentFolder (&*mRoot);
 	madeChanges = false;
+	mSaveOptions.setLastPassword("");
 	setEnabled(true);
 }
 
@@ -146,7 +147,7 @@ void XKeyApplication::openFile (const QString &filename) {
 			// Set attributes:
 			this->mRoot = std::move(newRoot);
 			currentFileName = filename;
-			currentFilePassword = password;
+			mSaveOptions.setLastPassword(password.toStdString());
 			this->mFolders->setRootFolder(&*mRoot);
 			this->mKeys->setCurrentFolder (&*mRoot);
 			madeChanges = false;
@@ -172,10 +173,14 @@ void XKeyApplication::saveFile (const QString &filename, const SaveFileOptions &
 	try {
 		QString passwd;
 		if (sopt.use_encryption) {
-			FilePasswordDialog pwdDiag (FilePasswordDialog::WRITE, &mMain);
-			if (pwdDiag.exec() != QDialog::Accepted)
-				return;
-			passwd = pwdDiag.password();
+			if (!sopt.password().empty()) {
+				passwd = QString::fromStdString (sopt.password());
+			} else {
+				FilePasswordDialog pwdDiag (FilePasswordDialog::WRITE, &mMain);
+				if (pwdDiag.exec() != QDialog::Accepted)
+					return;
+				passwd = pwdDiag.password();
+			}
 		}
 		XKey::Writer w;
 		XKey::CryptStream crypt_source (filename.toStdString(), passwd.toStdString(), XKey::CryptStream::WRITE, sopt.makeCryptStreamMode());
@@ -187,6 +192,7 @@ void XKeyApplication::saveFile (const QString &filename, const SaveFileOptions &
 			success = true;
 			madeChanges = false;
 			addRecentFile (filename);
+			mSaveOptions.setLastPassword(passwd.toStdString());
 		} else {
 			errorMsg = QString::fromStdString(w.error());
 		}
@@ -252,6 +258,8 @@ void XKeyApplication::showOpenFile () {
 }
 void XKeyApplication::showSaveAsFile () {
 	SaveFileDialog saveDiag (&mMain, mSaveOptions);
+	if (!currentFileName.isEmpty())
+		saveDiag.setDefaultFile(currentFileName);
 	if (saveDiag.exec () != QDialog::Accepted || saveDiag.selectedFiles().size() == 0)
 		return;
 	saveFile(saveDiag.selectedFiles().at(0), saveDiag.saveFileOptions());
@@ -316,7 +324,7 @@ void XKeyApplication::addEntryClicked () {
 		entry = XKey::Entry (tr("Example title", "NewKeyEntryTitle").toStdString(), tr("Your Username", "NewKeyEntryUser").toStdString(),
 						tr("example.org", "NewKeyEntryDomain").toStdString(), tr("", "NewKeyEntryPassword").toStdString(), tr("", "NewKeyEntryComment").toStdString() );
 	}
-	KeyEditDialog diag (&entry, &mMain);
+	KeyEditDialog diag (&entry, &mMain, &mGenerator);
 	if (diag.exec () == QDialog::Accepted) {
 		diag.makeChanges ();
 		this->mKeys->addEntry(std::move(entry));
