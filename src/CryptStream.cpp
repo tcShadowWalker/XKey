@@ -5,8 +5,6 @@
 #include <cstring> 
 #include <stdexcept>
 
-#include <iostream>
-
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 
@@ -15,7 +13,6 @@ namespace XKey {
 static int CURRENT_XKEY_FORMAT_VERSION = 10;
 static const int put_back_ = 8;
 
-//unsigned char iv[EVP_MAX_IV_LENGTH];
 // Only the first 16 bytes (EVP_MAX_IV_LENGTH) get evaluated!
 const unsigned char *iv = (const unsigned char*)"(W^>6&x)]@(Il/Sg#6.,4_^;BYZ*!tec8*n(V";
 
@@ -28,8 +25,12 @@ CryptStream::CryptStream (const std::string &filename, std::string key, Operatio
 	setp(&_buffer.front(), end - 2); // -1 to make overflow() easier, another -1 to terminate with null
 	
 	_file_bio = BIO_new_file(filename.c_str(), (_mode == READ) ? "rb" : "wb");
-	if (!_file_bio)
-		throw std::runtime_error ("Could not create OpenSSL File-Source BIO structure");
+	if (!_file_bio) {
+		if (_mode == READ)
+			throw std::runtime_error ("Could not open keystore file. Does the file exist and is it readable?");
+		else
+			throw std::runtime_error ("Could not open keystore file for writing. Please check filesystem permissions.");
+	}
 	
 	_bio_chain = _file_bio;
 	
@@ -40,19 +41,18 @@ CryptStream::CryptStream (const std::string &filename, std::string key, Operatio
 	char buf[buf_size+1];
 	if (m_info & EVALUATE_FILE_HEADER) {
 		if (_mode == WRITE) {
+			this->_version = CURRENT_XKEY_FORMAT_VERSION;
 			// Write this header directly to the file, without encoding or encryption
 			const int offset = buf_size;
-			int r = snprintf (buf, buf_size-1, "*167110* # v:%i # c:%.1i # e:%.1i # o:%i", CURRENT_XKEY_FORMAT_VERSION, useEncryption, useBase64Encode, offset);
+			int r = snprintf (buf, buf_size-1, "*167110* # v:%i # c:%.1i # e:%.1i # o:%i", this->_version, useEncryption, useBase64Encode, offset);
 			memset(buf+r, '*', buf_size-r-1);
 			buf[buf_size-1] = '\n';
 			BIO_write(_bio_chain, buf, buf_size);
 		} else {
 			int r = BIO_read(_bio_chain, buf, buf_size);
 			buf[r] = '\0';
-			int version = 0;
 			int offset = 0;
-			if (r = sscanf (buf, "*167110* # v:%i # c:%i # e:%i # o:%i", &version, &useEncryption, &useBase64Encode, &offset) != 4) {
-				std::cout << "r: " << r << "\n";
+			if (r = sscanf (buf, "*167110* # v:%i # c:%i # e:%i # o:%i", &this->_version, &useEncryption, &useBase64Encode, &offset) != 4) {
 				throw std::runtime_error ("Invalid file header. The file is probably not a valid XKey keystore.");
 			}
 			BIO_seek (_bio_chain, offset);
@@ -106,6 +106,8 @@ bool CryptStream::isEncoded () const {
 }
 
 void CryptStream::setEncryptionKey (std::string key) {
+	if (!_crypt_bio)
+		throw std::logic_error ("CryptStream was not set up to use encryption");
 	// EVP_aes_256_cbc EVP_aes_256_ctr
 	// EVP_get_cipherbyname("AES-256-CTR");
 	const EVP_CIPHER *ciph = EVP_aes_256_ctr(); 

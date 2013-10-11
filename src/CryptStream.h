@@ -54,6 +54,7 @@ private:
 	struct bio_st *_file_bio;
 	struct bio_st *_base64_bio;
 	OperationMode _mode;
+	int _version;
 };
 
 
