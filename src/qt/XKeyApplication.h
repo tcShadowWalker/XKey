@@ -31,7 +31,7 @@ public:
 	~XKeyApplication();
 	
 	void openFile (const QString &filename);
-	void saveFile (const QString &filename, const SaveFileOptions &sopt);
+	void saveFile (const QString &filename, SaveFileOptions &sopt);
 	
 	void show ();
 public slots:
@@ -50,6 +50,7 @@ public slots:
 	
 	void startSearch ();
 	void showSettingsDialog ();
+	void copyPassphraseToClipboard ();
 	
 	// Edit folders and entries
 	void addFolderClicked ();
@@ -87,6 +88,8 @@ private:
 	void saveApplicationState ();
 	
 	void addRecentFile (QString filename);
+	/// Message timeout for minor notifications in the status bar (in milli-seconds)
+	const int statusBarMessageTimeout = 5000;
 };
 
 #endif

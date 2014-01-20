@@ -151,8 +151,13 @@ int main (int argc, char** argv) {
 			
 			bool pretty_print = (output_no_encrypt && output_no_encode);
 			
+			std::string outkey;
+			if (!output_no_encrypt) {
+				std::cout << "Output passphrase: ";
+				outkey = get_password();
+			}
 			std::cout << "Writing...\n";
-			XKey::CryptStream crypt_filter (output_file, key, XKey::CryptStream::WRITE, m);
+			XKey::CryptStream crypt_filter (output_file, outkey, XKey::CryptStream::WRITE, m);
 			std::ostream stream (&crypt_filter);
 			XKey::Writer w;
 			if (!w.writeFile(stream, *f, pretty_print)) {

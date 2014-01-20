@@ -14,7 +14,7 @@
    <string>XKey Settings</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../src/qt/res.qrc">
+   <iconset>
     <normaloff>:/icons/configure.png</normaloff>:/icons/configure.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
@@ -242,7 +242,7 @@
       <item row="1" column="0">
        <widget class="QCheckBox" name="alwaysAskPasswordCheckBox">
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When activated, XKey will always ask for a password when saving a file.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;If keep this option deactivated, the password for your current keystore will be kept in memory and will be used again to save that file, when you use the quicksave option (e.g. 'Save' instead of 'Save As').&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Default: &lt;span style=&quot; font-weight:600;&quot;&gt;Off&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When activated, XKey will always ask for a password when saving a file.&lt;/p&gt;&lt;p&gt;If keep this option deactivated, the password for your current keystore will be kept in memory and will be used again to save that file, when you use the quicksave option (e.g. 'Save' instead of 'Save As').&lt;/p&gt;&lt;p&gt;Default: &lt;span style=&quot; font-weight:600;&quot;&gt;Off&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Always ask for password</string>
@@ -254,9 +254,7 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../src/qt/res.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>buttonBox</sender>

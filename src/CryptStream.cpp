@@ -123,7 +123,6 @@ void CryptStream::setEncryptionKey (std::string key) {
 	BIO_set_cipher (_crypt_bio, ciph, (const unsigned char*)key.c_str(), iv, enc);
 	_bio_chain = BIO_push(_crypt_bio, _bio_chain);
 	
-	
 	const std::string encBuffer ("-- FILE -- 85gxk9d7 --");
 	if (_mode == WRITE) {
 		BIO_write(_bio_chain, encBuffer.data(), encBuffer.size());

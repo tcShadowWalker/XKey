@@ -3,54 +3,51 @@
 #include <iostream>
 #include <string>
 #include <cstring>
-
-#include "XKeyGenerator.h"
-
 #include <openssl/evp.h>
+// Needed for no-echo password query
+#include <termios.h>
+#include <stdio.h>
+#include <unistd.h>
+
+std::string get_password () {
+	std::string pwd;
+	struct termios t;
+	tcgetattr(STDIN_FILENO, &t);
+	t.c_lflag &= ~ECHO;
+	tcsetattr(STDIN_FILENO, TCSANOW, &t);
+	std::cin >> pwd;
+	t.c_lflag |= ECHO;
+	tcsetattr(STDIN_FILENO, TCSANOW, &t);
+	return pwd;
+}
 
 int main (int argc, char** argv) {
-	XKey::PassphraseGenerator gen;
-	
-	std::string pwphrase;
-	
-	gen.disallowCharacterType(XKey::PassphraseGenerator::CHAR_SPECIAL);
-	gen.generatePassphrase (&pwphrase);
-	
-	std::cout << pwphrase << "\n";
-	
-	/*if (argc < 2) {
+	if (argc < 2) {
 		std::cerr << "Usage: XKey keystore_file\n";
 		return -1;
 	}
-	
-	
 	
 	OpenSSL_add_all_ciphers();
 
 	const std::string filename (argv[1]);
 
-	std::string key;
-	std::cout << "Password: ";
-	std::cin >> key;
+	XKey::CryptStream crypt_source (filename, std::string(), XKey::CryptStream::READ, XKey::BASE64_ENCODED | XKey::EVALUATE_FILE_HEADER);
 	
-	XKey::CryptStream crypt_source (filename, key, XKey::CryptStream::WRITE, XKey::BASE64_ENCODED);
+	if (crypt_source.isEncrypted()) {
+		std::cout << "Password: ";
+		std::string key = get_password();
+		crypt_source.setEncryptionKey(key);
+	}
 	
-	std::ostream stream (&crypt_source);
-	stream.exceptions (std::ios_base::failbit | std::ios_base::badbit);
+	std::istream stream (&crypt_source);
+	stream.exceptions (std::ios_base::badbit);
 	
-	using namespace XKey;
-	Folder root;
-	Folder * f = root.createSubfolder("ExampleFolder");
-	f->addEntry (Entry("John", "example.com", "somepwd"));
-	Folder *f2 = f->createSubfolder("SomeSubfolder");
-	f2->addEntry(Entry("SomeUser", "jp-dev.org", "newpwd"));
-	f->createSubfolder("Empty Subfolder");
-	
-	Writer w;
-	if (!w.writeFile(stream, root)) {
-		std::cerr << "Error: " << w.error() << "\n";
-		return -1;
-	}*/
+	while (!stream.eof()) {
+		std::string s;
+		stream >> s;
+		std::cout << s;
+	}
+	std::cout << "\n";
 
 	return 0;
 }

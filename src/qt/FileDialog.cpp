@@ -1,6 +1,8 @@
 #include "FileDialog.h"
+#include <QMessageBox>
 
 #include <ui_OpenKeystorePassphrase.h>
+#include <ui_SaveKeystorePassphrase.h>
 
 SaveFileDialog::SaveFileDialog (QWidget *parent, SaveFileOptions opt)
 	: QFileDialog(parent, tr("Save file"), tr("Keystore.xkey"), tr("Keystore Files (*.xkey)")), mSaveOpt(opt)
@@ -15,14 +17,17 @@ void SaveFileDialog::setDefaultFile (const QString &filepath) {
 //
 
 FilePasswordDialog::FilePasswordDialog (Operation op, QWidget *parent)
-	: QDialog(parent), ui(new Ui::OpenFilePassphraseDialog)
+	: QDialog(parent), openUi(nullptr), saveUi(nullptr)
 {
-	ui->setupUi (this);
-	if (op == WRITE) {
-		ui->headerLabel->setText(tr("Save file"));
-		ui->textLabel->setText(tr("Please enter the passphrase to encrypt the keystore:"));
+	if (op == READ) {
+		openUi = new Ui::OpenFilePassphraseDialog;
+		openUi->setupUi (this);
+		openUi->passphraseEdit->setFocus();
+	} else if (op == WRITE) {
+		saveUi = new Ui::SaveFilePassphraseDialog;
+		saveUi->setupUi (this);
+		saveUi->passphraseEdit->setFocus();
 	}
-	ui->passphraseEdit->setFocus();
 }
 
 int FilePasswordDialog::exec () {
@@ -30,9 +35,20 @@ int FilePasswordDialog::exec () {
 }
 
 QString FilePasswordDialog::password () const {
-	return ui->passphraseEdit->text();
+	if (openUi)
+		return openUi->passphraseEdit->text();
+	else if (saveUi)
+		return saveUi->passphraseEdit->text();
+	else
+		return QString ("");
 }
 
 void FilePasswordDialog::accept () {
+	if (saveUi) {
+		if (saveUi->passphraseEdit->text() != saveUi->passphraseConfirm->text()) {
+			QMessageBox::critical (this, tr("Password mismatch"), tr("The two passwords you entered do not match.\nPlease enter matching passwords"));
+			return;
+		}
+	}
 	return this->QDialog::accept();
 }

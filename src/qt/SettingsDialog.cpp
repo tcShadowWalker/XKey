@@ -53,8 +53,8 @@ void SettingsDialog::readSettings (QSettings *set, XKey::PassphraseGenerator *mG
 	mSaveOpt->use_encryption = set->value("keystore/encrypt", true).toBool();
 	mSaveOpt->use_encoding = set->value("keystore/base64_encode", true).toBool();
 	mSaveOpt->write_header = set->value("keystore/include_header", true).toBool();
-	//
-	mSaveOpt->save_password = set->value("ui/always_ask_for_password", false).toBool();
+	// This option is negated
+	mSaveOpt->save_password = !set->value("ui/always_ask_for_password", false).toBool();
 }
 
 void SettingsDialog::saveSettings () {

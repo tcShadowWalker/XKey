@@ -11,6 +11,7 @@
 #include <QSettings>
 #include <QLineEdit>
 #include <QShortcut>
+#include <QClipboard>
 #include <cassert>
 // UIs
 #include <ui_Main.h>
@@ -53,6 +54,7 @@ XKeyApplication::XKeyApplication(QSettings *sett)
 	connect (mUi->actionAddFolder, SIGNAL(triggered()), this, SLOT(addFolderClicked()));
 	connect (mUi->actionDeleteFolder, SIGNAL(triggered()), this, SLOT(deleteFolderClicked()));
 	connect (mUi->actionClearSelection, SIGNAL(triggered()), this, SLOT(clearSelection()));
+	connect (mUi->actionCopyPassphrase, SIGNAL(triggered()), this, SLOT(copyPassphraseToClipboard()));
 	
 	mUi->keyTree->setSelectionMode (QAbstractItemView::SingleSelection);
 	connect (mUi->keyTree->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(folderSelectionChanged(const QItemSelection &, const QItemSelection &)));
@@ -63,6 +65,7 @@ XKeyApplication::XKeyApplication(QSettings *sett)
 	connect (mUi->keyTable, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(editKey(QModelIndex)));
 	// Search bar:
 	mSearchBar = new QLineEdit (&mMain);
+	mSearchBar->setMinimumWidth(100);
 	mUi->toolBar->addWidget(mSearchBar);
 	QPushButton *searchButton = new QPushButton (tr("Search"), &mMain);
 	searchButton->setObjectName("searchButton");
@@ -139,6 +142,7 @@ void XKeyApplication::openFile (const QString &filename) {
 			if (pwdDiag.exec() != QDialog::Accepted)
 				return;
 			crypt_source.setEncryptionKey(pwdDiag.password().toStdString());
+			password = pwdDiag.password();
 		}
 		std::istream isource (&crypt_source);
 		XKey::RootFolder_Ptr newRoot = XKey::create_root_folder();
@@ -167,13 +171,13 @@ void XKeyApplication::openFile (const QString &filename) {
 	}
 }
 
-void XKeyApplication::saveFile (const QString &filename, const SaveFileOptions &sopt) {
+void XKeyApplication::saveFile (const QString &filename, SaveFileOptions &sopt) {
 	QString errorMsg;
 	bool success = false;
 	try {
 		QString passwd;
 		if (sopt.use_encryption) {
-			if (!sopt.password().empty()) {
+			if (!sopt.password().empty() && sopt.save_password) {
 				passwd = QString::fromStdString (sopt.password());
 			} else {
 				FilePasswordDialog pwdDiag (FilePasswordDialog::WRITE, &mMain);
@@ -192,7 +196,7 @@ void XKeyApplication::saveFile (const QString &filename, const SaveFileOptions &
 			success = true;
 			madeChanges = false;
 			addRecentFile (filename);
-			mSaveOptions.setLastPassword(passwd.toStdString());
+			sopt.setLastPassword(passwd.toStdString());
 		} else {
 			errorMsg = QString::fromStdString(w.error());
 		}
@@ -233,7 +237,7 @@ void XKeyApplication::startSearch () {
 			mKeys->setCurrentFolder( const_cast<XKey::Folder*> (sr.parentFolder()) );
 			mUi->keyTable->selectRow( sr.index() );
 		} else {
-			mUi->statusbar->showMessage(tr("No match was found for your search keywords"));
+			mUi->statusbar->showMessage(tr("No match was found for your search keywords"), statusBarMessageTimeout);
 			// Next time, start search over
 			lastSearchString = "";
 		}
@@ -352,6 +356,18 @@ void XKeyApplication::deleteEntryClicked () {
 void XKeyApplication::showSettingsDialog () {
 	SettingsDialog diag (mSettings, &mGenerator, &mSaveOptions, &mMain);
 	diag.exec();
+}
+
+void XKeyApplication::copyPassphraseToClipboard() {
+	QModelIndexList indexes = mUi->keyTable->selectionModel()->selectedRows();
+	if (mKeys && indexes.size() == 1) {
+		XKey::Entry &entry = static_cast<XKey::Entry&> (mKeys->folder()->entries().at(indexes.at(0).row()));
+		QClipboard *clipboard = QApplication::clipboard();
+		clipboard->setText ( QString::fromStdString( entry.password() ) );
+		mUi->statusbar->showMessage(tr("Copied passphrase into clipboard."), statusBarMessageTimeout);
+	} else {
+		mUi->statusbar->showMessage(tr("No password entry is currently selected."), statusBarMessageTimeout);
+	}
 }
 
 void XKeyApplication::saveApplicationState () {
