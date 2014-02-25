@@ -20,6 +20,10 @@ struct SaveFileOptions {
 	int makeCryptStreamMode () const;
 	
 	inline SaveFileOptions() : use_encryption(true), cipherType(AES_256), use_encoding(true), write_header(true), save_password(false) { }
+	inline ~SaveFileOptions () {
+		// Clear passphrase on deletion
+		std::fill (_lastPassword.begin(), _lastPassword.end(), '\0');
+	}
 	
 	inline void setLastPassword (std::string pwd) {
 		// Only store the password if that is allowed.
