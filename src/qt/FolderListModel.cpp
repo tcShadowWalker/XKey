@@ -163,21 +163,15 @@ Qt::DropActions FolderListModel::supportedDropActions () const {
 }
 
 bool FolderListModel::dropMimeData (const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) {
-	const QString text = data->text();
-	if (text.startsWith("XKey/Folder:")) {
-		QString fullPath = text.mid(12);
-		XKey::Folder *parentItem = 0;
-		if (!parent.isValid()) {
-			parentItem = root;
-		} else {
-			parentItem = static_cast<XKey::Folder *> (parent.internalPointer());
-		}
-		if (!parentItem)
-			return false;
-		if (row < -1 || row >= (int)parentItem->subfolders().size()) {
-			return false;
-		}
-		
+	XKey::Folder * const parentItem = (parent.isValid()) ? static_cast<XKey::Folder *> (parent.internalPointer()) : root;
+	if (!parentItem)
+		return false;
+	if (row < -1 || row >= (int)parentItem->subfolders().size()) {
+		return false;
+	}
+	if (data->hasFormat("application/x-xkey-folder")) {
+		QString fullPath = data->data ("application/x-xkey-folder");
+
 		XKey::Folder *oldFolder = const_cast<XKey::Folder *> (XKey::get_folder_by_path(root, fullPath.toStdString())),
 			*oldParent = (oldFolder) ? oldFolder->parent() : 0;
 		if (!oldFolder || !oldParent || oldParent == parentItem)
@@ -200,9 +194,30 @@ bool FolderListModel::dropMimeData (const QMimeData * data, Qt::DropAction actio
 			endInsertRows();
 			endRemoveRows();
 		}
-	} else if (text.startsWith("XKey/Entry:")) {
-		QString fullPath = text.mid(11);
-		std::cout << "move entry: " << fullPath.toStdString() << "\n";
+	} else if (data->hasFormat("application/x-xkey-entry")) {
+		QByteArray a = data->data ("application/x-xkey-entry");
+		QList<QByteArray> l = a.split('\0');
+		if (l.size() >= 2) {
+			// First entry in list is absolute path to root folder
+			QString sourceFolderPath (l.at(0));
+			XKey::Folder *oldFolder = const_cast<XKey::Folder *> (XKey::get_folder_by_path(root, sourceFolderPath.toStdString()));
+			if (!oldFolder)
+				return false; // Old parent not found
+			// All additional entries are indices to entries that shall be moved
+			for (int i = 1; i < l.size(); ++i) {
+				bool ok = false;
+				const int index = l.at(i).toInt(&ok);
+				if (ok && index >= 0) {
+					// get entry and make copy to new folder
+					beginInsertRows(parent, parentItem->subfolders().size(), parentItem->subfolders().size()+1);
+					const XKey::Entry &entry = oldFolder->getEntryAt(index);
+					parentItem->addEntry(entry);
+					//
+					endInsertRows();
+				}
+			}
+			return true;
+		}
 	}
 	return false;
 }

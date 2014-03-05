@@ -76,23 +76,43 @@ void KeyListModel::removeEntry (int index) {
 	endRemoveRows();
 }
 
+bool KeyListModel::removeRows (int row, int count, const QModelIndex & parent) {
+	try {
+		beginRemoveRows(parent, row, row+count-1);
+		for (int i = row+count-1; i >= row; --i ) {
+			_folder->removeEntry(i);
+		}
+		endRemoveRows();
+	} catch (const std::exception &e) {
+		std::cout << "KeyListModel::removeRows fail: " << e.what() << "\n";
+		endRemoveRows();
+		return false;
+	}
+	return true;
+}
+
 // Drag and drop
+
+Qt::DropActions KeyListModel::supportedDropActions () const {
+	return Qt::MoveAction;
+}
 
 QStringList KeyListModel::mimeTypes () const {
 	return QStringList{"text/plain", "application/x-xkey-entry"};
 }
 
 QMimeData *KeyListModel::mimeData (const QModelIndexList &indexes) const {
-	QMimeData *data = new QMimeData;
+	std::unique_ptr<QMimeData> data (new QMimeData);
 	QByteArray a;
-	QStringList rows ("XKey/Entry:");
+	QStringList rowList;
+	a.append(QString::fromStdString(_folder->fullPath()).toUtf8()).append('\0');
 	for (QModelIndex ind : indexes) {
-		rows << QString::number(ind.row());
+		rowList << QString::number(ind.row());
 	}
-	QString rowStr = rows.join(",");
-	data->setData ("folder", QString::fromStdString(_folder->fullPath()).toUtf8());
-	data->setData ("entries", rowStr.toUtf8() );
-	return data;
+	rowList.removeDuplicates();
+	a.append(rowList.join('\0'));
+	data->setData ("application/x-xkey-entry", a);
+	return data.release();
 }
 
 

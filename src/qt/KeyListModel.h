@@ -21,6 +21,8 @@ public:
 	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 	
 	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
+
+	bool removeRows ( int row, int count, const QModelIndex & parent = QModelIndex() );
 	
 	void addEntry (XKey::Entry entry);
 	void removeEntry (int index);
@@ -33,6 +35,7 @@ public:
 	
 	QStringList mimeTypes () const;
 	QMimeData *mimeData (const QModelIndexList &indexes) const;
+	Qt::DropActions supportedDropActions () const;
 private:
 	XKey::Folder *_folder;
 };
