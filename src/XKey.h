@@ -50,6 +50,7 @@ public:
 	std::string							fullPath() const;
 	
 	void 								addEntry (Entry entry);
+	Entry &								getEntryAt (int index);
 	void								removeEntry (int index);
 	Folder *							createSubfolder (const std::string &name);
 	void								removeSubfolder (int index);
@@ -63,7 +64,7 @@ public:
 	inline std::deque<Folder>&			subfolders () { return _subfolders; }
 	inline std::deque<Entry>&			entries () { return _entries; }
 	
-	 int 								row() const;
+	int 								row() const;
 private:
 	std::string _name;
 	std::deque<Folder> _subfolders;

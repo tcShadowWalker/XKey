@@ -150,6 +150,12 @@ void Folder::removeEntry (int index) {
 	_entries.erase(_entries.begin() + index);
 }
 
+Entry &Folder::getEntryAt (int index) {
+	if (index < 0 || index >= _entries.size())
+		throw std::logic_error ("Invalid key-entry index: Can not be found");
+	return *(_entries.begin() + index);
+}
+
 Folder *Folder::createSubfolder (const std::string &name) {
 	if (getSubfolder(name))
 		throw std::logic_error ("Can not create a second folder with the same name within the same parent");
