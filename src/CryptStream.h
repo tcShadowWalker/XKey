@@ -5,6 +5,7 @@
 #include <vector>
 
 struct bio_st;
+struct evp_cipher_st;
 
 namespace XKey {
 
@@ -15,23 +16,34 @@ enum ModeInfo {
 	EVALUATE_FILE_HEADER = 4
 };
 
+/**
+ * @brief File stream handling encryption
+ */
 class CryptStream
 	: public std::streambuf
 {
 public:
+	const int DEFAULT_KEY_ITERATION_COUNT = 20000;
 	enum OperationMode {
 		READ = 1,
 		WRITE = 2
 	};
 	
-	CryptStream (const std::string &filename, std::string key, OperationMode open_mode, int mode = BASE64_ENCODED | USE_ENCRYPTION | EVALUATE_FILE_HEADER);
+	CryptStream (const std::string &filename, std::string passphrase, OperationMode open_mode, int mode = BASE64_ENCODED | USE_ENCRYPTION | EVALUATE_FILE_HEADER);
 	~CryptStream ();
 	
 	bool isEncrypted () const;
 	
 	bool isEncoded () const;
 	
-	void setEncryptionKey (std::string key);
+	/**
+	 * @brief Set the key for encryption and description, if not specified for the constructor
+	 * @param passphrase The passphrase to dervie the key from
+	 * @param cipherName OpenSSL-name of the encryption cipher to use. Defaults to AES in CTR mode.
+	 * 
+	 * This method uses PBKDF2 to derive the real encryption key from the passphrase
+	 */
+	void setEncryptionKey (std::string passphrase, const char *cipherName = nullptr, const char *iv = nullptr, int keyIterationCount = DEFAULT_KEY_ITERATION_COUNT);
 	
 private:
 	// overrides base class behaviour:
@@ -41,6 +53,9 @@ private:
 	// Put:
 	int_type overflow (int_type c);
 	int sync();
+	
+	void _evaluateHeader ();
+	void _writeHeader ();
 	
 	//streamsize xsputn(const char_type* __s, streamsize __n);
 		
@@ -55,6 +70,10 @@ private:
 	struct bio_st *_base64_bio;
 	OperationMode _mode;
 	int _version;
+	//
+	int _pbkdfIterationCount;
+	std::string _iv;
+	const evp_cipher_st *_cipher;
 };
 
 

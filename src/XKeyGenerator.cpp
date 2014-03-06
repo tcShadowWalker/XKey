@@ -48,9 +48,9 @@ void PassphraseGenerator::generatePassphrase (std::string *passphrase) {
 	std::random_device rd;
 	std::mt19937 rng (rd());
 	std::uniform_int_distribution<int> type_dist (1,1);
-	// If special characters are allowed, we want them with a probability of 1/6
+	// If special characters are allowed, we want them with a probability of 1/5
 	if (mAllowed & CHAR_SPECIAL)
-		type_dist = std::uniform_int_distribution<int> (0, 5);
+		type_dist = std::uniform_int_distribution<int> (0, 4);
 	std::uniform_int_distribution<int> char_dist (0, mCharPool.size()-1);
 	passphrase->resize( char_dist( rng, std::uniform_int_distribution<int>::param_type( mMinLen, mMaxLen ) ) );
 	for (auto &it : *passphrase) {
