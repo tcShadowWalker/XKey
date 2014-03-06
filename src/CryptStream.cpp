@@ -20,7 +20,7 @@ const unsigned char *PBKDF_SALT = (const unsigned char*)"^Xait4!oh?f5Iye#brooti.
 
 CryptStream::CryptStream (const std::string &filename, OperationMode open_mode, int m_info)
 	: _buffer(std::max(256, put_back_) + put_back_), _crypt_bio(0), _file_bio(0), _base64_bio(0), _mode(open_mode), _initialized(false),
-	_version(CURRENT_XKEY_FORMAT_VERSION), _cipher(nullptr)
+	_version(CURRENT_XKEY_FORMAT_VERSION), _pbkdfIterationCount(DEFAULT_KEY_ITERATION_COUNT), _cipher(nullptr)
 {	
 	char *end = &_buffer.front() + _buffer.size();
 	setg(end, end, end);
@@ -122,8 +122,6 @@ void CryptStream::_evaluateHeader (int *headerMode) {
 	{
 		throw std::runtime_error ("Invalid file header. The file is probably not a valid XKey keystore.");
 	}
-	std::cout << "ciph: " << cipherName << "\n";
-	std::cout << "iv: " << iv << "\n";
 	this->_cipher = EVP_get_cipherbyname(cipherName);
 	if (!_cipher)
 		throw std::runtime_error ("OpenSSL library does not provide requested Cipher mode from file header");
@@ -136,14 +134,6 @@ void CryptStream::_evaluateHeader (int *headerMode) {
 void CryptStream::setEncryptionKey (std::string passphrase, const char *cipherName, const char *ivParam, int keyIterationCount) {
 	if (!_crypt_bio)
 		throw std::logic_error ("CryptStream was not set up to use encryption");
-	if (ivParam) {
-		this->_iv = ivParam;
-	} else {
-		if (_iv.size() == 0) {
-			// FIX INIT VECTOR
-			_iv = "TESTDDX";
-		}
-	}
 	if (cipherName && cipherName[0] != '\0') {
 		this->_cipher = EVP_get_cipherbyname(cipherName); 
 	} else {
@@ -154,15 +144,30 @@ void CryptStream::setEncryptionKey (std::string passphrase, const char *cipherNa
 	}
 	if (!this->_cipher)
 		throw std::runtime_error ("OpenSSL library does not provide requested Cipher mode");
+	if (ivParam) {
+		this->_iv = ivParam;
+	} else {
+		if (_iv.size() == 0) {
+			// FIX INIT VECTOR
+			_iv = "TESTDDXABC123456ADDX";
+			assert (_iv.length() >= _cipher->iv_len);
+		}
+	}
 	// Use PBKDF2 to get the derive encryption key from the passphrase
-	unsigned char key[_cipher->key_len];
-	int r = PKCS5_PBKDF2_HMAC_SHA1(passphrase.c_str(), passphrase.size(), PBKDF_SALT, strlen((const char*)PBKDF_SALT), keyIterationCount, _cipher->key_len, key);
+	unsigned char raw_key[_cipher->key_len + 1], real_key[_cipher->key_len * 2 + 1];
+
+	int r = PKCS5_PBKDF2_HMAC_SHA1(passphrase.c_str(), passphrase.size(), PBKDF_SALT, strlen((const char*)PBKDF_SALT), keyIterationCount, _cipher->key_len, raw_key);
 	if (r != 1)
 		throw std::runtime_error ("PBKDF2 algorithm to derive encryption key failed");
-	
-	// enc should be set to 1 for encryption and zero for decryption. 
+	raw_key[_cipher->key_len] = '\0';
+	real_key[_cipher->key_len * 2] = '\0';
+	for (int i = 0; i < _cipher->key_len; ++i)
+		sprintf((char*)&real_key[i * 2], "%02x", raw_key[i]);
+	std::cout << "iv: " << _iv << ", pw: " << passphrase << " len: " << _cipher->key_len << ", " << real_key << "\n";
+
+	// enc should be set to 1 for encryption and zero for decryption.
 	int enc = (_mode == READ) ? 0 : 1;
-	BIO_set_cipher (_crypt_bio, _cipher, (const unsigned char*)key, (const unsigned char*)_iv.c_str(), enc);
+	BIO_set_cipher (_crypt_bio, _cipher, (const unsigned char*)real_key, (const unsigned char*)_iv.c_str(), enc);
 	_bio_chain = BIO_push(_crypt_bio, _bio_chain);
 	
 	// Have a magic string in the beggining to find out if decryption actually works
