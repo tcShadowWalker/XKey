@@ -60,6 +60,8 @@ public slots:
 	void addEntryClicked ();
 	void editEntryClicked ();
 	void deleteEntryClicked ();
+
+	void aboutDialogClicked ();
 	
 private:
 	QMainWindow mMain;

@@ -8,7 +8,7 @@ set(XKey_Qt_SRCS KeyListModel.cpp FileDialog.cpp FolderListModel.cpp KeyEditDial
 qt4_wrap_cpp(XKey_MOC XKeyApplication.h KeyListModel.h FolderListModel.h KeyEditDialog.h FileDialog.h SettingsDialog.h )
 set(UiPath "${CMAKE_PROJECT_ROOT}/ui")
 qt4_wrap_ui(XKey_UI ${UiPath}/Main.ui ${UiPath}/Entry.ui ${UiPath}/Settings.ui
-	${UiPath}/SaveKeystorePassphrase.ui ${UiPath}/OpenKeystorePassphrase.ui )
+	${UiPath}/SaveKeystorePassphrase.ui ${UiPath}/OpenKeystorePassphrase.ui ${UiPath}/About.ui )
 
 QT4_ADD_RESOURCES(XKey_RCC_SRCS res.qrc )
 
