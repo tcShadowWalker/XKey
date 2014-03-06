@@ -15,6 +15,7 @@
 #include <cassert>
 // UIs
 #include <ui_Main.h>
+#include <ui_About.h>
 
 XKeyApplication::XKeyApplication(QSettings *sett)
 	: mSettings(sett), mUi(0), mFolders(0), mKeys(0), madeChanges(false), mRecentFiles(0)
@@ -42,6 +43,7 @@ XKeyApplication::XKeyApplication(QSettings *sett)
 	mUi->keyTree->header()->restoreState( mSettings->value("ui/key_tree").toByteArray() );
 	// Signals
 	connect (mUi->actionSettings, SIGNAL(triggered()), this, SLOT(showSettingsDialog()));
+	connect (mUi->actionAbout, SIGNAL(triggered()), this, SLOT(aboutDialogClicked()));
 	
 	connect (mUi->actionNew, SIGNAL(triggered()), this, SLOT(newFile()));
 	connect (mUi->actionOpen, SIGNAL(triggered()), this, SLOT(showOpenFile()));
@@ -399,6 +401,14 @@ void XKeyApplication::openRecentFile() {
 		openFile(action->data().toString());
 	}
 }
+
+void XKeyApplication::aboutDialogClicked () {
+	QDialog dialog (&this->mMain);
+	Ui::AboutDialog about;
+	about.setupUi (&dialog);
+	dialog.exec();
+}
+
 
 // SFO
 

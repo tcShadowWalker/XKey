@@ -14,7 +14,7 @@
    <string>XKey</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="../src/qt/res.qrc">
     <normaloff>:/icons/XKey.png</normaloff>:/icons/XKey.png</iconset>
   </property>
   <property name="styleSheet">
@@ -208,6 +208,8 @@ background: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:1 rgba(
      <string>Tools</string>
     </property>
     <addaction name="actionSettings"/>
+    <addaction name="separator"/>
+    <addaction name="actionAbout"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -249,7 +251,7 @@ background: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:1 rgba(
   </widget>
   <action name="actionNew">
    <property name="icon">
-    <iconset>
+    <iconset resource="../src/qt/res.qrc">
      <normaloff>:/icons/document-new.png</normaloff>:/icons/document-new.png</iconset>
    </property>
    <property name="text">
@@ -258,7 +260,7 @@ background: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:1 rgba(
   </action>
   <action name="actionOpen">
    <property name="icon">
-    <iconset>
+    <iconset resource="../src/qt/res.qrc">
      <normaloff>:/icons/document-open.png</normaloff>:/icons/document-open.png</iconset>
    </property>
    <property name="text">
@@ -267,7 +269,7 @@ background: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:1 rgba(
   </action>
   <action name="actionSave">
    <property name="icon">
-    <iconset>
+    <iconset resource="../src/qt/res.qrc">
      <normaloff>:/icons/document-save.png</normaloff>:/icons/document-save.png</iconset>
    </property>
    <property name="text">
@@ -276,7 +278,7 @@ background: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:1 rgba(
   </action>
   <action name="actionSave_As">
    <property name="icon">
-    <iconset>
+    <iconset resource="../src/qt/res.qrc">
      <normaloff>:/icons/document-save-as.png</normaloff>:/icons/document-save-as.png</iconset>
    </property>
    <property name="text">
@@ -285,7 +287,7 @@ background: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:1 rgba(
   </action>
   <action name="actionQuit">
    <property name="icon">
-    <iconset>
+    <iconset resource="../src/qt/res.qrc">
      <normaloff>:/icons/application-exit.png</normaloff>:/icons/application-exit.png</iconset>
    </property>
    <property name="text">
@@ -294,7 +296,7 @@ background: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:1 rgba(
   </action>
   <action name="actionSettings">
    <property name="icon">
-    <iconset>
+    <iconset resource="../src/qt/res.qrc">
      <normaloff>:/icons/configure.png</normaloff>:/icons/configure.png</iconset>
    </property>
    <property name="text">
@@ -303,7 +305,7 @@ background: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:1 rgba(
   </action>
   <action name="actionAddEntry">
    <property name="icon">
-    <iconset>
+    <iconset resource="../src/qt/res.qrc">
      <normaloff>:/icons/list-add.png</normaloff>:/icons/list-add.png</iconset>
    </property>
    <property name="text">
@@ -315,7 +317,7 @@ background: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:1 rgba(
   </action>
   <action name="actionEditEntry">
    <property name="icon">
-    <iconset>
+    <iconset resource="../src/qt/res.qrc">
      <normaloff>:/icons/document-edit.png</normaloff>:/icons/document-edit.png</iconset>
    </property>
    <property name="text">
@@ -327,7 +329,7 @@ background: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:1 rgba(
   </action>
   <action name="actionAddFolder">
    <property name="icon">
-    <iconset>
+    <iconset resource="../src/qt/res.qrc">
      <normaloff>:/icons/folder-new.png</normaloff>:/icons/folder-new.png</iconset>
    </property>
    <property name="text">
@@ -336,7 +338,7 @@ background: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:1 rgba(
   </action>
   <action name="actionDeleteFolder">
    <property name="icon">
-    <iconset>
+    <iconset resource="../src/qt/res.qrc">
      <normaloff>:/icons/folder-remove.png</normaloff>:/icons/folder-remove.png</iconset>
    </property>
    <property name="text">
@@ -345,7 +347,7 @@ background: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:1 rgba(
   </action>
   <action name="actionDeleteEntry">
    <property name="icon">
-    <iconset>
+    <iconset resource="../src/qt/res.qrc">
      <normaloff>:/icons/edit-delete.png</normaloff>:/icons/edit-delete.png</iconset>
    </property>
    <property name="text">
@@ -367,7 +369,7 @@ background: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:1 rgba(
   </action>
   <action name="actionCopyPassphrase">
    <property name="icon">
-    <iconset>
+    <iconset resource="../src/qt/res.qrc">
      <normaloff>:/icons/clipboard.png</normaloff>:/icons/clipboard.png</iconset>
    </property>
    <property name="text">
@@ -377,8 +379,19 @@ background: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:1 rgba(
     <string>Copy the passphrase of the selected entry into clipboard</string>
    </property>
   </action>
+  <action name="actionAbout">
+   <property name="icon">
+    <iconset resource="../src/qt/res.qrc">
+     <normaloff>:/icons/XKey.png</normaloff>:/icons/XKey.png</iconset>
+   </property>
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="../src/qt/res.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>actionQuit</sender>
