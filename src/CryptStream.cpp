@@ -7,8 +7,8 @@
 
 #include <openssl/bio.h>
 #include <openssl/evp.h>
+#include <openssl/rand.h>
 
-// TODO DEBUG
 #include <iostream>
 
 namespace XKey {
@@ -16,7 +16,27 @@ namespace XKey {
 static int CURRENT_XKEY_FORMAT_VERSION = 11;
 static const int put_back_ = 8;
 
-const unsigned char *PBKDF_SALT = (const unsigned char*)"^Xait4!oh?f5Iye#brooti.t9OEeg9i_kooPh§choh&(oPhao2ao)!h7Oav,;Qvae/?iet7";
+/// Unsigned char string to hexadecimal representation
+static std::string uc2hex (const unsigned char *in, int in_length) {
+	assert (in_length >= 0);
+	std::string out ( (size_t) in_length * 2, '\0');
+	for (int i = 0; i < in_length; ++i) {
+		sprintf((char*)&out[i * 2], "%02x", in[i]);
+	}
+	return out;
+}
+
+/// Signed char hexadecimal notation to unsigned char. in_length must be even, output string has half the length
+static std::string hex2uc (const char *in, int in_length) {
+	assert (in_length >= 0 && in_length % 2 == 0);
+	in_length /= 2;
+	std::string out ( (size_t) in_length, '\0');
+	for (int i = 0; i < in_length; ++i) {
+		if (sscanf(&in[i*2], "%02x", &out[i]) != 1)
+			throw std::runtime_error ("Invalid hexadecimal format");
+	}
+	return out;
+}
 
 CryptStream::CryptStream (const std::string &filename, OperationMode open_mode, int m_info)
 	: _buffer(std::max(256, put_back_) + put_back_), _crypt_bio(0), _file_bio(0), _base64_bio(0), _mode(open_mode), _initialized(false),
@@ -56,7 +76,7 @@ CryptStream::CryptStream (const std::string &filename, OperationMode open_mode, 
 		if (!_crypt_bio)
 			throw std::runtime_error ("Could not create OpenSSL Crypt-filter BIO structure");
 	} else
-		_initialized = true;
+		this->_initialized = true;
 }
 
 CryptStream::~CryptStream () {
@@ -97,8 +117,10 @@ void CryptStream::_writeHeader () {
 	char buf[header_buf_size+1];
 	// Write this header directly to the file, without encoding or encryption
 	const int offset = header_buf_size;
+	std::string hexIV = uc2hex((const unsigned char*)_iv.c_str(), _iv.length());
 	int r = snprintf (buf, header_buf_size-1, "*167110* # v:%i # c:%.1i # e:%.1i # o:%i # ciph:%.30s # iv:%.256s # count:%i #",
-						this->_version, isEncrypted(), isEncoded(), offset, EVP_CIPHER_name(_cipher), _iv.c_str(), _pbkdfIterationCount);
+						this->_version, isEncrypted(), isEncoded(), offset, EVP_CIPHER_name(_cipher),
+						hexIV.c_str(), _pbkdfIterationCount);
 	memset(buf+r, '*', header_buf_size-r-1);
 	buf[header_buf_size-1] = '\n';
 	BIO_write(_file_bio, buf, header_buf_size);
@@ -115,7 +137,7 @@ void CryptStream::_evaluateHeader (int *headerMode) {
 	int offset = 0;
 	const int ciphNameLen = 30;
 	char cipherName[ciphNameLen + 1];
-	unsigned char iv[256 + 1];
+	char iv[256 + 1];
 	int useEncryption, useBase64Encode;
 	if (r = sscanf (buf, "*167110* # v:%i # c:%i # e:%i # o:%i # ciph:%30s # iv:%256s # count:%i #",
 			&this->_version, &useEncryption, &useBase64Encode, &offset, cipherName, iv, &_pbkdfIterationCount) != 7)
@@ -125,7 +147,9 @@ void CryptStream::_evaluateHeader (int *headerMode) {
 	this->_cipher = EVP_get_cipherbyname(cipherName);
 	if (!_cipher)
 		throw std::runtime_error ("OpenSSL library does not provide requested Cipher mode from file header");
-	this->_iv.assign((const char*)iv);
+	if (strnlen((const char*)iv, 256) != _cipher->iv_len * 2)
+		throw std::runtime_error ("Invalid initialization vector length");
+	this->_iv.assign( hex2uc(iv, _cipher->iv_len * 2) );
 	BIO_seek (_file_bio, offset);
 	*headerMode = ((useEncryption) ? (*headerMode | USE_ENCRYPTION) : (*headerMode & ~USE_ENCRYPTION));
 	*headerMode = ((useBase64Encode) ? (*headerMode | BASE64_ENCODED) : (*headerMode & ~BASE64_ENCODED));
@@ -137,8 +161,6 @@ void CryptStream::setEncryptionKey (std::string passphrase, const char *cipherNa
 	if (cipherName && cipherName[0] != '\0') {
 		this->_cipher = EVP_get_cipherbyname(cipherName); 
 	} else {
-		// EVP_aes_256_cbc EVP_aes_256_ctr
-		// EVP_get_cipherbyname("AES-256-CTR");
 		if (!_cipher)
 			this->_cipher = EVP_aes_256_ctr();
 	}
@@ -147,27 +169,23 @@ void CryptStream::setEncryptionKey (std::string passphrase, const char *cipherNa
 	if (ivParam) {
 		this->_iv = ivParam;
 	} else {
-		if (_iv.size() == 0) {
-			// FIX INIT VECTOR
-			_iv = "TESTDDXABC123456ADDX";
-			assert (_iv.length() >= _cipher->iv_len);
+		if (this->_iv.size() == 0) {
+			this->_iv.resize(_cipher->iv_len);
+			if (!RAND_bytes((unsigned char*)&_iv[0], _cipher->iv_len))
+				throw std::runtime_error ("Could not generate random bytes to create initialization vector");
 		}
 	}
+	if (_iv.length() != _cipher->iv_len)
+		throw std::runtime_error ("Invalid initialization vector length does not match cipher");
 	// Use PBKDF2 to get the derive encryption key from the passphrase
-	unsigned char raw_key[_cipher->key_len + 1], real_key[_cipher->key_len * 2 + 1];
-
-	int r = PKCS5_PBKDF2_HMAC_SHA1(passphrase.c_str(), passphrase.size(), PBKDF_SALT, strlen((const char*)PBKDF_SALT), keyIterationCount, _cipher->key_len, raw_key);
+	unsigned char raw_key[_cipher->key_len + 1];
+	int r = PKCS5_PBKDF2_HMAC_SHA1(passphrase.c_str(), passphrase.size(), (const unsigned char*)_iv.c_str(), _iv.length(),
+									keyIterationCount, _cipher->key_len, raw_key);
 	if (r != 1)
 		throw std::runtime_error ("PBKDF2 algorithm to derive encryption key failed");
-	raw_key[_cipher->key_len] = '\0';
-	real_key[_cipher->key_len * 2] = '\0';
-	for (int i = 0; i < _cipher->key_len; ++i)
-		sprintf((char*)&real_key[i * 2], "%02x", raw_key[i]);
-	std::cout << "iv: " << _iv << ", pw: " << passphrase << " len: " << _cipher->key_len << ", " << real_key << "\n";
-
 	// enc should be set to 1 for encryption and zero for decryption.
 	int enc = (_mode == READ) ? 0 : 1;
-	BIO_set_cipher (_crypt_bio, _cipher, (const unsigned char*)real_key, (const unsigned char*)_iv.c_str(), enc);
+	BIO_set_cipher (_crypt_bio, _cipher, raw_key, (const unsigned char*)_iv.c_str(), enc);
 	_bio_chain = BIO_push(_crypt_bio, _bio_chain);
 	
 	// Have a magic string in the beggining to find out if decryption actually works
@@ -176,7 +194,6 @@ void CryptStream::setEncryptionKey (std::string passphrase, const char *cipherNa
 	if (_mode == WRITE) {
 		BIO_write(_bio_chain, encBuffer.data(), encBuffer.size());
 	} else {
-		
 		std::string rBuffer (encBuffer.size(), '\0');
 		r = BIO_read(_bio_chain, &rBuffer[0], encBuffer.size());
 		
