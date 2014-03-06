@@ -8,20 +8,23 @@ class OpenFilePassphraseDialog;
 class SaveFilePassphraseDialog;
 }
 
+const int DEFAULT_KEY_ITERATION_COUNT = 20000;
+extern const char *DEFAULT_CIPHER_ALGORITHM;
+
 struct SaveFileOptions {
 	bool use_encryption;
-	enum EncryptionType {
-		AES_256
-	} cipherType;
+	std::string cipher_name;
 	bool use_encoding;
 	bool write_header;
 	bool save_password;
+	int key_iteration_count;
 	
 	int makeCryptStreamMode () const;
 	
-	inline SaveFileOptions() : use_encryption(true), cipherType(AES_256), use_encoding(true), write_header(true), save_password(false) { }
+	inline SaveFileOptions() : use_encryption(true), cipher_name(DEFAULT_CIPHER_ALGORITHM),
+		use_encoding(true), write_header(true), save_password(false), key_iteration_count(DEFAULT_KEY_ITERATION_COUNT) { }
 	inline ~SaveFileOptions () {
-		// Clear passphrase on deletion
+		// Clear passphrase on destruction
 		std::fill (_lastPassword.begin(), _lastPassword.end(), '\0');
 	}
 	

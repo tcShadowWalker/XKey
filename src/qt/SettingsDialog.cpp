@@ -7,28 +7,47 @@
 #include <QMessageBox>
 #include <ui_Settings.h>
 
+namespace SettingNames {
+const char *KeystoreEncrypt = "keystore/encrypt", *KeystoreEncode = "keystore/base64_encode", *KeystoreHeader = "keystore/include_header",
+	*KeystoreIteration = "keystore/key_iteration_count", *KeystoreAlgorithm = "keystore/algorithm";
+const char *GenerationSpecial = "generation/special_chars", *GenerationNumerics = "generation/numerics",
+	*GenerationMixed = "generation/mixed_case", *GenerationMin = "generation/min_length", *GenerationMax = "generation/max_Length";
+// Extern
+extern const char *UiAlwaysExpand, *UiExampleData, *UiAlwaysAsk;
+}
+
 SettingsDialog::SettingsDialog (QSettings *s, XKey::PassphraseGenerator *gen, SaveFileOptions *saveOptions, QWidget *parent)
 	: QDialog(parent), set(s), mUi(0), mGen(gen), mSaveOpt(saveOptions)
 {
+	using namespace SettingNames;
 	mUi = new Ui::SettingsDialog;
 	mUi->setupUi(this);
 	
 	connect ((const QObject*)mUi->buttonBox->button(QDialogButtonBox::Save), SIGNAL(clicked()), this, SLOT(trySave()));
 	readSettings(s, gen, saveOptions);
 	// ui
-	mUi->expandFoldersCheckBox->setChecked ( set->value ("ui/always_expand", false).toBool() );
-	mUi->exampleEntriesCheckBox->setChecked ( set->value ("ui/example_data", true).toBool() );
-	mUi->alwaysAskPasswordCheckBox->setChecked ( set->value ("ui/always_ask_for_password", false).toBool() );
+	mUi->expandFoldersCheckBox->setChecked ( set->value (UiAlwaysExpand, false).toBool() );
+	mUi->exampleEntriesCheckBox->setChecked ( set->value (UiExampleData, true).toBool() );
+	mUi->alwaysAskPasswordCheckBox->setChecked ( set->value (UiAlwaysAsk, false).toBool() );
 	// keystore
-	mUi->encryptionCheckBox->setChecked (set->value("keystore/encrypt", QVariant(true)).toBool());
-	mUi->asciiArmorCheckBox->setChecked (set->value("keystore/base64_encode", QVariant(true)).toBool());
-	mUi->headerCheckBox->setChecked (set->value ("keystore/include_header", QVariant(true)).toBool());
+	mUi->encryptionCheckBox->setChecked (set->value(KeystoreEncrypt, QVariant(true)).toBool());
+	mUi->asciiArmorCheckBox->setChecked (set->value(KeystoreEncode, QVariant(true)).toBool());
+	mUi->headerCheckBox->setChecked (set->value (KeystoreHeader, QVariant(true)).toBool());
+	mUi->keyIterationSpinBox->setValue ( set->value (KeystoreIteration, DEFAULT_KEY_ITERATION_COUNT).toInt() );
+	QString algo = set->value(KeystoreAlgorithm, QString(DEFAULT_CIPHER_ALGORITHM)).toString();
+	int index = mUi->cipherComboBox->findData( algo, Qt::DisplayRole );
+	if (index >= 0) {
+		mUi->cipherComboBox->setCurrentIndex( (index >= 0) ? index : 0 );
+	} else {
+		mUi->cipherComboBox->insertItem(0, QIcon(), algo);
+		mUi->cipherComboBox->setCurrentIndex(0);
+	}
 	// pwgen
-	mUi->specialCharCheckBox->setChecked( set->value ("generation/special_chars", QVariant(false)).toBool() );
-	mUi->numericsCheckBox->setChecked( set->value ("generation/numerics", QVariant(true)).toBool() );
-	mUi->uppercaseCheckBox->setChecked( set->value ("generation/mixed_case", QVariant(true)).toBool() );
-	mUi->minLengthSpinBox->setValue( set->value ("generation/min_length", QVariant(10)).toInt() );
-	mUi->maxLengthSpinBox->setValue( set->value ("generation/max_Length", QVariant(14)).toInt() );
+	mUi->specialCharCheckBox->setChecked( set->value (GenerationSpecial, QVariant(false)).toBool() );
+	mUi->numericsCheckBox->setChecked( set->value (GenerationNumerics, QVariant(true)).toBool() );
+	mUi->uppercaseCheckBox->setChecked( set->value (GenerationMixed, QVariant(true)).toBool() );
+	mUi->minLengthSpinBox->setValue( set->value (GenerationMin, QVariant(10)).toInt() );
+	mUi->maxLengthSpinBox->setValue( set->value (GenerationMax, QVariant(14)).toInt() );
 	
 }
 
@@ -38,40 +57,46 @@ SettingsDialog::~SettingsDialog() {
 
 void SettingsDialog::readSettings (QSettings *set, XKey::PassphraseGenerator *mGen, SaveFileOptions *mSaveOpt) {
 	using namespace XKey;
+	using namespace SettingNames;
 	// Pwgen
 	int allowed_chars = PassphraseGenerator::CHAR_ALPHA;
-	if (set->value ("generation/special_chars", false).toBool())
+	if (set->value (GenerationSpecial, false).toBool())
 		allowed_chars |= PassphraseGenerator::CHAR_SPECIAL;
-	if (set->value ("generation/numerics", true).toBool())
+	if (set->value (GenerationNumerics, true).toBool())
 		allowed_chars |= PassphraseGenerator::CHAR_NUMERIC;
-	if (set->value ("generation/mixed_case", true).toBool())
+	if (set->value (GenerationMixed, true).toBool())
 		allowed_chars |= PassphraseGenerator::CHAR_LOWER_UPPERCASE;
 	mGen->setAllowedCharacters(allowed_chars);
-	mGen->setMinLength( set->value ("generation/min_length", 10).toInt() );
-	mGen->setMaxLength( set->value ("generation/max_Length", 14).toInt() );
+	mGen->setMinLength( set->value (GenerationMin, 10).toInt() );
+	mGen->setMaxLength( set->value (GenerationMax, 14).toInt() );
 	//
-	mSaveOpt->use_encryption = set->value("keystore/encrypt", true).toBool();
-	mSaveOpt->use_encoding = set->value("keystore/base64_encode", true).toBool();
-	mSaveOpt->write_header = set->value("keystore/include_header", true).toBool();
+	mSaveOpt->use_encryption = set->value(KeystoreEncrypt, true).toBool();
+	mSaveOpt->use_encoding = set->value(KeystoreEncode, true).toBool();
+	mSaveOpt->write_header = set->value(KeystoreHeader, true).toBool();
+	mSaveOpt->key_iteration_count = set->value(KeystoreIteration, DEFAULT_KEY_ITERATION_COUNT).toInt();
+	mSaveOpt->cipher_name = set->value(KeystoreAlgorithm, QString(DEFAULT_CIPHER_ALGORITHM)).toString().toStdString();
 	// This option is negated
-	mSaveOpt->save_password = !set->value("ui/always_ask_for_password", false).toBool();
+	mSaveOpt->save_password = !set->value(UiAlwaysAsk, false).toBool();
 }
 
 void SettingsDialog::saveSettings () {
+	using namespace SettingNames;
 	// ui
-	set->setValue ("ui/always_expand", mUi->expandFoldersCheckBox->isChecked());
-	set->setValue ("ui/example_data", mUi->exampleEntriesCheckBox->isChecked());
-	set->setValue ("ui/always_ask_for_password", mUi->alwaysAskPasswordCheckBox->isChecked());
+	set->setValue (UiAlwaysExpand, mUi->expandFoldersCheckBox->isChecked());
+	set->setValue (UiExampleData, mUi->exampleEntriesCheckBox->isChecked());
+	set->setValue (UiAlwaysAsk, mUi->alwaysAskPasswordCheckBox->isChecked());
 	// keystore
-	set->setValue ("keystore/encrypt", mUi->encryptionCheckBox->isChecked());
-	set->setValue ("keystore/base64_encode", mUi->asciiArmorCheckBox->isChecked());
-	set->setValue ("keystore/include_header", mUi->headerCheckBox->isChecked());
+	set->setValue (KeystoreEncrypt, mUi->encryptionCheckBox->isChecked());
+	set->setValue (KeystoreEncode, mUi->asciiArmorCheckBox->isChecked());
+	set->setValue (KeystoreHeader, mUi->headerCheckBox->isChecked());
+	set->setValue (KeystoreIteration, mUi->keyIterationSpinBox->value());
+	set->setValue (KeystoreAlgorithm, mUi->cipherComboBox->currentText());
 	// pwgen
-	set->setValue ("generation/special_chars", mUi->specialCharCheckBox->isChecked());
-	set->setValue ("generation/numerics", mUi->numericsCheckBox->isChecked());
-	set->setValue ("generation/mixed_case", mUi->uppercaseCheckBox->isChecked());
-	set->setValue ("generation/min_length", mUi->minLengthSpinBox->value());
-	set->setValue ("generation/max_Length", mUi->maxLengthSpinBox->value());
+	set->setValue (GenerationSpecial, mUi->specialCharCheckBox->isChecked());
+	set->setValue (GenerationNumerics, mUi->numericsCheckBox->isChecked());
+	set->setValue (GenerationMixed, mUi->uppercaseCheckBox->isChecked());
+	set->setValue (GenerationMin, mUi->minLengthSpinBox->value());
+	set->setValue (GenerationMax, mUi->maxLengthSpinBox->value());
 	set->sync();
 	readSettings(set, mGen, mSaveOpt);
 }

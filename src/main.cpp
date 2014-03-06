@@ -44,25 +44,25 @@ int parse_commandline (int argc, char** argv) {
 	namespace po = boost::program_options; 
 	po::options_description desc("Options"); 
 	desc.add_options() 
-		("help", "Print help messages") 
-		("input_file", po::value<std::string>(&input_file), "Input key-database")
+		("help", "Print help messages")
+		("input_file,i", po::value<std::string>(&input_file), "Input key-database")
 		("keyfile", po::value<std::string>(&key_file), "File that contains the password to open a databse. If not given, the password will be read from standard input")
 		("search_root,s", po::value<std::string>(&search_path), "Search path, specifying the root-folder withing the key-database")
-		("output_file,o", po::value<std::string>(&output_file), "Output key-database") 
+		("output_file,o", po::value<std::string>(&output_file), "Output key-database")
 		
-		("out-no-encrypt", po::bool_switch(&output_no_encrypt), "Do not encrypt output file (Default yes)")
-		("out-no-encode", po::bool_switch(&output_no_encode), "Do not base64-encode output file, so that it contains only ascii characters (Default: Yes)")
+		("out-no-encrypt", po::bool_switch(&output_no_encrypt), "Do not encrypt output file (Default: do encrypt)")
+		("out-no-encode", po::bool_switch(&output_no_encode), "Do not base64-encode output file, so that it contains only ascii characters (Default: do encode)")
 		("out-no-header", po::bool_switch(&output_no_header), "Do not include keyfile header in output file"
 				"If you omit the header, it will not be so easy to recognize the file as an XKey database. "
 				"On ther other hand, if you open the file again, XKey won't be able to guess wich encryption and encoding you used "
 				"to encrypt the file, so you have to specify those manually\n"
-				"(Default: Yes)"
+				"(Default: include header)"
 		)
 		("in-no-header", po::bool_switch(&input_no_header), "The input file does not have an XKey header (Default: Yes)")
 		("in-not-encoded", po::bool_switch(&input_not_encoded), "The input file is not base64-encoded (Default: Yes)")
-		("in-not-encrypted", po::bool_switch(&input_not_encrypted), "The input file is in plaintext (Default: Yes)");
-		//("out-params,p", po::value<std::vector<std::string>>(&out_options), "Output database options");
-		
+		("in-not-encrypted", po::bool_switch(&input_not_encrypted), "The input file is in plaintext (Default: Yes)")
+		//("out-params,p", po::value<std::vector<std::string>>(&out_options), "Output database options")
+	;
 	po::positional_options_description positionalOptions; 
 		positionalOptions.add("input_file", 1); 
 		positionalOptions.add("search_root", 1); 
@@ -73,13 +73,11 @@ int parse_commandline (int argc, char** argv) {
 					.positional(positionalOptions).run(), vm); 
 
 		if ( vm.count("help")  ) { 
-			std::cout << "XKey key storage tool for the command-line.\n"
-					<< desc << "\n"; 
+			std::cout << "XKey key storage tool for the command-line.\n" << desc << "\n";
 			return -1; 
-		} 
+		}
 
-		po::notify(vm); // throws on error, so do after help in case 
-						// there are any problems 
+		po::notify(vm); // throws on error, so do after help in case there are any problems
 	} catch(po::error& e) { 
 		std::cerr << "ERROR: " << e.what() << "\n\n"; 
 		std::cerr << desc << "\n"; 
@@ -89,11 +87,9 @@ int parse_commandline (int argc, char** argv) {
 }
 
 int main (int argc, char** argv) {
-
 	if (parse_commandline (argc, argv) != 0) {
 		return -1;
 	}
-	
 	// TODO key_file
 	
 	OpenSSL_add_all_ciphers();
@@ -150,7 +146,6 @@ int main (int argc, char** argv) {
 				m |=  XKey::EVALUATE_FILE_HEADER;
 			
 			bool pretty_print = (output_no_encrypt && output_no_encode);
-			XKey::Writer::setRestrictiveFilePermissions (output_file);
 
 			std::string outkey;
 			if (!output_no_encrypt) {
@@ -159,8 +154,9 @@ int main (int argc, char** argv) {
 			}
 			std::cout << "Writing...\n";
 			XKey::CryptStream crypt_filter (output_file, XKey::CryptStream::WRITE, m);
-			crypt_filter.setEncryptionKey (outkey);
 			std::ostream stream (&crypt_filter);
+			XKey::Writer::setRestrictiveFilePermissions (output_file);
+			crypt_filter.setEncryptionKey (outkey);
 			XKey::Writer w;
 			if (!w.writeFile(stream, *f, pretty_print)) {
 				std::cerr << "Error: " << w.error() << "\n";

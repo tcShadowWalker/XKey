@@ -40,10 +40,12 @@ public:
 	 * @brief Set the key for encryption and description, if not specified for the constructor
 	 * @param passphrase The passphrase to dervie the key from
 	 * @param cipherName OpenSSL-name of the encryption cipher to use. Defaults to AES in CTR mode.
+	 * @param iv initialization vector to use. If empty, a random one will be generated
+	 * @param keyIterationCount number of iterations to derive the encryption key. If -1, defaults to DEFAULT_KEY_ITERATION_COUNT
 	 * 
 	 * This method uses PBKDF2 to derive the real encryption key from the passphrase
 	 */
-	void setEncryptionKey (std::string passphrase, const char *cipherName = nullptr, const char *iv = nullptr, int keyIterationCount = DEFAULT_KEY_ITERATION_COUNT);
+	void setEncryptionKey (std::string passphrase, const char *cipherName = nullptr, const char *iv = nullptr, int keyIterationCount = -1);
 	
 private:
 	// overrides base class behaviour:

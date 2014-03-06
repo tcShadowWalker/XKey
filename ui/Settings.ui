@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>509</width>
-    <height>286</height>
+    <width>579</width>
+    <height>356</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>XKey Settings</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="../src/qt/res.qrc">
     <normaloff>:/icons/configure.png</normaloff>:/icons/configure.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
@@ -140,7 +140,7 @@
          <bool>true</bool>
         </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;XKeystore databases are always fully encrypted.&lt;br/&gt;This setting can not be deactivated.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;XKeystore databases should &lt;span style=&quot; font-weight:600;&quot;&gt;always&lt;/span&gt; be encrypted.&lt;br/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;WARNING&lt;/span&gt;: Deactivating this setting will fully expose your keyfile.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Encryption</string>
@@ -156,7 +156,7 @@
       <item>
        <widget class="QComboBox" name="cipherComboBox">
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The used encryption cipher from the OpenSSL library&lt;br/&gt;that is used to encrypt databases.&lt;/p&gt;&lt;p&gt;Recommended: &lt;span style=&quot; font-weight:600;&quot;&gt;AES&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The used encryption cipher from the OpenSSL library&lt;br/&gt;that is used to encrypt databases.&lt;/p&gt;&lt;p&gt;You can choose between a few different block modes.&lt;/p&gt;&lt;p&gt;Recommended: &lt;span style=&quot; font-weight:600;&quot;&gt;AES-256-CTR&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="editable">
          <bool>false</bool>
@@ -166,7 +166,17 @@
         </property>
         <item>
          <property name="text">
-          <string>AES</string>
+          <string>AES-256-CTR</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>AES-256-CFB</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>AES-256-OFB</string>
          </property>
         </item>
        </widget>
@@ -174,7 +184,7 @@
       <item>
        <widget class="QCheckBox" name="asciiArmorCheckBox">
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Base64 Encoding for Keystores.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;This setting will additionaly encode the encrypted keystores with Base64.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;This can be useful for transmission via E-Mail or copying over the network,&lt;/p&gt;&lt;p&gt;when the underlying protocol or server has problems handling binary data.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Recommended: &lt;span style=&quot; font-weight:600;&quot;&gt;On&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Base64&lt;/span&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Encoding&lt;/span&gt; for Keystores.&lt;br/&gt;This setting will additionaly encode the encrypted keystores with Base64.&lt;br/&gt;This can be useful for transmission via E-Mail or copying over the network,&lt;br/&gt;when the underlying protocol or server has problems handling binary data.&lt;/p&gt;&lt;p&gt;Recommended: &lt;span style=&quot; font-weight:600;&quot;&gt;On&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>ASCII armor</string>
@@ -187,13 +197,42 @@
       <item>
        <widget class="QCheckBox" name="headerCheckBox">
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Include a cleartext header file into keystores.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Normally, all keystore have a plaintext ascii header,&lt;br/&gt;which indicates the files to be passphrase keystores.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;This header helps XKey to recognize the encryption and version settings used for encryption and you might encounter problems when that header ist not present.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Strongly recommended to be &lt;span style=&quot; font-weight:600;&quot;&gt;On&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Include a cleartext header file into keystores.&lt;/p&gt;&lt;p&gt;Normally, all keystore have a plaintext ascii header,&lt;br/&gt;which indicates the files to be passphrase keystores.&lt;/p&gt;&lt;p&gt;This header helps XKey to recognize the encryption and version settings used for encryption and you might encounter problems when that header ist not present.&lt;/p&gt;&lt;p&gt;Strongly recommended to be &lt;span style=&quot; font-weight:600;&quot;&gt;On&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Include header</string>
         </property>
         <property name="checked">
          <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_3">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of iterations used in the key-generation algorithm (PBKDF2) to derive the key fron the passphrase provided.&lt;/p&gt;&lt;p&gt;The higher this number, the more difficult it is to crack the XKey-file.&lt;/p&gt;&lt;p&gt;The default value (20.000) should be fine.&lt;br/&gt;If you are paranoid, you can increase this value for higher security, at the cost of additional time for en- and decryption.&lt;/p&gt;&lt;p&gt;Only lower this value if you understand the security implications of this.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Key Iteration count:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="keyIterationSpinBox">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of iterations used in the key-generation algorithm (PBKDF2) to derive the key fron the passphrase provided.&lt;/p&gt;&lt;p&gt;The higher this number, the more difficult it is to crack the XKey-file.&lt;/p&gt;&lt;p&gt;The default value (20.000) should be fine.&lt;/p&gt;&lt;p&gt;If you are paranoid, you can increase this value for higher security, at the cost of additional time for en- and decryption.&lt;/p&gt;&lt;p&gt;Only lower this value if you understand the security implications of this.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="statusTip">
+         <string>PBKDF2 rounds</string>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>100000000</number>
+        </property>
+        <property name="value">
+         <number>20000</number>
         </property>
        </widget>
       </item>
@@ -254,7 +293,9 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../src/qt/res.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>
