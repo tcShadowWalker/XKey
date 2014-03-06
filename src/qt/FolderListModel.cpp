@@ -148,7 +148,7 @@ QMimeData *FolderListModel::mimeData (const QModelIndexList &indexes) const {
 	if (indexes.size() == 1) {
 		const XKey::Folder *item = static_cast<const XKey::Folder *> (indexes.at(0).internalPointer());
 		QMimeData *data = new QMimeData;
-		data->setText(QString ("XKey/Folder:") + QString::fromStdString(item->fullPath()));
+		data->setData("application/x-xkey-folder", QString::fromStdString(item->fullPath()).toUtf8());
 		return data;
 	} else
 		return 0;
