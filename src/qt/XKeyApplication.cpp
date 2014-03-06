@@ -177,6 +177,17 @@ void XKeyApplication::saveFile (const QString &filename, SaveFileOptions &sopt) 
 	QString errorMsg;
 	bool success = false;
 	try {
+		bool correctRead = false;
+		if (XKey::Writer::checkFilePermissions(filename.toStdString(), &correctRead) && !correctRead) {
+			int r = QMessageBox::critical (&mMain, tr("Wrong file permissions"), tr("The file has incorrect file permissions\n"
+				"It is probably world- or group-readable. Do you really want to continue?"), QMessageBox::Save | QMessageBox::Abort);
+			if (r == QMessageBox::No) {
+				// Abort save
+				return;
+			}
+		}
+		XKey::Writer::setRestrictiveFilePermissions (filename.toStdString());
+		//
 		QString passwd;
 		if (sopt.use_encryption) {
 			if (!sopt.password().empty() && sopt.save_password) {
@@ -193,7 +204,7 @@ void XKeyApplication::saveFile (const QString &filename, SaveFileOptions &sopt) 
 		crypt_source.setEncryptionKey (passwd.toStdString());
 		// 
 		std::ostream isource (&crypt_source);
-		// If we don't use encryption, we want to write formatted.
+		// If we don't use encryption, we want formatted output.
 		bool writeFormatted = (sopt.use_encryption == false);
 		if (w.writeFile(isource, *mRoot, writeFormatted)) {
 			success = true;

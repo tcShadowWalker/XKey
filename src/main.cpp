@@ -150,7 +150,8 @@ int main (int argc, char** argv) {
 				m |=  XKey::EVALUATE_FILE_HEADER;
 			
 			bool pretty_print = (output_no_encrypt && output_no_encode);
-			
+			XKey::Writer::setRestrictiveFilePermissions (output_file);
+
 			std::string outkey;
 			if (!output_no_encrypt) {
 				std::cout << "Output passphrase: ";

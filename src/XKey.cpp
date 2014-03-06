@@ -7,6 +7,9 @@
 #include <memory>
 #include <cassert>
 #include <json/writer.h>
+// Unix
+#include <sys/stat.h>
+#include <unistd.h>
 
 namespace XKey {
 
@@ -273,6 +276,26 @@ Folder *moveFolder (Folder *oldFolder, Folder *newParent, int newPosition) {
 }
 
 // Writer
+
+bool Writer::checkFilePermissions (const std::string &filename, bool *correctReadPermissions, bool *canWrite) {
+	struct stat st;
+	if (stat (filename.c_str(), &st) != 0) {
+		if (errno == ENOENT)
+			return false;
+		throw std::runtime_error ("Failed to stat() file");
+	}
+	if (canWrite)
+		*canWrite = (access (filename.c_str(), W_OK) == 0);
+	// Not readable or writable by group or others
+	*correctReadPermissions = ( (st.st_mode & (S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)) == 0);
+	return true; // File exists
+}
+
+void Writer::setRestrictiveFilePermissions (const std::string &filename) {
+	int r = chmod(filename.c_str(), S_IRUSR | S_IWUSR);
+	if (r != 0)
+		throw std::runtime_error ("Could not set permissions on file");
+}
 
 bool Writer::writeFile (std::ostream &stream, const Folder &rootNode, bool write_formatted) {
 	if (!stream.good()) {
