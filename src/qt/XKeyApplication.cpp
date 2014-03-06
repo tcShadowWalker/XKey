@@ -136,7 +136,7 @@ void XKeyApplication::openFile (const QString &filename) {
 	QString password;
 	try {
 		XKey::Parser p;
-		XKey::CryptStream crypt_source (filename.toStdString(), std::string(), XKey::CryptStream::READ, mSaveOptions.makeCryptStreamMode());
+		XKey::CryptStream crypt_source (filename.toStdString(), XKey::CryptStream::READ, mSaveOptions.makeCryptStreamMode());
 		if (crypt_source.isEncrypted()) {
 			FilePasswordDialog pwdDiag (FilePasswordDialog::READ, &mMain);
 			if (pwdDiag.exec() != QDialog::Accepted)
@@ -187,7 +187,8 @@ void XKeyApplication::saveFile (const QString &filename, SaveFileOptions &sopt) 
 			}
 		}
 		XKey::Writer w;
-		XKey::CryptStream crypt_source (filename.toStdString(), passwd.toStdString(), XKey::CryptStream::WRITE, sopt.makeCryptStreamMode());
+		XKey::CryptStream crypt_source (filename.toStdString(), XKey::CryptStream::WRITE, sopt.makeCryptStreamMode());
+		crypt_source.setEncryptionKey (passwd.toStdString());
 		// 
 		std::ostream isource (&crypt_source);
 		// If we don't use encryption, we want to write formatted.

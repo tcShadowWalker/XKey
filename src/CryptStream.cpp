@@ -8,6 +8,9 @@
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 
+// TODO DEBUG
+#include <iostream>
+
 namespace XKey {
 
 static int CURRENT_XKEY_FORMAT_VERSION = 11;
@@ -15,8 +18,8 @@ static const int put_back_ = 8;
 
 const unsigned char *PBKDF_SALT = (const unsigned char*)"^Xait4!oh?f5Iye#brooti.t9OEeg9i_kooPh§choh&(oPhao2ao)!h7Oav,;Qvae/?iet7";
 
-CryptStream::CryptStream (const std::string &filename, std::string key, OperationMode open_mode, int m_info)
-	: _buffer(std::max(256, put_back_) + put_back_), _crypt_bio(0), _file_bio(0), _base64_bio(0), _mode(open_mode),
+CryptStream::CryptStream (const std::string &filename, OperationMode open_mode, int m_info)
+	: _buffer(std::max(256, put_back_) + put_back_), _crypt_bio(0), _file_bio(0), _base64_bio(0), _mode(open_mode), _initialized(false),
 	_version(CURRENT_XKEY_FORMAT_VERSION), _cipher(nullptr)
 {	
 	char *end = &_buffer.front() + _buffer.size();
@@ -34,11 +37,11 @@ CryptStream::CryptStream (const std::string &filename, std::string key, Operatio
 	
 	_bio_chain = _file_bio;
 	
-	int useBase64Encode = (m_info & BASE64_ENCODED), useEncryption = (m_info & USE_ENCRYPTION);
-	
-	if (m_info & EVALUATE_FILE_HEADER) {
-		_evaluateHeader();
+	if (_mode == READ && (m_info & EVALUATE_FILE_HEADER)) {
+		_evaluateHeader(&m_info);
 	}
+	
+	int useBase64Encode = (m_info & BASE64_ENCODED), useEncryption = (m_info & USE_ENCRYPTION);
 	
 	if (useBase64Encode) {
 		// Base 64 encoding is requested. Create the base64 filter bio and push it to the bio-stack
@@ -52,9 +55,8 @@ CryptStream::CryptStream (const std::string &filename, std::string key, Operatio
 		_crypt_bio = BIO_new(BIO_f_cipher());
 		if (!_crypt_bio)
 			throw std::runtime_error ("Could not create OpenSSL Crypt-filter BIO structure");
-		if (key.size() > 0)
-			setEncryptionKey (key);
-	}
+	} else
+		_initialized = true;
 }
 
 CryptStream::~CryptStream () {
@@ -95,16 +97,17 @@ void CryptStream::_writeHeader () {
 	char buf[header_buf_size+1];
 	// Write this header directly to the file, without encoding or encryption
 	const int offset = header_buf_size;
-	int r = snprintf (buf, header_buf_size-1, "*167110* # v:%i # c:%.1i # e:%.1i # o:%i # ciph:%.30s # iv:%.256s # count:%.li",
+	int r = snprintf (buf, header_buf_size-1, "*167110* # v:%i # c:%.1i # e:%.1i # o:%i # ciph:%.30s # iv:%.256s # count:%i #",
 						this->_version, isEncrypted(), isEncoded(), offset, EVP_CIPHER_name(_cipher), _iv.c_str(), _pbkdfIterationCount);
 	memset(buf+r, '*', header_buf_size-r-1);
 	buf[header_buf_size-1] = '\n';
 	BIO_write(_file_bio, buf, header_buf_size);
 }
 
-void CryptStream::_evaluateHeader () {
+void CryptStream::_evaluateHeader (int *headerMode) {
 	assert (_mode == READ);
 	assert (_file_bio); // Operate on _file_bio
+	assert (headerMode);
 	
 	char buf[header_buf_size+1];
 	int r = BIO_read(_file_bio, buf, header_buf_size);
@@ -113,39 +116,53 @@ void CryptStream::_evaluateHeader () {
 	const int ciphNameLen = 30;
 	char cipherName[ciphNameLen + 1];
 	unsigned char iv[256 + 1];
-	if (r = sscanf (buf, "*167110* # v:%i # c:%i # e:%i # o:%i # ciph:%.30s # iv:%.256s # count:%.li",
-			&this->_version, &useEncryption, &useBase64Encode, &offset, cipherName, iv, _pbkdfIterationCount) != 4)
+	int useEncryption, useBase64Encode;
+	if (r = sscanf (buf, "*167110* # v:%i # c:%i # e:%i # o:%i # ciph:%30s # iv:%256s # count:%i #",
+			&this->_version, &useEncryption, &useBase64Encode, &offset, cipherName, iv, &_pbkdfIterationCount) != 7)
 	{
 		throw std::runtime_error ("Invalid file header. The file is probably not a valid XKey keystore.");
 	}
-	this->_ciph = EVP_get_cipherbyname(cipherName);
-	if (!_ciph)
-		throw std::runtime_error ("OpenSSL library does not provide requested Cipher mode");
-	this->_iv.assign(iv);
+	std::cout << "ciph: " << cipherName << "\n";
+	std::cout << "iv: " << iv << "\n";
+	this->_cipher = EVP_get_cipherbyname(cipherName);
+	if (!_cipher)
+		throw std::runtime_error ("OpenSSL library does not provide requested Cipher mode from file header");
+	this->_iv.assign((const char*)iv);
 	BIO_seek (_file_bio, offset);
+	*headerMode = ((useEncryption) ? (*headerMode | USE_ENCRYPTION) : (*headerMode & ~USE_ENCRYPTION));
+	*headerMode = ((useBase64Encode) ? (*headerMode | BASE64_ENCODED) : (*headerMode & ~BASE64_ENCODED));
 }
 
-void CryptStream::setEncryptionKey (std::string passphrase, const char *cipherName, const char *iv, int keyIterationCount) {
+void CryptStream::setEncryptionKey (std::string passphrase, const char *cipherName, const char *ivParam, int keyIterationCount) {
 	if (!_crypt_bio)
 		throw std::logic_error ("CryptStream was not set up to use encryption");
-	if (!iv)
-		iv = DEFAULT_IV;
-	const EVP_CIPHER *ciph;
+	if (ivParam) {
+		this->_iv = ivParam;
+	} else {
+		if (_iv.size() == 0) {
+			// FIX INIT VECTOR
+			_iv = "TESTDDX";
+		}
+	}
 	if (cipherName && cipherName[0] != '\0') {
-		ciph = EVP_get_cipherbyname(cipherName); 
+		this->_cipher = EVP_get_cipherbyname(cipherName); 
 	} else {
 		// EVP_aes_256_cbc EVP_aes_256_ctr
 		// EVP_get_cipherbyname("AES-256-CTR");
-		ciph = EVP_aes_256_ctr(); 
+		if (!_cipher)
+			this->_cipher = EVP_aes_256_ctr();
 	}
-	if (!ciph)
+	if (!this->_cipher)
 		throw std::runtime_error ("OpenSSL library does not provide requested Cipher mode");
 	// Use PBKDF2 to get the derive encryption key from the passphrase
-	PKCS5_PBKDF2_HMAC_SHA1(passphrase.c_str(), passphrase.size(), PBKDF_SALT, strlen(PBKDF_SALT), keyIterationCount, ciph->key_len, key);
+	unsigned char key[_cipher->key_len];
+	int r = PKCS5_PBKDF2_HMAC_SHA1(passphrase.c_str(), passphrase.size(), PBKDF_SALT, strlen((const char*)PBKDF_SALT), keyIterationCount, _cipher->key_len, key);
+	if (r != 1)
+		throw std::runtime_error ("PBKDF2 algorithm to derive encryption key failed");
 	
 	// enc should be set to 1 for encryption and zero for decryption. 
 	int enc = (_mode == READ) ? 0 : 1;
-	BIO_set_cipher (_crypt_bio, ciph, (const unsigned char*)key, iv, enc);
+	BIO_set_cipher (_crypt_bio, _cipher, (const unsigned char*)key, (const unsigned char*)_iv.c_str(), enc);
 	_bio_chain = BIO_push(_crypt_bio, _bio_chain);
 	
 	// Have a magic string in the beggining to find out if decryption actually works
@@ -156,13 +173,17 @@ void CryptStream::setEncryptionKey (std::string passphrase, const char *cipherNa
 	} else {
 		
 		std::string rBuffer (encBuffer.size(), '\0');
-		int r = BIO_read(_bio_chain, &rBuffer[0], encBuffer.size());
+		r = BIO_read(_bio_chain, &rBuffer[0], encBuffer.size());
 		
 		if (r != encBuffer.size())
 			throw std::runtime_error ("Unexpected file read error");
 		if (encBuffer != rBuffer)
 			throw std::runtime_error ("Invalid key");
 	}
+	if (_mode == WRITE) {
+		_writeHeader();
+	}
+	this->_initialized = true;
 }
 
 CryptStream::int_type CryptStream::underflow() {

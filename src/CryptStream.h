@@ -23,13 +23,13 @@ class CryptStream
 	: public std::streambuf
 {
 public:
-	const int DEFAULT_KEY_ITERATION_COUNT = 20000;
+	static const int DEFAULT_KEY_ITERATION_COUNT = 20000;
 	enum OperationMode {
 		READ = 1,
 		WRITE = 2
 	};
 	
-	CryptStream (const std::string &filename, std::string passphrase, OperationMode open_mode, int mode = BASE64_ENCODED | USE_ENCRYPTION | EVALUATE_FILE_HEADER);
+	CryptStream (const std::string &filename, OperationMode open_mode, int mode = BASE64_ENCODED | USE_ENCRYPTION | EVALUATE_FILE_HEADER);
 	~CryptStream ();
 	
 	bool isEncrypted () const;
@@ -54,7 +54,7 @@ private:
 	int_type overflow (int_type c);
 	int sync();
 	
-	void _evaluateHeader ();
+	void _evaluateHeader (int *headerMode);
 	void _writeHeader ();
 	
 	//streamsize xsputn(const char_type* __s, streamsize __n);
@@ -70,6 +70,7 @@ private:
 	struct bio_st *_base64_bio;
 	OperationMode _mode;
 	int _version;
+	bool _initialized;
 	//
 	int _pbkdfIterationCount;
 	std::string _iv;

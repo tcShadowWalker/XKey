@@ -113,7 +113,7 @@ int main (int argc, char** argv) {
 			m |= XKey::USE_ENCRYPTION;
 		if (!input_not_encoded)
 			m |= XKey::BASE64_ENCODED;
-		XKey::CryptStream crypt_streambuf (input_file, std::string(), XKey::CryptStream::READ, m);
+		XKey::CryptStream crypt_streambuf (input_file, XKey::CryptStream::READ, m);
 		
 		std::string key;
 		
@@ -157,7 +157,8 @@ int main (int argc, char** argv) {
 				outkey = get_password();
 			}
 			std::cout << "Writing...\n";
-			XKey::CryptStream crypt_filter (output_file, outkey, XKey::CryptStream::WRITE, m);
+			XKey::CryptStream crypt_filter (output_file, XKey::CryptStream::WRITE, m);
+			crypt_filter.setEncryptionKey (outkey);
 			std::ostream stream (&crypt_filter);
 			XKey::Writer w;
 			if (!w.writeFile(stream, *f, pretty_print)) {
