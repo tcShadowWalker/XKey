@@ -43,28 +43,28 @@ public:
 	void operator= (Folder &&);
 	
 	inline const std::string&			name() const { return _name; }
-	inline Folder*						parent() const { return _parent; }
+	inline Folder*					parent() const { return _parent; }
 	
-	void 								setName (const std::string &name);
+	void 							setName (const std::string &name);
 	
-	std::string							fullPath() const;
+	std::string						fullPath() const;
 	
-	void 								addEntry (Entry entry);
-	Entry &								getEntryAt (int index);
-	void								removeEntry (int index);
-	Folder *							createSubfolder (const std::string &name);
-	void								removeSubfolder (int index);
+	void 							addEntry (Entry entry);
+	Entry &						getEntryAt (int index);
+	void							removeEntry (int index);
+	Folder *						createSubfolder (const std::string &name);
+	void							removeSubfolder (int index);
 	
-	Folder * 							getSubfolder (const std::string &name);
-	const Folder * 						getSubfolder (const std::string &name) const;
+	Folder * 						getSubfolder (const std::string &name);
+	const Folder * 					getSubfolder (const std::string &name) const;
 	
 	inline const std::deque<Folder>&	subfolders () const { return _subfolders; }
-	inline const std::deque<Entry>&		entries () const { return _entries; }
+	inline const std::deque<Entry>&	entries () const { return _entries; }
 	
-	inline std::deque<Folder>&			subfolders () { return _subfolders; }
-	inline std::deque<Entry>&			entries () { return _entries; }
+	inline std::deque<Folder>&		subfolders () { return _subfolders; }
+	inline std::deque<Entry>&		entries () { return _entries; }
 	
-	int 								row() const;
+	int 							row() const;
 private:
 	std::string _name;
 	std::deque<Folder> _subfolders;

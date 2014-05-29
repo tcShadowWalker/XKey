@@ -368,8 +368,12 @@ void XKeyApplication::deleteEntryClicked () {
 	QModelIndexList indexes = mUi->keyTable->selectionModel()->selectedRows();
 	if (indexes.size() == 1) {
 		const int row = indexes.at(0).row();
-		this->mKeys->removeEntry(row);
-		madeChanges = true;
+		QString entryName = QString::fromStdString (this->mKeys->folder()->getEntryAt(row).title());
+		int rv = QMessageBox::question(&mMain, tr("Confirm deletion"), tr("Do you really want to remove the entry '%1'?").arg(entryName), QMessageBox::Yes | QMessageBox::Cancel);
+		if (rv == QMessageBox::Yes) {
+			this->mKeys->removeEntry(row);
+			madeChanges = true;
+		}
 	}
 }
 
