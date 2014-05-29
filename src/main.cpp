@@ -25,20 +25,34 @@ std::string get_password () {
 	return pwd;
 }
 
-void print_folder (const XKey::Folder &f, int depth = 0) {
+enum PrintOptions {
+	PRINT_PASSWORD = 4
+};
+
+void print_folder (const XKey::Folder &f, int print_options, int depth = 0) {
 	if (depth != 0)
 		std::cout << std::string(depth*2, '-') << " " << f.name() << "\n";
 	for (const auto &it : f.entries()) {
-		std::cout << std::string(depth*2, '-') << "    # " << it.username() << " " << it.url() << "\n";
+		std::cout << std::string(depth*2, '-') << "    # " << it.title();
+		if (it.username().size() > 0)
+			std::cout << ", User: " << it.username();
+		if (it.url().size() > 0) {
+			std::cout << ", " << it.url();
+		}
+		if (print_options & PRINT_PASSWORD) {
+			std::cout << ", Password: " << it.password() << " ";
+		}
+		std::cout << "\n";
 	}
 	for (const auto &it : f.subfolders()) {
-		print_folder(it, depth+1);
+		print_folder(it, print_options, depth+1);
 	}
 }
 
 std::string input_file, output_file, search_path, key_file;
 bool output_no_encrypt = false, output_no_encode = false, output_no_header = false;
 bool input_no_header = false, input_not_encoded = false, input_not_encrypted = false;
+bool print_passwords = false;
 
 int parse_commandline (int argc, char** argv) {
 	namespace po = boost::program_options; 
@@ -49,6 +63,7 @@ int parse_commandline (int argc, char** argv) {
 		("keyfile", po::value<std::string>(&key_file), "File that contains the password to open a databse. If not given, the password will be read from standard input")
 		("search_root,s", po::value<std::string>(&search_path), "Search path, specifying the root-folder withing the key-database")
 		("output_file,o", po::value<std::string>(&output_file), "Output key-database")
+		("print-passwords,p", po::bool_switch(&print_passwords), "Print passwords in cleartext on the console. (Default: no passwords printed)")
 		
 		("out-no-encrypt", po::bool_switch(&output_no_encrypt), "Do not encrypt output file (Default: do encrypt)")
 		("out-no-encode", po::bool_switch(&output_no_encode), "Do not base64-encode output file, so that it contains only ascii characters (Default: do encode)")
@@ -99,7 +114,7 @@ int main (int argc, char** argv) {
 		return -1;
 	}
 	
-	XKey::RootFolder_Ptr rootKeyFolder = XKey::create_root_folder();
+	XKey::RootFolder_Ptr rootKeyFolder = XKey::createRootFolder();
 
 	try {
 		int m = 0;
@@ -129,7 +144,9 @@ int main (int argc, char** argv) {
 		const XKey::Folder *f = &*rootKeyFolder;
 		if (search_path.size() > 0) {
 			// Search path specified:
-			f = XKey::get_folder_by_path (&*rootKeyFolder, search_path);
+			f = XKey::getFolderByPath (&*rootKeyFolder, search_path);
+			// Issue a newline here
+			std::cout << "\n";
 		}
 		if (!f) {
 			std::cerr << "Requested path not found.\n";
@@ -163,9 +180,12 @@ int main (int argc, char** argv) {
 				return -1;
 			}
 		} else {
+			int print_options = 0;
+			if (print_passwords)
+				print_options |= PRINT_PASSWORD;
 			// No options. Just show a list
 			std::cout << f->fullPath() << "\n";
-			print_folder (*f);
+			print_folder (*f, print_options);
 		}
 	} catch (const std::exception &e) {
 		std::cerr << "Error: " << e.what() << "\n";

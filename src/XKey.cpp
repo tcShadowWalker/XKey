@@ -36,7 +36,8 @@ static SearchResult search_folder (const std::vector<std::string> &tokens, const
 	for (const Entry &ent : f->entries()) {
 		for (const std::string &word : tokens) {
 			if (match_in_string (word, ent.title()) || match_in_string(word, ent.comment()) ||
-			  match_in_string(word, ent.url()) || match_in_string(word, ent.username()))
+			    match_in_string(word, ent.url()) || match_in_string(word, ent.username()) ||
+			    match_in_string(word, ent.email()))
 				return SearchResult (&ent, f, ind);
 			
 		}
@@ -81,16 +82,20 @@ SearchResult continueSearch (const std::string &searchString, const SearchResult
 	tokenize (searchString, &tokens, ' ');
 	const XKey::Folder *startFolder = lastResult._lastFolder;
 	// Look for siblings from the first result
-	std::deque<Entry>::const_iterator ent = startFolder->entries().begin() + lastResult._lastIndex + 1;
+	SearchResult res = search_folder (tokens, startFolder);
+	if (res.hasMatch())
+		return res;
+	/*std::deque<Entry>::const_iterator ent = startFolder->entries().begin() + lastResult._lastIndex + 1;
 	int index = lastResult._lastIndex + 1;
 	for (; ent < startFolder->entries().end(); ++ent) {
 		for (const std::string &word : tokens) {
 			if (match_in_string (word, ent->title()) || match_in_string(word, ent->comment()) ||
+				email
 			  match_in_string(word, ent->url()) || match_in_string(word, ent->username()))
 				return SearchResult {&*ent, startFolder, index};
 		}
 		++index;
-	}
+	}*/
 	// Now look ABOVE this folder.
 	if (startFolder->parent())
 		return search_up_recursive (tokens, startFolder);
@@ -102,7 +107,7 @@ SearchResult startSearch (const std::string &searchString, const XKey::Folder *s
 	return search_down_recursive(tokens, startFolder);
 }
 
-const XKey::Folder *get_folder_by_path (const XKey::Folder *root, const std::string &search_path) {
+const XKey::Folder *getFolderByPath (const XKey::Folder *root, const std::string &search_path) {
 	std::vector<std::string> searchPathComponents;
 	std::vector<std::string>::const_iterator currentSearchPathComponent;
 	if (search_path.size() > 0) {
@@ -229,10 +234,12 @@ void Parser::parse_key (const Json::Value &key_entry, Folder *parent) {
 		user = key_entry.get("username", Json::Value::null),
 		url = key_entry.get("url", Json::Value::null),
 		pwd = key_entry.get("password", Json::Value::null),
+		email = key_entry.get("email", Json::Value::null),
 		comment = key_entry.get("comment", Json::Value::null);
 	if (!title.isString() || !user.isString() || !url.isString() || !pwd.isString() || !comment.isString())
 		std::cerr << "Error when parsing key entry: Missing or invalid field\n";
-	Entry ent (title.asString(), user.asString(), url.asString(), pwd.asString(), comment.asString());
+	Entry ent (title.asString(), user.asString(), url.asString(), pwd.asString(),
+		   (email.isString()) ? email.asString() : "",  comment.asString());
 	parent->addEntry (std::move(ent));
 }
 

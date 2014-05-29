@@ -172,7 +172,7 @@ bool FolderListModel::dropMimeData (const QMimeData * data, Qt::DropAction actio
 	if (data->hasFormat("application/x-xkey-folder")) {
 		QString fullPath = data->data ("application/x-xkey-folder");
 
-		XKey::Folder *oldFolder = const_cast<XKey::Folder *> (XKey::get_folder_by_path(root, fullPath.toStdString())),
+		XKey::Folder *oldFolder = const_cast<XKey::Folder *> (XKey::getFolderByPath(root, fullPath.toStdString())),
 			*oldParent = (oldFolder) ? oldFolder->parent() : 0;
 		if (!oldFolder || !oldParent || oldParent == parentItem)
 			return false;
@@ -200,7 +200,7 @@ bool FolderListModel::dropMimeData (const QMimeData * data, Qt::DropAction actio
 		if (l.size() >= 2) {
 			// First entry in list is absolute path to root folder
 			QString sourceFolderPath (l.at(0));
-			XKey::Folder *oldFolder = const_cast<XKey::Folder *> (XKey::get_folder_by_path(root, sourceFolderPath.toStdString()));
+			XKey::Folder *oldFolder = const_cast<XKey::Folder *> (XKey::getFolderByPath(root, sourceFolderPath.toStdString()));
 			if (!oldFolder)
 				return false; // Old parent not found
 			// All additional entries are indices to entries that shall be moved

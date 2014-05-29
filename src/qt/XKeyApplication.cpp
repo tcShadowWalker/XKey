@@ -117,7 +117,7 @@ bool XKeyApplication::askClose () {
 void XKeyApplication::newFile () {
 	if (!askClose())
 		return;
-	this->mRoot = XKey::create_root_folder();
+	this->mRoot = XKey::createRootFolder();
 	this->mFolders->setRootFolder(&*mRoot);
 	this->mKeys->setCurrentFolder (&*mRoot);
 	madeChanges = false;
@@ -153,7 +153,7 @@ void XKeyApplication::openFile (const QString &filename) {
 			password = pwdDiag.password();
 		}
 		std::istream isource (&crypt_source);
-		XKey::RootFolder_Ptr newRoot = XKey::create_root_folder();
+		XKey::RootFolder_Ptr newRoot = XKey::createRootFolder();
 		if (p.readFile(isource, &*newRoot)) {
 			success = true;
 			// Set attributes:
@@ -346,7 +346,8 @@ void XKeyApplication::addEntryClicked () {
 	XKey::Entry entry;
 	if (mSettings->value(SettingNames::UiExampleData, true).toBool() == true) {
 		entry = XKey::Entry (tr("Example title", "NewKeyEntryTitle").toStdString(), tr("Your Username", "NewKeyEntryUser").toStdString(),
-						tr("example.org", "NewKeyEntryDomain").toStdString(), tr("", "NewKeyEntryPassword").toStdString(), tr("", "NewKeyEntryComment").toStdString() );
+						tr("example.org", "NewKeyEntryDomain").toStdString(), tr("", "NewKeyEntryPassword").toStdString(), 
+						tr("user@example.org", "NewKeyEntryEmail").toStdString(), tr("", "NewKeyEntryComment").toStdString() );
 	}
 	KeyEditDialog diag (&entry, mKeys->folder(), &mMain, &mGenerator);
 	if (diag.exec () == QDialog::Accepted) {

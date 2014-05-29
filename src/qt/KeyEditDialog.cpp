@@ -13,6 +13,7 @@ KeyEditDialog::KeyEditDialog (XKey::Entry *r, XKey::Folder *folder, QWidget *par
 	mUi->titleEdit->setText( QString::fromStdString(mEntry->title()) );
 	mUi->usernameEdit->setText( QString::fromStdString(mEntry->username()) );
 	mUi->urlEdit->setText( QString::fromStdString(mEntry->url()) );
+	mUi->emailEdit->setText( QString::fromStdString(mEntry->email()) );
 	mUi->commentEdit->setText( QString::fromStdString(mEntry->comment()) );
 	setPasswordHidden (true);
 	mUi->passwordEdit->setText( QString::fromStdString(mEntry->password()) );
@@ -38,7 +39,8 @@ void KeyEditDialog::generatePassphraseClicked () {
 
 void KeyEditDialog::makeChanges () {
 	*mEntry = XKey::Entry ( mUi->titleEdit->text().toStdString(), mUi->usernameEdit->text().toStdString(), mUi->urlEdit->text().toStdString(),
-		mUi->passwordEdit->text().toStdString(), mUi->commentEdit->toPlainText().toStdString()
+		mUi->passwordEdit->text().toStdString(),  mUi->emailEdit->text().toStdString(),
+		mUi->commentEdit->toPlainText().toStdString()
 	);
 }
 

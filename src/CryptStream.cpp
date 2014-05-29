@@ -11,7 +11,7 @@
 
 namespace XKey {
 
-static int CURRENT_XKEY_FORMAT_VERSION = 11;
+static int CURRENT_XKEY_FORMAT_VERSION = 12;
 static const int put_back_ = 8;
 
 /// Unsigned char string to hexadecimal representation

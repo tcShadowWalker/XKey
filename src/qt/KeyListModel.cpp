@@ -6,7 +6,7 @@
 
 #include <iostream>
 
-static const QStringList headerColumns {QObject::tr("Title"), QObject::tr("Username"), QObject::tr("URL"), QObject::tr("Password")};
+static const QStringList headerColumns {QObject::tr("Title"), QObject::tr("Username"), QObject::tr("URL"), QObject::tr("E-Mail")};
 
 KeyListModel::KeyListModel(QObject *parent)
 	: QAbstractTableModel(parent), _folder(0)
@@ -54,7 +54,7 @@ QVariant KeyListModel::data (const QModelIndex &index, int role) const {
 		else if (index.column() == 2)
 			return QString::fromStdString( entry.url() );
 		else
-			return QString( "**********" );
+			return QString::fromStdString( entry.email() );
 		
 	} else
 		return QVariant();
