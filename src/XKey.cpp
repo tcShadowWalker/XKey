@@ -31,15 +31,18 @@ static inline bool match_in_string (const std::string &needle, const std::string
 	return std::search(haystack.begin(), haystack.end(), needle.begin(), needle.end(), &compareCaseInsensitive) != haystack.end();
 }
 
-static SearchResult search_folder (const std::vector<std::string> &tokens, const Folder *f) {
-	int ind = 0;
-	for (const Entry &ent : f->entries()) {
+static SearchResult search_folder (const std::vector<std::string> &tokens, const Folder *f, int begin_index = 0) {
+	if (begin_index > f->entries().size())
+		throw std::invalid_argument ("begin_index parameter for search_folder greater than number of sumfolders");
+	int ind = begin_index;
+	for (auto ent = f->entries().begin() + begin_index; ent != f->entries().end(); ++ent) {
 		for (const std::string &word : tokens) {
-			if (match_in_string (word, ent.title()) || match_in_string(word, ent.comment()) ||
-			    match_in_string(word, ent.url()) || match_in_string(word, ent.username()) ||
-			    match_in_string(word, ent.email()))
-				return SearchResult (&ent, f, ind);
-			
+			if (match_in_string (word, ent->title()) || match_in_string(word, ent->comment()) ||
+			    match_in_string(word, ent->url()) || match_in_string(word, ent->username()) ||
+			    match_in_string(word, ent->email()))
+			{
+				return SearchResult (&*ent, f, ind);
+			}
 		}
 		++ind;
 	}
@@ -82,20 +85,10 @@ SearchResult continueSearch (const std::string &searchString, const SearchResult
 	tokenize (searchString, &tokens, ' ');
 	const XKey::Folder *startFolder = lastResult._lastFolder;
 	// Look for siblings from the first result
-	SearchResult res = search_folder (tokens, startFolder);
+	SearchResult res = search_folder (tokens, startFolder, lastResult._lastIndex + 1);
+	std::cout << "found: " << res.index() << "\n";
 	if (res.hasMatch())
 		return res;
-	/*std::deque<Entry>::const_iterator ent = startFolder->entries().begin() + lastResult._lastIndex + 1;
-	int index = lastResult._lastIndex + 1;
-	for (; ent < startFolder->entries().end(); ++ent) {
-		for (const std::string &word : tokens) {
-			if (match_in_string (word, ent->title()) || match_in_string(word, ent->comment()) ||
-				email
-			  match_in_string(word, ent->url()) || match_in_string(word, ent->username()))
-				return SearchResult {&*ent, startFolder, index};
-		}
-		++index;
-	}*/
 	// Now look ABOVE this folder.
 	if (startFolder->parent())
 		return search_up_recursive (tokens, startFolder);
@@ -154,26 +147,26 @@ void Folder::addEntry (Entry entry) {
 
 void Folder::removeEntry (int index) {
 	if (index < 0 || index >= _entries.size())
-		throw std::logic_error ("Invalid key-entry index: Can not be removed");
+		throw std::invalid_argument ("Invalid key-entry index: Can not be removed");
 	_entries.erase(_entries.begin() + index);
 }
 
 Entry &Folder::getEntryAt (int index) {
 	if (index < 0 || index >= _entries.size())
-		throw std::logic_error ("Invalid key-entry index: Can not be found");
+		throw std::invalid_argument ("Invalid key-entry index: Can not be found");
 	return *(_entries.begin() + index);
 }
 
 Folder *Folder::createSubfolder (const std::string &name) {
 	if (getSubfolder(name))
-		throw std::logic_error ("Can not create a second folder with the same name within the same parent");
+		throw std::invalid_argument ("Can not create a second folder with the same name within the same parent");
 	_subfolders.emplace_back (name, this);
 	return &_subfolders.back();
 }
 
 void Folder::removeSubfolder (int index) {
 	if (index < 0 || index >= subfolders().size())
-		throw std::logic_error ("Invalid subfolder index: Can not be removed");
+		throw std::invalid_argument ("Invalid subfolder index: Can not be removed");
 	_subfolders.erase(_subfolders.begin() + index);
 }
 
@@ -183,16 +176,15 @@ Folder *Folder::getSubfolder (const std::string &name) {
 
 const Folder *Folder::getSubfolder (const std::string &name) const {
 	std::deque<Folder>::const_iterator it = std::find_if(_subfolders.begin(), _subfolders.end(), [name] (const XKey::Folder &f) {
-												return (f.name() == name);
-											} );
+			return (f.name() == name);
+		} );
 	return (it == _subfolders.end()) ? 0 : &*it;
 }
 
 int Folder::row() const {
 	if (_parent) {
-		std::deque<Folder>::const_iterator it = std::find_if(_parent->_subfolders.begin(), _parent->_subfolders.end(), [this] (const XKey::Folder &f) {
-												return (&f == this);
-											} );
+		std::deque<Folder>::const_iterator it = std::find_if(_parent->_subfolders.begin(), _parent->_subfolders.end(),
+			[this] (const XKey::Folder &f) { return (&f == this); } );
 		assert (it != _parent->_subfolders.end());
 		return it - _parent->_subfolders.begin();
 	}
@@ -207,7 +199,7 @@ void Folder::setName (const std::string &name) {
 
 bool Parser::readFile (std::istream &stream, Folder *new_folder_root) {
 	if (!new_folder_root)
-		throw std::logic_error("Need a root folder object to parse a file");
+		throw std::invalid_argument("Need a root folder object to parse a file");
 	
 	if (!stream.good()) {
 		this->errorMsg = "Could not open file";
