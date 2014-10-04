@@ -8,7 +8,7 @@ class OpenFilePassphraseDialog;
 class SaveFilePassphraseDialog;
 }
 
-const int DEFAULT_KEY_ITERATION_COUNT = 20000;
+const int DEFAULT_KEY_ITERATION_COUNT = 100000;
 extern const char *DEFAULT_CIPHER_ALGORITHM;
 
 struct SaveFileOptions {

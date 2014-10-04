@@ -8,6 +8,7 @@ add_definitions( -std=c++0x )
 
 find_package(OpenSSL)
 
+set(Boost_USE_STATIC_LIBS True)
 find_package(Boost REQUIRED COMPONENTS program_options)
 
 # Boost_program_options_LIBRARY

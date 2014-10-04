@@ -93,7 +93,7 @@
         <string notr="true">margin-right: 45px;</string>
        </property>
        <property name="text">
-        <string>Version 0.6</string>
+        <string>Version 0.7</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
