@@ -166,7 +166,7 @@
      <x>0</x>
      <y>0</y>
      <width>1210</width>
-     <height>20</height>
+     <height>23</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -228,7 +228,7 @@ background: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:1 rgba(
     <string notr="true">background: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:1 rgba(173, 178, 178, 255), stop:0 rgba(200, 200, 200, 255));</string>
    </property>
    <property name="toolButtonStyle">
-    <enum>Qt::ToolButtonTextBesideIcon</enum>
+    <enum>Qt::ToolButtonIconOnly</enum>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>

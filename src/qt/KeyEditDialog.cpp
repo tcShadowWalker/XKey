@@ -4,9 +4,10 @@
 
 #include <ui_Entry.h>
 #include <QClipboard>
+#include <QMessageBox>
 
-KeyEditDialog::KeyEditDialog (XKey::Entry *r, XKey::Folder *folder, QWidget *parent, XKey::PassphraseGenerator *gen)
-	: QDialog(parent), mUi(0), mEntry(r), mGen(gen)
+KeyEditDialog::KeyEditDialog (XKey::Entry *r, XKey::Folder *folder, QWidget *parent, XKey::PassphraseGenerator *gen, bool newEnt)
+	: QDialog(parent), mUi(0), mEntry(r), mGen(gen), mIsNewEntry(newEnt)
 {
 	mUi = new Ui::EditEntryDialog;
 	mUi->setupUi(this);
@@ -34,7 +35,15 @@ void KeyEditDialog::setPasswordHidden (bool hidden) {
 }
 
 void KeyEditDialog::generatePassphraseClicked () {
-	mUi->passwordEdit->setText( generatePassphrase() );
+	int r = QMessageBox::Ok;
+	if (!mIsNewEntry) {
+		r = QMessageBox::question(this, tr("Generate passphrase"), tr("Do you really want to clear "
+					"the current passphrase and generate a new one?"), QMessageBox::Ok, QMessageBox::Cancel);
+	}
+	if (r == QMessageBox::Ok) {
+		mUi->passwordEdit->setText( generatePassphrase() );
+		mIsNewEntry = false;
+	}
 }
 
 void KeyEditDialog::makeChanges () {

@@ -267,7 +267,7 @@ void XKeyApplication::startSearch () {
 
 void XKeyApplication::editKey (const QModelIndex & index) {
 	XKey::Entry &entry = static_cast<XKey::Entry&> (mKeys->folder()->entries().at(index.row()));
-	KeyEditDialog diag (&entry, mKeys->folder(), &mMain, &mGenerator);
+	KeyEditDialog diag (&entry, mKeys->folder(), &mMain, &mGenerator, false);
 	if (diag.exec () == QDialog::Accepted) {
 		diag.makeChanges ();
 		madeChanges = true;
@@ -349,7 +349,7 @@ void XKeyApplication::addEntryClicked () {
 						tr("example.org", "NewKeyEntryDomain").toStdString(), tr("", "NewKeyEntryPassword").toStdString(), 
 						tr("user@example.org", "NewKeyEntryEmail").toStdString(), tr("", "NewKeyEntryComment").toStdString() );
 	}
-	KeyEditDialog diag (&entry, mKeys->folder(), &mMain, &mGenerator);
+	KeyEditDialog diag (&entry, mKeys->folder(), &mMain, &mGenerator, true);
 	if (diag.exec () == QDialog::Accepted) {
 		diag.makeChanges ();
 		this->mKeys->addEntry(std::move(entry));
