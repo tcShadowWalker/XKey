@@ -19,7 +19,8 @@
 
 namespace SettingNames {
 const char *UiRecentFiles = "ui/recentFileList", *UiExampleData = "ui/example_data", *UiAlwaysAsk = "ui/always_ask_for_password",
-	*UiAlwaysExpand = "ui/always_expand", *UiMain = "ui/main", *UiKeyTable = "ui/key_table", *UiKeyTree = "ui/key_tree";
+	*UiAlwaysExpand = "ui/always_expand", *UiMain = "ui/main", *UiKeyTable = "ui/key_table", *UiKeyTree = "ui/key_tree",
+	*UiCustomStyle = "ui/custom_stylesheet";
 }
 
 XKeyApplication::XKeyApplication(QSettings *sett)
@@ -65,7 +66,8 @@ XKeyApplication::XKeyApplication(QSettings *sett)
 	connect (mUi->actionCopyPassphrase, SIGNAL(triggered()), this, SLOT(copyPassphraseToClipboard()));
 	
 	mUi->keyTree->setSelectionMode (QAbstractItemView::SingleSelection);
-	connect (mUi->keyTree->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(folderSelectionChanged(const QItemSelection &, const QItemSelection &)));
+	connect (mUi->keyTree->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+			 this, SLOT(folderSelectionChanged(const QItemSelection &, const QItemSelection &)));
 	
 	mUi->keyTable->setSelectionMode (QAbstractItemView::SingleSelection);
 	mUi->keyTable->setSelectionBehavior (QAbstractItemView::SelectRows);
@@ -91,6 +93,15 @@ XKeyApplication::XKeyApplication(QSettings *sett)
 	act->setIcon(QIcon(tr(":/icons/document-open.png", "Icon for recent documents submenu")));
 	
 	setEnabled(false);
+	if (mSettings->value(UiCustomStyle, true).toBool() == false) {
+		mUi->keyTable->setStyleSheet ("");
+		mUi->keyTree->setStyleSheet ("");
+		mUi->centralwidget->setStyleSheet ("");
+		mUi->menubar->setStyleSheet ("");
+		mUi->toolBar->setStyleSheet ("");
+		mUi->statusbar->setStyleSheet ("");
+		mMain.setStyleSheet ("");
+	}
 }
 
 XKeyApplication::~XKeyApplication() {
@@ -107,7 +118,9 @@ void XKeyApplication::show() {
 
 bool XKeyApplication::askClose () {
 	if (mFolders && madeChanges) {
-		int answer = QMessageBox::question(&mMain, tr("Close database"), tr("Are you sure you want to close the current database and discard all changes you may have made?"),
+		int answer = QMessageBox::question(&mMain, tr("Close database"),
+				tr("Are you sure you want to close the current database "
+				   "and discard all changes you may have made?"),
 				QMessageBox::Abort | QMessageBox::Yes);
 		return (answer == QMessageBox::Yes);
 	}

@@ -20,9 +20,7 @@
   <property name="styleSheet">
    <string notr="true">QHeaderView::section:!hover {
 	background: rgb(200, 200, 200);
-     color: black;
-}
-</string>
+}</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="styleSheet">
@@ -63,7 +61,8 @@
         <bool>true</bool>
        </property>
        <property name="styleSheet">
-        <string notr="true">background: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:1, stop:1 rgba(150, 150, 150, 255), stop:0 rgba(255, 255, 255, 255));</string>
+        <string notr="true">background: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:1, stop:1 rgba(150, 150, 150, 255), stop:0 rgba(255, 255, 255, 255));
+color: black;</string>
        </property>
        <property name="editTriggers">
         <set>QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
@@ -102,6 +101,7 @@
        </property>
        <property name="styleSheet">
         <string notr="true">background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:1 rgba(150, 150, 150, 255), stop:0 rgba(255, 255, 255, 255));
+color: black;
 
  QScrollBar::horizontal {
      border: 1px solid grey;
@@ -166,16 +166,18 @@
      <x>0</x>
      <y>0</y>
      <width>1210</width>
-     <height>23</height>
+     <height>24</height>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true"> QMenuBar::item:selected {
+    <string notr="true">QMenuBar::item:selected {
      background: #a8a8a8;
- }
+}
 
 QMenuBar {
 background: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:1 rgba(200, 200, 200, 255), stop:0 rgba(227, 228, 229, 255));
+color: black;
+
 }
 </string>
    </property>
@@ -217,7 +219,8 @@ background: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:1 rgba(
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="styleSheet">
-    <string notr="true">background: rgb(227, 228, 229);</string>
+    <string notr="true">background: rgb(227, 228, 229);
+color: black;</string>
    </property>
   </widget>
   <widget class="QToolBar" name="toolBar">
@@ -225,7 +228,8 @@ background: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:1 rgba(
     <string>Toolbar</string>
    </property>
    <property name="styleSheet">
-    <string notr="true">background: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:1 rgba(173, 178, 178, 255), stop:0 rgba(200, 200, 200, 255));</string>
+    <string notr="true">background: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:1 rgba(173, 178, 178, 255), stop:0 rgba(200, 200, 200, 255));
+color: black;</string>
    </property>
    <property name="toolButtonStyle">
     <enum>Qt::ToolButtonIconOnly</enum>

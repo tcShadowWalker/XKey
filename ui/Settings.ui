@@ -288,6 +288,16 @@
         </property>
        </widget>
       </item>
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="customStylesheetCheckBox">
+        <property name="text">
+         <string>Use XKey window style</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

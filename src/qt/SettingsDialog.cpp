@@ -13,7 +13,7 @@ const char *KeystoreEncrypt = "keystore/encrypt", *KeystoreEncode = "keystore/ba
 const char *GenerationSpecial = "generation/special_chars", *GenerationNumerics = "generation/numerics",
 	*GenerationMixed = "generation/mixed_case", *GenerationMin = "generation/min_length", *GenerationMax = "generation/max_Length";
 // Extern
-extern const char *UiAlwaysExpand, *UiExampleData, *UiAlwaysAsk;
+extern const char *UiAlwaysExpand, *UiExampleData, *UiAlwaysAsk, *UiCustomStyle;
 }
 
 SettingsDialog::SettingsDialog (QSettings *s, XKey::PassphraseGenerator *gen, SaveFileOptions *saveOptions, QWidget *parent)
@@ -29,6 +29,7 @@ SettingsDialog::SettingsDialog (QSettings *s, XKey::PassphraseGenerator *gen, Sa
 	mUi->expandFoldersCheckBox->setChecked ( set->value (UiAlwaysExpand, false).toBool() );
 	mUi->exampleEntriesCheckBox->setChecked ( set->value (UiExampleData, true).toBool() );
 	mUi->alwaysAskPasswordCheckBox->setChecked ( set->value (UiAlwaysAsk, false).toBool() );
+	mUi->customStylesheetCheckBox->setChecked ( set->value (UiCustomStyle, false).toBool() );
 	// keystore
 	mUi->encryptionCheckBox->setChecked (set->value(KeystoreEncrypt, QVariant(true)).toBool());
 	mUi->asciiArmorCheckBox->setChecked (set->value(KeystoreEncode, QVariant(true)).toBool());
@@ -85,6 +86,7 @@ void SettingsDialog::saveSettings () {
 	set->setValue (UiAlwaysExpand, mUi->expandFoldersCheckBox->isChecked());
 	set->setValue (UiExampleData, mUi->exampleEntriesCheckBox->isChecked());
 	set->setValue (UiAlwaysAsk, mUi->alwaysAskPasswordCheckBox->isChecked());
+	set->setValue (UiCustomStyle, mUi->customStylesheetCheckBox->isChecked());
 	// keystore
 	set->setValue (KeystoreEncrypt, mUi->encryptionCheckBox->isChecked());
 	set->setValue (KeystoreEncode, mUi->asciiArmorCheckBox->isChecked());
