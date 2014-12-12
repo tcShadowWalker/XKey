@@ -1,0 +1,16 @@
+# XKey
+
+A cross-platform password-manager written in C++, utilizing the power of QT.
+
+### Folder Structure
+
+    - src/              Source files for XKey core and command line interface
+    - src/qt            Sources for QT user interface
+    - ui/               QT user interface XML files
+    - ThirdParty        Included external libraries
+ 
+### Encryption
+
+- AES-256-CTR Mode (configurable)
+- PBKDF2 Key derivation function with 20.000 iterations per default (configurable)
+- Using the vetted OpenSSL library (libcrypto)
