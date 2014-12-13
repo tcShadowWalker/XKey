@@ -24,6 +24,7 @@ class CryptStream
 {
 public:
 	static const int DEFAULT_KEY_ITERATION_COUNT = 20000;
+	
 	enum OperationMode {
 		READ = 1,
 		WRITE = 2
@@ -37,8 +38,8 @@ public:
 	bool isEncoded () const;
 	
 	/**
-	 * @brief Set the key for encryption and description, if not specified for the constructor
-	 * @param passphrase The passphrase to dervie the key from
+	 * @brief Set the key for encryption and decryption, if not specified for the constructor
+	 * @param passphrase The passphrase to derive the key from
 	 * @param cipherName OpenSSL-name of the encryption cipher to use. Defaults to AES in CTR mode.
 	 * @param iv initialization vector to use. If empty, a random one will be generated
 	 * @param keyIterationCount number of iterations to derive the encryption key. If -1, defaults to DEFAULT_KEY_ITERATION_COUNT
