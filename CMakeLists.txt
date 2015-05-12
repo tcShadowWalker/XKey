@@ -1,10 +1,9 @@
 project(XKey)
 cmake_minimum_required(VERSION 2.6)
 
-
 set(CMAKE_PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_definitions( -std=c++0x )
+add_definitions( -std=c++11 )
 
 find_package(OpenSSL)
 
@@ -13,7 +12,7 @@ find_package(Boost REQUIRED COMPONENTS program_options)
 
 # Boost_program_options_LIBRARY
 
-include_directories( ${OPENSSL_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/ ${Boost_INCLUDE_DIR} )
+include_directories(SYSTEM ${OPENSSL_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/ ${Boost_INCLUDE_DIR} )
 
 set(XKeyLibraries ${OPENSSL_CRYPTO_LIBRARIES} )
 
