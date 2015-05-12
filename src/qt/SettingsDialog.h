@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QDialog>
+#include <memory>
 
 struct SaveFileOptions;
 class QSettings;
@@ -19,7 +20,7 @@ class SettingsDialog
 	Q_OBJECT
 public:
 	SettingsDialog (QSettings *set, XKey::PassphraseGenerator *gen, SaveFileOptions *saveOptions, QWidget *parent);
-	~SettingsDialog();
+	~SettingsDialog ();
 	
 	/**
 	 * @brief Read saved settings from disk, if available
@@ -31,7 +32,7 @@ public slots:
 	
 private:
 	QSettings *set;
-	Ui::SettingsDialog *mUi;
+	std::unique_ptr<Ui::SettingsDialog> mUi;
 	XKey::PassphraseGenerator *mGen;
 	SaveFileOptions *mSaveOpt;
 	

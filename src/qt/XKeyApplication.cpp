@@ -18,7 +18,7 @@
 #include <ui_Main.h>
 #include <ui_About.h>
 
-namespace SettingNames {
+namespace Settings {
 const char *UiRecentFiles = "ui/recentFileList", *UiExampleData = "ui/example_data", *UiAlwaysAsk = "ui/always_ask_for_password",
 	*UiAlwaysExpand = "ui/always_expand", *UiMain = "ui/main", *UiKeyTable = "ui/key_table", *UiKeyTree = "ui/key_tree",
 	*UiCustomStyle = "ui/custom_stylesheet";
@@ -27,7 +27,7 @@ const char *UiRecentFiles = "ui/recentFileList", *UiExampleData = "ui/example_da
 XKeyApplication::XKeyApplication(QSettings *sett)
 	: mSettings(sett), mUi(0), mFolders(0), mKeys(0), madeChanges(false), mRecentFiles(0)
 {
-	using namespace SettingNames;
+	using namespace Settings;
 	// Read application settings from hard disk
 	SettingsDialog::readSettings(mSettings, &mGenerator, &mSaveOptions);
 	// Init Ui
@@ -141,12 +141,12 @@ void XKeyApplication::newFile () {
 
 void XKeyApplication::addRecentFile (QString filename) {
 	// Add to recent file list:
-	QStringList files = mSettings->value(SettingNames::UiRecentFiles).toStringList();
+	QStringList files = mSettings->value(Settings::UiRecentFiles).toStringList();
 	files.removeAll(filename);
 	files.prepend(filename);
 	while (files.size() > 15)
 		files.removeLast();
-	mSettings->setValue(SettingNames::UiRecentFiles, files);
+	mSettings->setValue(Settings::UiRecentFiles, files);
 	loadRecentFileList ();
 }
 
@@ -179,7 +179,7 @@ void XKeyApplication::openFile (const QString &filename) {
 			madeChanges = false;
 			setEnabled(true);
 			addRecentFile (filename);
-			if (mSettings->value (SettingNames::UiAlwaysExpand, false).toBool()) {
+			if (mSettings->value (Settings::UiAlwaysExpand, false).toBool()) {
 				mUi->keyTree->expandAll();
 			}
 		} else {
@@ -209,7 +209,7 @@ void XKeyApplication::saveFile (const QString &filename, SaveFileOptions &sopt) 
 		//
 		QString passwd;
 		if (sopt.use_encryption) {
-			if (!sopt.password().empty() && sopt.save_password) {
+			if (!sopt.password().empty() && !sopt.always_ask_password) {
 				passwd = QString::fromStdString (sopt.password());
 			} else {
 				FilePasswordDialog pwdDiag (FilePasswordDialog::WRITE, &mMain);
@@ -358,7 +358,7 @@ void XKeyApplication::addEntryClicked () {
 	if (!this->mKeys->folder() || this->mKeys->folder() == &*mRoot)
 		return;
 	XKey::Entry entry;
-	if (mSettings->value(SettingNames::UiExampleData, true).toBool() == true) {
+	if (mSettings->value(Settings::UiExampleData, true).toBool() == true) {
 		entry = XKey::Entry (tr("Example title", "NewKeyEntryTitle").toStdString(), tr("Your Username", "NewKeyEntryUser").toStdString(),
 						tr("example.org", "NewKeyEntryDomain").toStdString(), tr("", "NewKeyEntryPassword").toStdString(), 
 						tr("user@example.org", "NewKeyEntryEmail").toStdString(), tr("", "NewKeyEntryComment").toStdString() );
@@ -410,7 +410,7 @@ void XKeyApplication::copyPassphraseToClipboard() {
 }
 
 void XKeyApplication::saveApplicationState () {
-	using namespace SettingNames;
+	using namespace Settings;
 	mSettings->setValue(UiKeyTable, mUi->keyTable->horizontalHeader()->saveState());
 	mSettings->setValue(UiKeyTree, mUi->keyTree->header()->saveState());
 	mSettings->setValue(UiMain, mMain.saveGeometry());
@@ -423,7 +423,7 @@ void XKeyApplication::clearSelection () {
 }
 
 void XKeyApplication::loadRecentFileList() {
-	QStringList files = mSettings->value(SettingNames::UiRecentFiles).toStringList();
+	QStringList files = mSettings->value(Settings::UiRecentFiles).toStringList();
 	for (const QString &file : files) {
 		QAction *act = mRecentFiles->addAction(file);
 		act->setData(file);
