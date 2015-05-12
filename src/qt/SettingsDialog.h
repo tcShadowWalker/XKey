@@ -1,5 +1,4 @@
-#ifndef SETTINGS_DIALOG_H
-#define SETTINGS_DIALOG_H
+#pragma once
 
 #include <QDialog>
 
@@ -40,5 +39,3 @@ private:
 	
 	QString generatePassphrase ();
 };
-
-#endif

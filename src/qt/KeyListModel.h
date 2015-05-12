@@ -1,5 +1,4 @@
-#ifndef KEYLISTMODEL_H
-#define KEYLISTMODEL_H
+#pragma once
 
 #include <qabstractitemmodel.h>
 
@@ -39,5 +38,3 @@ public:
 private:
 	XKey::Folder *_folder;
 };
-
-#endif

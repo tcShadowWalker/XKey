@@ -1,12 +1,11 @@
-#ifndef XKEY_DATA_H
-#define XKEY_DATA_H
+#pragma once
 
 #include <string>
 #include <deque>
 #include <memory>
 
 namespace Json {
-	class Value;
+class Value;
 }
 
 namespace XKey {
@@ -20,14 +19,15 @@ class Entry
 {
 public:
 	inline Entry () { }
-	inline Entry (const std::string &title, const std::string &user, const std::string &url, const std::string &pwd, const std::string &email, const std::string &comment);
+	inline Entry (const std::string &title, const std::string &user, const std::string &url,
+		      const std::string &pwd, const std::string &email, const std::string &comment);
 	
-	inline const std::string&			title() const { return _title; }
-	inline const std::string&			username() const { return _username; }
-	inline const std::string&			url() const { return _url; }
-	inline const std::string&			password() const { return _password; }
-	inline const std::string&			email() const { return _email; }
-	inline const std::string&			comment() const { return _comment; }
+	const std::string& title() const { return _title; }
+	const std::string& username() const { return _username; }
+	const std::string& url() const { return _url; }
+	const std::string& password() const { return _password; }
+	const std::string& email() const { return _email; }
+	const std::string& comment() const { return _comment; }
 private:
 	std::string _title;
 	std::string _username;
@@ -45,39 +45,41 @@ typedef std::unique_ptr<Folder> RootFolder_Ptr;
 class Folder
 {
 public:
-	Folder ();
-	Folder (const std::string &name, Folder *parent);
+	const std::string& name() const { return _name; }
+	Folder* parent() const { return _parent; }
+	
+	void setName (const std::string &name);
+	
+	std::string fullPath() const;
+	
+	void addEntry (Entry entry);
+	Entry& getEntryAt (int index);
+	void removeEntry (int index);
+	Folder* createSubfolder (const std::string &name);
+	void removeSubfolder (int index);
+	
+	Folder* getSubfolder (const std::string &name);
+	const Folder* getSubfolder (const std::string &name) const;
+	
+	const std::deque<Folder>& subfolders () const { return _subfolders; }
+	const std::deque<Entry>& entries () const { return _entries; }
+	
+	std::deque<Folder>& subfolders () { return _subfolders; }
+	std::deque<Entry>& entries () { return _entries; }
+	
+	/// @return this items index in the parent's folder-list
+	int row() const;
 	
 	void operator= (Folder &&);
 	
-	inline const std::string&			name() const { return _name; }
-	inline Folder*					parent() const { return _parent; }
-	
-	void 							setName (const std::string &name);
-	
-	std::string						fullPath() const;
-	
-	void 							addEntry (Entry entry);
-	Entry &						getEntryAt (int index);
-	void							removeEntry (int index);
-	Folder *						createSubfolder (const std::string &name);
-	void							removeSubfolder (int index);
-	
-	Folder * 						getSubfolder (const std::string &name);
-	const Folder * 					getSubfolder (const std::string &name) const;
-	
-	inline const std::deque<Folder>&	subfolders () const { return _subfolders; }
-	inline const std::deque<Entry>&	entries () const { return _entries; }
-	
-	inline std::deque<Folder>&		subfolders () { return _subfolders; }
-	inline std::deque<Entry>&		entries () { return _entries; }
-	
-	int 							row() const;
+	Folder (const std::string &name, Folder *parent);
 private:
 	std::string _name;
 	std::deque<Folder> _subfolders;
 	std::deque<Entry> _entries;
 	Folder *_parent;
+	
+	Folder ();
 	// Disallow copying
 	Folder (const Folder &) = delete;
 	Folder &operator= (const Folder &) = delete;
@@ -97,26 +99,27 @@ inline RootFolder_Ptr createRootFolder () {
 /**
  * @brief Result structure for searching in a key-tree structure
  * 
- * An object of this class gets returned by @continueSearch or @startSearch.\n
- * It serves as an iterator into the key-tree and can be given as a parameter to @continueSearch to return the next result.\n
+ * An object of this class gets returned by #continueSearch or #startSearch.\n
+ * It serves as an iterator into the key-tree and can be given as a parameter
+ * to #continueSearch to return the next result.\n
  * \n
  * You must not modify the tree-structure while performing a search, or the result is undefined.
  */
 struct SearchResult
 {
-	inline SearchResult () : _match(0), _lastFolder(0), _lastIndex(-1) { }
-	inline SearchResult (const Entry *e, const Folder *f, int ind) : _match(e), _lastFolder(f), _lastIndex(ind) { }
+	SearchResult () : _match(0), _lastFolder(0), _lastIndex(-1) { }
+	SearchResult (const Entry *e, const Folder *f, int ind) : _match(e), _lastFolder(f), _lastIndex(ind) { }
 	
-	inline const Entry *match () const {
+	const Entry *match () const {
 		return _match;
 	}
 	
 	/// Check if the SearchResult contains a valid result match
-	inline bool hasMatch () const { return _match != 0; }
+	bool hasMatch () const { return _match != 0; }
 	
-	inline const Folder *parentFolder () const { return _lastFolder; }
+	const Folder *parentFolder () const { return _lastFolder; }
 	
-	inline int index () const { return _lastIndex; }
+	int index () const { return _lastIndex; }
 	
 	const Entry *_match;
 	const Folder *_lastFolder;
@@ -161,13 +164,13 @@ Folder *moveFolder (Folder *oldFolder, Folder *newParent, int newPosition);
 class Parser
 {
 public:
-	bool 					readFile (std::istream &in, Folder *root);
+	bool readFile (std::istream &in, Folder *root);
 
-	const std::string&		error () const;
+	const std::string& error () const;
 private:
-	void 					parse_folder (const Json::Value &folder, Folder *parent);
-	void 					parse_folder_list (const Json::Value &item, Folder *parent);
-	void 					parse_key (const Json::Value &key_entry, Folder *parent);
+	void parse_folder (const Json::Value &folder, Folder *parent);
+	void parse_folder_list (const Json::Value &item, Folder *parent);
+	void parse_key (const Json::Value &key_entry, Folder *parent);
 	
 	std::string errorMsg;
 };
@@ -178,9 +181,9 @@ private:
 class Writer
 {
 public:
-	bool 					writeFile (std::ostream &out, const Folder &root, bool write_formatted = false);
+	bool writeFile (std::ostream &out, const Folder &root, bool write_formatted = false);
 
-	const std::string&		error () const;
+	const std::string& error () const;
 
 	/**
 	 * @brief Assert correct file permissions
@@ -189,12 +192,12 @@ public:
 	 * @param canWrite if not NULL, containts whether the application can write to the file
 	 * @return true iff file exists
 	 */
-	static bool				checkFilePermissions (const std::string &filename, bool *correctReadPermissions, bool *canWrite = nullptr);
+	static bool checkFilePermissions (const std::string &filename, bool *correctReadPermissions, bool *canWrite = nullptr);
 
 	/// Make a file readable and writable only by it's owner
-	static void				setRestrictiveFilePermissions (const std::string &filename);
+	static void setRestrictiveFilePermissions (const std::string &filename);
 private:
-	void 					serialize_folder (Json::Value &parent, const Folder &folder);
+	void serialize_folder (Json::Value &parent, const Folder &folder);
 	
 	std::string errorMsg;
 };
@@ -202,10 +205,9 @@ private:
 
 // Impl
 
-Entry::Entry (const std::string &title, const std::string &user, const std::string &url, const std::string &pwd, const std::string &email, const std::string &comment) 
+Entry::Entry (const std::string &title, const std::string &user, const std::string &url,
+	      const std::string &pwd, const std::string &email, const std::string &comment)
 	: _title(title), _username (user), _url(url), _password (pwd), _email(email), _comment (comment)
 {}
 
 }
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef SAVE_FILE_DIALOG_H
-#define SAVE_FILE_DIALOG_H
+#pragma once
 
 #include <QFileDialog>
 
@@ -79,5 +78,3 @@ private:
 	Ui::OpenFilePassphraseDialog *openUi;
 	Ui::SaveFilePassphraseDialog *saveUi;
 };
-
-#endif

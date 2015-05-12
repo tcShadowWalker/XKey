@@ -1,5 +1,4 @@
-#ifndef XKEY_CRYPTSTREAM_H
-#define XKEY_CRYPTSTREAM_H
+#pragma once
 
 #include <streambuf>
 #include <vector>
@@ -11,8 +10,12 @@ namespace XKey {
 
 enum ModeInfo {
 	NO_OPTIONS = 0,
+	/// Encode content in base64
 	BASE64_ENCODED = 1,
+	/// Encrypt file. If this is omitted, the file is stored in plaintext
 	USE_ENCRYPTION = 2,
+	/// If this is not set for reading, the cipher, IV and key iteration count
+	/// must be set explicity for decryption to succeed. Omitting not recommended.
 	EVALUATE_FILE_HEADER = 4
 };
 
@@ -23,7 +26,7 @@ class CryptStream
 	: public std::streambuf
 {
 public:
-	static const int DEFAULT_KEY_ITERATION_COUNT = 20000;
+	static const int DEFAULT_KEY_ITERATION_COUNT = 100000;
 	
 	enum OperationMode {
 		READ = 1,
@@ -80,7 +83,4 @@ private:
 	const evp_cipher_st *_cipher;
 };
 
-
 }
-
-#endif

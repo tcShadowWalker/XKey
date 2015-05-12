@@ -1,5 +1,4 @@
-#ifndef KEY_EDIT_DIALOG_H
-#define KEY_EDIT_DIALOG_H
+#pragma once
 
 #include <QDialog>
 
@@ -39,5 +38,3 @@ private:
 
 	QString generatePassphrase ();
 };
-
-#endif

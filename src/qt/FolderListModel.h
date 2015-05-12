@@ -1,5 +1,4 @@
-#ifndef FOLDERLISTMODEL_H
-#define FOLDERLISTMODEL_H
+#pragma once
 
 #include <qabstractitemmodel.h>
 
@@ -41,5 +40,3 @@ protected:
 private:
 	XKey::Folder *root;
 };
-
-#endif

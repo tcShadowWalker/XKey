@@ -1,5 +1,4 @@
-#ifndef XKEY_APP_H
-#define XKEY_APP_H
+#pragma once
 
 #include <QtGui/QMainWindow>
 #include <boost/concept_check.hpp>
@@ -94,4 +93,3 @@ private:
 	const int statusBarMessageTimeout = 5000;
 };
 
-#endif
