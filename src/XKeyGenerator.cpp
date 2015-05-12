@@ -5,10 +5,6 @@
 
 namespace XKey {
 
-static std::initializer_list<char> specialChars = {'!', '$', '%', '&', '/', '(', ')', '=', '?', '*', '+', '-',
-	'_', '.', ',', ':', ';', '~', '{', '}', '[', ']', '^', '#', '<', '>'
-};
-
 PassphraseGenerator::PassphraseGenerator ()
 	: mAllowed (CHAR_ALPHA | CHAR_LOWER_UPPERCASE | CHAR_NUMERIC | CHAR_SPECIAL), mMinLen(10), mMaxLen(14), mRegenerate(true)
 { }
@@ -44,7 +40,7 @@ void PassphraseGenerator::generatePassphrase (std::string *passphrase) {
 	if (mRegenerate) {
 		_generateCharacterPool();
 	}
-	const int numSpecialChars = specialChars.size();
+	const int numSpecialChars = SpecialCharPool.size();
 	std::random_device rd;
 	std::mt19937 rng (rd());
 	std::uniform_int_distribution<int> type_dist (1,1);
@@ -58,7 +54,7 @@ void PassphraseGenerator::generatePassphrase (std::string *passphrase) {
 		if (type_dist(rng) != 0) {
 			it = mCharPool[char_dist(rng)];
 		} else {
-			it = *(specialChars.begin()+char_dist( rng, std::uniform_int_distribution<int>::param_type( 0, numSpecialChars ) ));
+			it = *(SpecialCharPool.begin()+char_dist( rng, std::uniform_int_distribution<int>::param_type( 0, numSpecialChars ) ));
 		}
 	}
 }

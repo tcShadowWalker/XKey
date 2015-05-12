@@ -1,20 +1,18 @@
 #include "KeyListModel.h"
 #include "../XKey.h"
 
-#include <qstringlist.h>
+#include <QStringList>
 #include <QMimeData>
-
 #include <iostream>
 
-static const QStringList headerColumns {QObject::tr("Title"), QObject::tr("Username"), QObject::tr("URL"), QObject::tr("E-Mail")};
+static const QStringList headerColumns {QObject::tr("Title"), QObject::tr("Username"),
+	QObject::tr("URL"), QObject::tr("E-Mail")};
 
 KeyListModel::KeyListModel(QObject *parent)
 	: QAbstractTableModel(parent), _folder(0)
 { }
 
-KeyListModel::~KeyListModel() {
-	
-}
+KeyListModel::~KeyListModel() { }
 
 void KeyListModel::setCurrentFolder (XKey::Folder *r) {
 	this->_folder = r;
@@ -84,7 +82,7 @@ bool KeyListModel::removeRows (int row, int count, const QModelIndex & parent) {
 		}
 		endRemoveRows();
 	} catch (const std::exception &e) {
-		std::cout << "KeyListModel::removeRows fail: " << e.what() << "\n";
+		std::cerr << "KeyListModel::removeRows fail: " << e.what() << "\n";
 		endRemoveRows();
 		return false;
 	}
@@ -110,7 +108,7 @@ QMimeData *KeyListModel::mimeData (const QModelIndexList &indexes) const {
 		rowList << QString::number(ind.row());
 	}
 	rowList.removeDuplicates();
-	a.append(rowList.join('\0'));
+	a.append(rowList.join("\0"));
 	data->setData ("application/x-xkey-entry", a);
 	return data.release();
 }

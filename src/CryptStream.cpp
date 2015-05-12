@@ -30,7 +30,7 @@ static std::string hex2uc (const char *in, int in_length) {
 	in_length /= 2;
 	std::string out ( (size_t) in_length, '\0');
 	for (int i = 0; i < in_length; ++i) {
-		if (sscanf(&in[i*2], "%02x", &out[i]) != 1)
+		if (sscanf(&in[i*2], "%02x", (unsigned int*)&out[i]) != 1)
 			throw std::runtime_error ("Invalid hexadecimal format");
 	}
 	return out;
@@ -137,7 +137,7 @@ void CryptStream::_evaluateHeader (int *headerMode) {
 	char cipherName[ciphNameLen + 1];
 	char iv[256 + 1];
 	int useEncryption, useBase64Encode;
-	if (r = sscanf (buf, "*167110* # v:%i # c:%i # e:%i # o:%i # ciph:%30s # iv:%256s # count:%i #",
+	if (sscanf (buf, "*167110* # v:%i # c:%i # e:%i # o:%i # ciph:%30s # iv:%256s # count:%i #",
 			&this->_version, &useEncryption, &useBase64Encode, &offset, cipherName, iv, &_pbkdfIterationCount) != 7)
 	{
 		throw std::runtime_error ("Invalid file header. The file is probably not a valid XKey keystore.");
@@ -192,7 +192,7 @@ void CryptStream::setEncryptionKey (std::string passphrase, const char *cipherNa
 	_bio_chain = BIO_push(_crypt_bio, _bio_chain);
 	
 	// Have a magic string in the beggining to find out if decryption actually works
-	// Cipher must be secure against known-plaintext attacks
+	// Cipher must be secure against known-plaintext attacks (a cipher not secure agains KPA is utter garbage)
 	const std::string encBuffer ("-- FILE -- 85gxk9d7 --");
 	if (_mode == WRITE) {
 		BIO_write(_bio_chain, encBuffer.data(), encBuffer.size());
@@ -228,7 +228,7 @@ CryptStream::int_type CryptStream::underflow() {
 
 	// start is now the start of the buffer, proper.
 	// Read to the provided buffer
-	size_t n = BIO_read(_bio_chain, start, _buffer.size() - (start - base));
+	int n = BIO_read(_bio_chain, start, _buffer.size() - (start - base));
 	if (n == 0)
 		return traits_type::eof();
 	else if (n < 0)

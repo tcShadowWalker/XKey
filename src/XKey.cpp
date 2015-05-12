@@ -92,6 +92,7 @@ SearchResult continueSearch (const std::string &searchString, const SearchResult
 	// Now look ABOVE this folder.
 	if (startFolder->parent())
 		return search_up_recursive (tokens, startFolder);
+	return SearchResult { }; // No match
 }
 
 SearchResult startSearch (const std::string &searchString, const XKey::Folder *startFolder) {
