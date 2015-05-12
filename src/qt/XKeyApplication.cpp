@@ -4,7 +4,8 @@
 #include "KeyEditDialog.h"
 #include "FileDialog.h"
 #include "SettingsDialog.h"
-#include "../CryptStream.h"
+#include <CryptStream.h>
+#include <XKeyJsonSerialization.h>
 #include <QFileDialog>
 #include <QPushButton>
 #include <QMessageBox>
@@ -167,7 +168,7 @@ void XKeyApplication::openFile (const QString &filename) {
 		}
 		std::istream isource (&crypt_source);
 		XKey::RootFolder_Ptr newRoot = XKey::createRootFolder();
-		if (p.readFile(isource, &*newRoot)) {
+		if (p.read(isource, &*newRoot)) {
 			success = true;
 			// Set attributes:
 			this->mRoot = std::move(newRoot);
@@ -225,7 +226,7 @@ void XKeyApplication::saveFile (const QString &filename, SaveFileOptions &sopt) 
 		std::ostream osource (&crypt_source);
 		// If we don't use encryption, we want formatted output.
 		bool writeFormatted = (sopt.use_encryption == false);
-		if (w.writeFile(osource, *mRoot, writeFormatted)) {
+		if (w.write(osource, *mRoot, writeFormatted)) {
 			success = true;
 			madeChanges = false;
 			addRecentFile (filename);

@@ -1,6 +1,6 @@
 #include "KeyEditDialog.h"
-#include <../src/XKey.h>
-#include <../src/XKeyGenerator.h>
+#include <XKey.h>
+#include <XKeyGenerator.h>
 
 #include <ui_Entry.h>
 #include <QClipboard>

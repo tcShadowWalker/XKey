@@ -1,9 +1,8 @@
 #pragma once
 
 #include <QtGui/QMainWindow>
-#include <boost/concept_check.hpp>
-#include "../XKey.h"
-#include "../XKeyGenerator.h"
+#include <XKey.h>
+#include <XKeyGenerator.h>
 #include "FileDialog.h"
 
 class QMenu;

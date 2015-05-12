@@ -1,6 +1,5 @@
 #include "KeyListModel.h"
-#include "../XKey.h"
-
+#include <XKey.h>
 #include <QStringList>
 #include <QMimeData>
 #include <iostream>

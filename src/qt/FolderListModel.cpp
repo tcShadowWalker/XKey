@@ -1,5 +1,5 @@
 #include "FolderListModel.h"
-#include "../XKey.h"
+#include <XKey.h>
 #include <algorithm>
 #include <cassert>
 #include <QStringList>

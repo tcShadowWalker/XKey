@@ -1,5 +1,6 @@
-#include "XKey.h"
-#include "CryptStream.h"
+#include <XKey.h>
+#include <CryptStream.h>
+#include <XKeyJsonSerialization.h>
 #include <iostream>
 #include <algorithm>
 #include <string>
@@ -136,7 +137,7 @@ int main (int argc, char** argv) {
 
 		std::istream stream (&crypt_streambuf);
 		XKey::Parser pars;
-		if (!pars.readFile (stream, &*rootKeyFolder)) {
+		if (!pars.read (stream, &*rootKeyFolder)) {
 			std::cerr << "Could not parse keystore file " << input_file << ": " << pars.error() << "\n";
 			return -1;
 		}
@@ -175,7 +176,7 @@ int main (int argc, char** argv) {
 			XKey::Writer::setRestrictiveFilePermissions (output_file);
 			crypt_filter.setEncryptionKey (outkey);
 			XKey::Writer w;
-			if (!w.writeFile(stream, *f, pretty_print)) {
+			if (!w.write(stream, *f, pretty_print)) {
 				std::cerr << "Error: " << w.error() << "\n";
 				return -1;
 			}

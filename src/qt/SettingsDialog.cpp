@@ -1,7 +1,7 @@
 #include "SettingsDialog.h"
 #include "FileDialog.h"
-#include <../src/XKey.h>
-#include <../src/XKeyGenerator.h>
+#include <XKey.h>
+#include <XKeyGenerator.h>
 
 #include <QSettings>
 #include <QMessageBox>
