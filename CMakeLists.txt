@@ -3,14 +3,12 @@ cmake_minimum_required(VERSION 2.6)
 
 set(CMAKE_PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_definitions( -std=c++11 )
+set(CMAKE_CXX_FLAGS -std=c++11 )
 
 find_package(OpenSSL)
 
 set(Boost_USE_STATIC_LIBS True)
 find_package(Boost REQUIRED COMPONENTS program_options)
-
-# Boost_program_options_LIBRARY
 
 include_directories(SYSTEM ${OPENSSL_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/ ${Boost_INCLUDE_DIR} )
 
@@ -25,7 +23,7 @@ set(XKey_SRCS ${SrcDir}/XKey.cpp ${SrcDir}/CryptStream.cpp
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )
 
-include_directories( include )
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/include )
 
 add_executable(XKey ${SrcDir}/main.cpp ${XKey_SRCS} ${TP_Json_SRCS} )
 target_link_libraries(XKey ${XKeyLibraries} ${Boost_PROGRAM_OPTIONS_LIBRARY}  )

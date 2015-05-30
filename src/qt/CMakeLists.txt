@@ -5,8 +5,7 @@ find_package(Qt5Widgets REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 
-include_directories(SYSTEM ${QT_INCLUDES} )
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(SYSTEM ${Qt5Widgets_INCLUDES} ${CMAKE_CURRENT_BINARY_DIR} )
 
 set(XKey_Qt_SRCS KeyListModel.cpp FileDialog.cpp FolderListModel.cpp KeyEditDialog.cpp XKeyApplication.cpp SettingsDialog.cpp qt_main.cpp)
 
