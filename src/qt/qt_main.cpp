@@ -1,4 +1,4 @@
-#include <QtGui/QApplication>
+#include <QtWidgets/QApplication>
 #include <QSettings>
 #include "XKeyApplication.h"
 #include <openssl/evp.h>

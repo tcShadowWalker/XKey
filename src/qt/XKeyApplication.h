@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QtGui/QMainWindow>
+#include <QtWidgets/QMainWindow>
 #include <XKey.h>
 #include <XKeyGenerator.h>
 #include "FileDialog.h"
