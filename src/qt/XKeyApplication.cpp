@@ -199,8 +199,10 @@ void XKeyApplication::saveFile (const QString &filename, SaveFileOptions &sopt) 
 	try {
 		bool correctRead = false;
 		if (XKey::Writer::checkFilePermissions(filename.toStdString(), &correctRead) && !correctRead) {
-			int r = QMessageBox::critical (&mMain, tr("Wrong file permissions"), tr("The file has incorrect file permissions\n"
-				"It is probably world- or group-readable. Do you really want to continue?"), QMessageBox::Save | QMessageBox::Abort);
+			int r = QMessageBox::critical (&mMain, tr("Wrong file permissions"),
+				tr("The file has incorrect file permissions\n"
+				"It is probably readable for other users. Do you really want to continue?"),
+				QMessageBox::Save | QMessageBox::Abort);
 			if (r == QMessageBox::No) {
 				// Abort save
 				return;
@@ -216,6 +218,18 @@ void XKeyApplication::saveFile (const QString &filename, SaveFileOptions &sopt) 
 				if (pwdDiag.exec() != QDialog::Accepted)
 					return;
 				passwd = pwdDiag.password();
+			}
+		} else {
+			// Show warning
+			if (QMessageBox::critical (&mMain, tr("Encryption is disabled"),
+				tr("<p>You are saving this key database <b>without any encryption</b>.</p>"
+				"<p>Sensitive data will be readable by anyone who has access to the file.</p>"
+				"<p>If you want to re-enable file-encryption, you can do so in the Tools > Settings menu.</p>"
+				"<p>Are you sure you want to save the file unencrypted?</p>"), 
+			        QMessageBox::Save | QMessageBox::Abort) != QMessageBox::Save)
+			{
+				// Abort save
+				return;
 			}
 		}
 		XKey::Writer w;

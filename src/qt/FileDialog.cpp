@@ -46,7 +46,8 @@ QString FilePasswordDialog::password () const {
 void FilePasswordDialog::accept () {
 	if (saveUi) {
 		if (saveUi->passphraseEdit->text() != saveUi->passphraseConfirm->text()) {
-			QMessageBox::critical (this, tr("Password mismatch"), tr("The two passwords you entered do not match.\nPlease enter matching passwords"));
+			QMessageBox::critical (this, tr("Password mismatch"),
+			  tr("The two passwords you entered do not match.\nPlease enter matching passwords"));
 			return;
 		}
 	}

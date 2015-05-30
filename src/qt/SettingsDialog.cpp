@@ -181,9 +181,10 @@ void SettingsDialog::trySave () {
 	// maybe we only want to check changes: add mSaveOpt->use_encryption &&
 	if (!mUi->encryptionCheckBox->isChecked()) {
 		answer = QMessageBox::question(this, tr("Deactivate encryption"),
-			tr("<p>You have chosen to save all files<br /><b>WITHOUT ANY ENCRYPTION</b>.</p>"
+			tr("<p>You have chosen to save all files <b>WITHOUT ANY ENCRYPTION</b>.</p>"
 			"<p>After you confirm this action and save a key-database to disk,"
-			"anyone who has access to those files can read all passwords stored in it</p>"
+			"anyone who has access to those files can read all sensitive data stored in it</p>"
+			"<p>Disabling encryption is <b>NOT RECOMMENDED</b></p>"
 			"<p>Are you sure you want to deactivate encryption?</p>"),
 			QMessageBox::Yes | QMessageBox::Abort);
 	}
