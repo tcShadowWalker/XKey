@@ -15,6 +15,9 @@ class Folder;
 class Parser
 {
 public:
+	/**
+	 * 
+	 */
 	bool read (std::istream &in, Folder *root);
 
 	const std::string& error () const;

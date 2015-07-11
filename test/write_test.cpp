@@ -69,7 +69,7 @@ int main (int argc, char** argv) {
 		return 1;
 	
 	XKey::RootFolder_Ptr cmpRoot;
-	if (!readFromFile (&cmpRoot, filename, key))
+	if (!readFromFile (&cmpRoot, filename, "XXA"))
 		return 1;
 
 	print_folder(*cmpRoot, 0);

@@ -257,8 +257,9 @@ CryptStream::int_type CryptStream::underflow() {
 			throw std::runtime_error ("Not enough space left in buffer");
 		unsigned char compChecksum[MaxCheckSumLength];
 		makeMessageDigest(bytes, head.length, compChecksum);
-		if (CRYPTO_memcmp (compChecksum, head.checksum, EVP_MD_size(_md)) != 0)
+		if (CRYPTO_memcmp (compChecksum, head.checksum, EVP_MD_size(_md)) != 0) {
 			throw std::runtime_error ("Message digest does not match message");
+		}
 		int outLen;
 		if (EVP_CipherUpdate (&*_cipherCtx, (unsigned char*)start, &outLen, bytes, head.length) != 1)
 			throw std::runtime_error ("Failed to decrypt block");

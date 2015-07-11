@@ -9,17 +9,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-std::string get_password () {
-	std::string pwd;
-	struct termios t;
-	tcgetattr(STDIN_FILENO, &t);
-	t.c_lflag &= ~ECHO;
-	tcsetattr(STDIN_FILENO, TCSANOW, &t);
-	std::cin >> pwd;
-	t.c_lflag |= ECHO;
-	tcsetattr(STDIN_FILENO, TCSANOW, &t);
-	return pwd;
-}
+std::string get_password ();
 
 int main (int argc, char** argv) {
 	if (argc < 2) {
@@ -30,7 +20,7 @@ int main (int argc, char** argv) {
 	const std::string filename (argv[1]);
 
 	XKey::CryptStream::InitCrypto();
-	XKey::CryptStream crypt_source (filename, std::string(), XKey::CryptStream::READ, XKey::BASE64_ENCODED | XKey::EVALUATE_FILE_HEADER);
+	XKey::CryptStream crypt_source (filename, XKey::CryptStream::READ, XKey::BASE64_ENCODED | XKey::EVALUATE_FILE_HEADER);
 	
 	if (crypt_source.isEncrypted()) {
 		std::cout << "Password: ";

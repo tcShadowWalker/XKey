@@ -2,6 +2,7 @@
 #include <CryptStream.h>
 #include <XKeyJsonSerialization.h>
 #include <iostream>
+#include <fstream>
 #include <algorithm>
 #include <vector>
 #include <cstring>
@@ -25,18 +26,21 @@ int parse_commandline (int argc, char** argv) {
 	desc.add_options() 
 		("help", "Print help messages")
 		("input_file,i", po::value<std::string>(&input_file), "Input key-database")
-		("keyfile", po::value<std::string>(&key_file), "File that contains the password to open a databse. If not given, the password will be read from standard input")
-		("search_root,s", po::value<std::string>(&search_path), "Search path, specifying the root-folder withing the key-database")
+		("keyfile", po::value<std::string>(&key_file), "File that contains the password to open a databse."
+			"If not given, the password will be read from standard input")
+		("search_root,s", po::value<std::string>(&search_path), "Search path, specifying the root-folder within the key-database")
 		("output_file,o", po::value<std::string>(&output_file), "Output key-database")
-		("print-passwords,p", po::bool_switch(&print_passwords), "Print passwords in cleartext on the console. (Default: no passwords printed)")
+		("print-passwords,p", po::bool_switch(&print_passwords), "Print passwords in cleartext on the console. "
+			"(Default: no passwords printed)")
 		
 		("out-no-encrypt", po::bool_switch(&output_no_encrypt), "Do not encrypt output file (Default: do encrypt)")
-		("out-no-encode", po::bool_switch(&output_no_encode), "Do not base64-encode output file, so that it contains only ascii characters (Default: do encode)")
+		("out-no-encode", po::bool_switch(&output_no_encode), "Do not base64-encode output file, "
+			"so that it contains only ascii characters (Default: do encode)")
 		("out-no-header", po::bool_switch(&output_no_header), "Do not include keyfile header in output file"
-				"If you omit the header, it will not be so easy to recognize the file as an XKey database. "
-				"On ther other hand, if you open the file again, XKey won't be able to guess wich encryption and encoding you used "
-				"to encrypt the file, so you have to specify those manually\n"
-				"(Default: include header)"
+			"If you omit the header, it will not be so easy to recognize the file as an XKey database. "
+			"On ther other hand, if you open the file again, XKey won't be able to guess wich encryption and encoding you used "
+			"to encrypt the file, so you have to specify those manually\n"
+			"(Default: include header)"
 		)
 		("in-no-header", po::bool_switch(&input_no_header), "The input file does not have an XKey header (Default: Yes)")
 		("in-not-encoded", po::bool_switch(&input_not_encoded), "The input file is not base64-encoded (Default: Yes)")
@@ -58,7 +62,7 @@ int parse_commandline (int argc, char** argv) {
 		}
 
 		po::notify(vm); // throws on error, so do after help in case there are any problems
-	} catch(po::error& e) { 
+	} catch (const po::error &e) { 
 		std::cerr << "ERROR: " << e.what() << "\n\n"; 
 		std::cerr << desc << "\n"; 
 		return -1; 
@@ -70,7 +74,6 @@ int main (int argc, char** argv) {
 	if (parse_commandline (argc, argv) != 0) {
 		return -1;
 	}
-	// TODO key_file
 	
 	XKey::CryptStream::InitCrypto();
 	
@@ -91,11 +94,19 @@ int main (int argc, char** argv) {
 			m |= XKey::BASE64_ENCODED;
 		XKey::CryptStream crypt_streambuf (input_file, XKey::CryptStream::READ, m);
 		
-		std::string key;
-		
 		if (crypt_streambuf.isEncrypted()) {
-			std::cout << "Password: ";
-			key = get_password();
+			std::string key;
+			if (key_file.size() > 0) {
+				std::ifstream keystream (key_file);
+				if (!keystream.is_open()) {
+					std::cerr << "Failed to open keyfile!\n";
+					return -1;
+				}
+				key = std::string(std::istreambuf_iterator<char>(keystream), std::istreambuf_iterator<char>());
+			} else {
+				std::cout << "Password: ";
+				key = get_password();
+			}
 			crypt_streambuf.setEncryptionKey(key);
 		}
 

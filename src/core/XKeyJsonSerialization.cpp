@@ -11,6 +11,19 @@ namespace XKey {
 
 // Parser:
 
+struct ExceptionMaskReset
+{
+	ExceptionMaskReset (std::basic_ios<char> &ps) : s(ps), origState (s.exceptions()) {
+		s.exceptions(origState | std::ios::badbit);
+	}
+	~ExceptionMaskReset () {
+		s.exceptions(origState);
+	}
+private:
+	std::basic_ios<char> &s;
+	std::ios::iostate origState;
+};
+
 bool Parser::read (std::istream &stream, Folder *new_folder_root) {
 	if (!new_folder_root)
 		throw std::invalid_argument("Need a root folder object to parse a file");
@@ -19,14 +32,20 @@ bool Parser::read (std::istream &stream, Folder *new_folder_root) {
 		this->errorMsg = "Could not open file";
 		return false;
 	}
+	ExceptionMaskReset excMaskReset (stream);
 
-	Json::Reader r;
-	Json::Value json_root;
-	if (r.parse(stream, json_root) == true) {
-		parse_folder_list (json_root, new_folder_root);
-		return true;
-	} else {
-		this->errorMsg = r.getFormattedErrorMessages();
+	try {
+		Json::Reader r;
+		Json::Value json_root;
+		if (r.parse(stream, json_root) == true) {
+			parse_folder_list (json_root, new_folder_root);
+			return true;
+		} else {
+			this->errorMsg = r.getFormattedErrorMessages();
+			return false;
+		}
+	} catch (const std::exception &e) {
+		this->errorMsg = e.what();
 		return false;
 	}
 }
@@ -105,6 +124,7 @@ bool Writer::write (std::ostream &stream, const Folder &rootNode, bool write_for
 		this->errorMsg = "Could not open file";
 		return false;
 	}
+	ExceptionMaskReset excMaskReset (stream);
 	
 	Json::Value jsonRoot;
 	serialize_folder (jsonRoot, rootNode);
@@ -114,7 +134,12 @@ bool Writer::write (std::ostream &stream, const Folder &rootNode, bool write_for
 	else
 		wptr.reset(new Json::FastWriter);
 	std::string text = wptr->write(jsonRoot);
-	stream.write (text.data(), text.size());
+	try {
+		stream.write (text.data(), text.size());
+	} catch (const std::exception &e) {
+		this->errorMsg = e.what();
+		return false;
+	}
 	if (!stream.good()) {
 		errorMsg = "Could not write to output filestream";
 		return false;
