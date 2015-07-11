@@ -11,7 +11,7 @@
 
 namespace XKey {
 
-static int CURRENT_XKEY_FORMAT_VERSION = 13;
+static int CURRENT_XKEY_FORMAT_VERSION = 14;
 static const int put_back_ = 8;
 
 /// Unsigned char string to hexadecimal representation
@@ -38,6 +38,10 @@ static std::string hex2uc (const char *in, int in_length) {
 
 CryptStream::CryptStream (const std::string &filename, OperationMode open_mode, int m_info)
 	: _buffer(std::max(256, put_back_) + put_back_),
+	_cipherCtx(nullptr, &EVP_CIPHER_CTX_free),
+	_mdCtx(nullptr, &EVP_MD_CTX_destroy),
+	_mdKey(nullptr, &EVP_PKEY_free),
+	_bio_chain(nullptr, &BIO_free_all),
 	_mode(open_mode), _version(CURRENT_XKEY_FORMAT_VERSION)
 {	
 	char *end = &_buffer.front() + _buffer.size();
@@ -53,26 +57,27 @@ CryptStream::CryptStream (const std::string &filename, OperationMode open_mode, 
 			throw std::runtime_error ("Could not open keystore file for writing. Please check filesystem permissions.");
 	}
 	
-	_bio_chain = _file_bio;
+	_bio_chain.reset (_file_bio);
 	
 	if (_mode == READ && (m_info & EVALUATE_FILE_HEADER)) {
 		_evaluateHeader(&m_info);
 	}
 	
-	const bool useBase64Encode = (m_info & BASE64_ENCODED),
+	const bool useBase64Encode = _isEncoded = (m_info & BASE64_ENCODED),
 	           useEncryption = (m_info & USE_ENCRYPTION);
 	
 	if (useBase64Encode) {
 		// Base 64 encoding is requested. Create the base64 filter bio and push it to the bio-stack
-		_base64_bio = BIO_new(BIO_f_base64());
+		BIO *_base64_bio = BIO_new(BIO_f_base64());
 		if (!_base64_bio)
 			throw std::runtime_error ("Could not create OpenSSL Encoding (Base64) BIO structure");
-		_bio_chain = BIO_push(_base64_bio, _bio_chain);
+		_bio_chain.release();
+		_bio_chain.reset( BIO_push(_base64_bio, _file_bio));
 	}
 	
 	if (useEncryption) {
-		_cipherCtx.reset(EVP_CIPHER_CTX_new(), &EVP_CIPHER_CTX_free);
-		_mdCtx.reset(EVP_MD_CTX_create(), &EVP_MD_CTX_destroy);
+		_cipherCtx.reset(EVP_CIPHER_CTX_new());
+		_mdCtx.reset(EVP_MD_CTX_create());
 	} else {
 		this->_initialized = true;
 	}
@@ -80,17 +85,8 @@ CryptStream::CryptStream (const std::string &filename, OperationMode open_mode, 
 
 CryptStream::~CryptStream () {
 	sync();
-	//
-	if (_base64_bio) {
-		if (_mode == WRITE)
-			(void)BIO_flush(_base64_bio);
-		BIO_pop(_base64_bio);
-		BIO_vfree(_base64_bio);
-	}
 	if (_mode == WRITE)
-		(void)BIO_flush(_file_bio);
-	BIO_pop(_file_bio);
-	BIO_vfree(_file_bio);
+		(void)BIO_flush(bioChain());
 }
 
 bool CryptStream::isEncrypted () const {
@@ -98,26 +94,26 @@ bool CryptStream::isEncrypted () const {
 }
 
 bool CryptStream::isEncoded () const {
-	return _base64_bio != 0;
+	return _isEncoded;
 }
 
-const int header_buf_size = 512;
+const int HeaderBufSize = 512;
 
 void CryptStream::_writeHeader () {
 	assert (_mode == WRITE);
 	assert (_file_bio); // Operate on _file_bio
 	
-	char buf[header_buf_size+1];
+	char buf[HeaderBufSize+1];
 	// Write this header directly to the file, without encoding or encryption
-	const int offset = header_buf_size;
+	const int offset = HeaderBufSize;
 	std::string hexIV = uc2hex((const unsigned char*)_iv.c_str(), _iv.length());
-	int r = snprintf (buf, header_buf_size-1,
-	                  "*167110* # v:%i # c:%.1i # e:%.1i # o:%i # ciph:%.30s # iv:%.64s # count:%i #",
+	int r = snprintf (buf, HeaderBufSize-1,
+	                  "*167110* # v:%i # c:%.1i # e:%.1i # o:%i # ciph:%.30s # iv:%.64s # count:%i # md:%.30s #",
 	                  this->_version, isEncrypted(), isEncoded(), offset, EVP_CIPHER_name(_cipher),
-	                  hexIV.c_str(), _pbkdfIterationCount);
-	memset(buf+r, '*', header_buf_size-r-1);
-	buf[header_buf_size-1] = '\n';
-	if (BIO_write(_file_bio, buf, header_buf_size) <= 0)
+	                  hexIV.c_str(), _pbkdfIterationCount, EVP_MD_name(_md));
+	memset(buf+r, '*', HeaderBufSize-r-1);
+	buf[HeaderBufSize-1] = '\n';
+	if (BIO_write(_file_bio, buf, HeaderBufSize) <= 0)
 		throw std::runtime_error ("Failed to write file header");
 }
 
@@ -126,22 +122,28 @@ void CryptStream::_evaluateHeader (int *headerMode) {
 	assert (_file_bio); // Operate on _file_bio
 	assert (headerMode);
 	
-	char buf[header_buf_size+1];
-	int r = BIO_read(_file_bio, buf, header_buf_size);
+	char buf[HeaderBufSize+1];
+	int r = BIO_read(_file_bio, buf, HeaderBufSize);
 	buf[r] = '\0';
 	int offset = 0;
 	const int ciphNameLen = 30;
 	char cipherName[ciphNameLen + 1];
+	char digestName[ciphNameLen + 1];
 	char iv[64 + 1];
 	int useEncryption, useBase64Encode;
-	r = sscanf (buf, "*167110* # v:%i # c:%i # e:%i # o:%i # ciph:%30s # iv:%64s # count:%i #",
-			&this->_version, &useEncryption, &useBase64Encode, &offset, cipherName, iv, &_pbkdfIterationCount);
-	if (r != 7) {
+	r = sscanf (buf, "*167110* # v:%i # c:%i # e:%i # o:%i # ciph:%30s # iv:%64s # count:%i # md:%30s #",
+	            &this->_version, &useEncryption, &useBase64Encode, &offset, cipherName,
+	            iv, &_pbkdfIterationCount, digestName);
+	if (r != 8) {
 		throw std::runtime_error ("Invalid file header. The file is probably not a valid XKey keystore.");
 	}
+	cipherName[ciphNameLen] = digestName[ciphNameLen] = '\0';
 	this->_cipher = EVP_get_cipherbyname(cipherName);
 	if (!_cipher)
 		throw std::runtime_error ("OpenSSL library does not provide requested Cipher mode from file header");
+	this->_md = EVP_get_digestbyname(digestName);
+	if (!_md)
+		throw std::runtime_error ("OpenSSL library does not provide requested Digest algorithm from file header");
 	if (strnlen((const char*)iv, 256) != (size_t)_cipher->iv_len * 2)
 		throw std::runtime_error ("Invalid initialization vector length");
 	if (_pbkdfIterationCount <= 0)
@@ -184,7 +186,7 @@ void CryptStream::setEncryptionKey (const std::string &passphrase, const char *c
 									_pbkdfIterationCount, _cipher->key_len, raw_key);
 	if (r != 1)
 		throw std::runtime_error ("PBKDF2 algorithm to derive encryption key failed");
-	_mdKey.reset(EVP_PKEY_new_mac_key(EVP_PKEY_HMAC, nullptr, raw_key, _cipher->key_len), &EVP_PKEY_free);
+	_mdKey.reset(EVP_PKEY_new_mac_key(EVP_PKEY_HMAC, nullptr, raw_key, _cipher->key_len));
 	// enc should be set to 1 for encryption and 0 for decryption.
 	const int enc = (_mode == READ) ? 0 : 1;
 	if (EVP_CipherInit(&*_cipherCtx, _cipher, raw_key, (const unsigned char*)_iv.c_str(), enc) != 1)
@@ -230,7 +232,7 @@ CryptStream::int_type CryptStream::underflow() {
 	// start is now the start of the buffer, proper.
 
 	BlockHead head;
-	int n = BIO_read(_bio_chain, &head, sizeof(head.length) + EVP_MD_size(_md));
+	int n = BIO_read(bioChain(), &head, sizeof(head.length) + EVP_MD_size(_md));
 	if (n <= 0) {
 		if (n == 0)
 			return traits_type::eof();
@@ -240,7 +242,7 @@ CryptStream::int_type CryptStream::underflow() {
 	if (_cipherCtx) {
 		// Read to the provided buffer
 		unsigned char bytes[head.length];
-		n = BIO_read(_bio_chain, bytes, head.length);
+		n = BIO_read(bioChain(), bytes, head.length);
 		if (n <= 0) {
 			if (n == 0)
 				return traits_type::eof();
@@ -257,7 +259,7 @@ CryptStream::int_type CryptStream::underflow() {
 			throw std::runtime_error ("Failed to decrypt block");
 		assert (outLen == n);
 	} else {
-		n = BIO_read(_bio_chain, start, _buffer.size() - (start - base));
+		n = BIO_read(bioChain(), start, _buffer.size() - (start - base));
 		if (n <= 0) {
 			if (n == 0)
 				return traits_type::eof();
@@ -295,14 +297,14 @@ CryptStream::int_type CryptStream::overflow (int_type ch) {
 		assert (length == n);
 		makeMessageDigest (cryptBlock, length, &head.checksum[0]);
 		
-		r = BIO_write(_bio_chain, &head, sizeof(head.length) + EVP_MD_size(_md));
+		r = BIO_write(bioChain(), &head, sizeof(head.length) + EVP_MD_size(_md));
 		if (r <= 0)
 			throw std::runtime_error ("Error writing to OpenSSL BIO (1)");
-		r = BIO_write(_bio_chain, cryptBlock, length);
+		r = BIO_write(bioChain(), cryptBlock, length);
 		if (r <= 0)
 			throw std::runtime_error ("Error writing to OpenSSL BIO (2)");
 	} else {
-		r = BIO_write(_bio_chain, pbase(), n);
+		r = BIO_write(bioChain(), pbase(), n);
 		if (r <= 0)
 			throw std::runtime_error ("Error writing to OpenSSL BIO (2)");
 	}
