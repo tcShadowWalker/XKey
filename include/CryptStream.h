@@ -71,6 +71,8 @@ public:
 			       const char *digestName = nullptr,
 			       const char *iv = nullptr, int keyIterationCount = -1);
 	
+	/// Init crypto library after application startup
+	static void InitCrypto ();
 private:
 	// Get:
 	int_type underflow() override;

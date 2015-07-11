@@ -26,11 +26,10 @@ int main (int argc, char** argv) {
 		std::cerr << "Usage: XKey keystore_file\n";
 		return -1;
 	}
-	
-	OpenSSL_add_all_ciphers();
 
 	const std::string filename (argv[1]);
 
+	XKey::CryptStream::InitCrypto();
 	XKey::CryptStream crypt_source (filename, std::string(), XKey::CryptStream::READ, XKey::BASE64_ENCODED | XKey::EVALUATE_FILE_HEADER);
 	
 	if (crypt_source.isEncrypted()) {

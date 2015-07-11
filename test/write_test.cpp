@@ -3,7 +3,6 @@
 #include <iostream>
 #include <string>
 #include <cstring>
-#include <openssl/evp.h>
 // Needed for no-echo password query
 #include <termios.h>
 #include <stdio.h>
@@ -51,9 +50,8 @@ int main (int argc, char** argv) {
 		return -1;
 	}
 	
-	OpenSSL_add_all_ciphers();
-
 	const std::string filename (argv[1]);
+	XKey::CryptStream::InitCrypto();
 
 	//std::cout << "Password: ";
 	//std::string key = get_password();

@@ -14,6 +14,11 @@ namespace XKey {
 static int CURRENT_XKEY_FORMAT_VERSION = 14;
 static const int put_back_ = 8;
 
+void CryptStream::InitCrypto () {
+	OpenSSL_add_all_ciphers();
+	OpenSSL_add_all_digests();
+}
+
 /// Unsigned char string to hexadecimal representation
 static std::string uc2hex (const unsigned char *in, int in_length) {
 	assert (in_length >= 0);

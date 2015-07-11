@@ -18,7 +18,7 @@ QT5_ADD_RESOURCES(XKey_RCC_SRCS res.qrc)
 
 set(Libraries Qt5::Widgets )
 
-add_executable(XKey_qt ${XKey_SRCS} ${XKey_Qt_SRCS} ${XKey_MOC} ${XKey_UI} ${XKey_RCC_SRCS} ${TP_Json_SRCS} )
+add_executable(XKey_qt ${XKey_Qt_SRCS} ${XKey_MOC} ${XKey_UI} ${XKey_RCC_SRCS} )
 target_link_libraries(XKey_qt ${Libraries} ${XKeyLibraries} )
 
 qt5_use_modules(XKey_qt Widgets Qml OpenGL)

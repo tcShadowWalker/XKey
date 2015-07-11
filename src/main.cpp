@@ -5,8 +5,6 @@
 #include <algorithm>
 #include <vector>
 #include <cstring>
-
-#include <openssl/evp.h>
 #include <boost/program_options.hpp>
 
 std::string get_password ();
@@ -74,7 +72,7 @@ int main (int argc, char** argv) {
 	}
 	// TODO key_file
 	
-	OpenSSL_add_all_ciphers();
+	XKey::CryptStream::InitCrypto();
 	
 	if (input_file.size() <= 0) {
 		std::cerr << "Input file is required!\n";
