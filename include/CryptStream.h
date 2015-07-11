@@ -8,6 +8,8 @@ struct bio_st;
 struct evp_cipher_st;
 struct evp_cipher_ctx_st;
 struct env_md_st;
+struct env_md_ctx_st;
+struct evp_pkey_st;
 
 namespace XKey {
 
@@ -78,6 +80,7 @@ private:
 	
 	std::vector<char> _buffer;
 	std::shared_ptr<evp_cipher_ctx_st> _cipherCtx;
+	std::shared_ptr<env_md_ctx_st> _mdCtx;
 	struct bio_st *_bio_chain = 0;
 	struct bio_st *_file_bio = 0;
 	struct bio_st *_base64_bio = 0;
@@ -89,6 +92,10 @@ private:
 	std::string _iv;
 	const evp_cipher_st *_cipher = 0;
 	const env_md_st *_md = 0;
+	std::shared_ptr<evp_pkey_st> _mdKey;
+	
+	struct BlockHead;
+	void makeMessageDigest (const unsigned char *data, size_t length, unsigned char *mdOut);
 };
 
 }
