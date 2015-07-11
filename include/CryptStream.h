@@ -2,9 +2,12 @@
 
 #include <streambuf>
 #include <vector>
+#include <memory>
 
 struct bio_st;
 struct evp_cipher_st;
+struct evp_cipher_ctx_st;
+struct env_md_st;
 
 namespace XKey {
 
@@ -33,7 +36,8 @@ public:
 		WRITE = 2
 	};
 	
-	CryptStream (const std::string &filename, OperationMode open_mode, int mode = BASE64_ENCODED | USE_ENCRYPTION | EVALUATE_FILE_HEADER);
+	CryptStream (const std::string &filename, OperationMode open_mode,
+		     int mode = BASE64_ENCODED | USE_ENCRYPTION | EVALUATE_FILE_HEADER);
 	~CryptStream ();
 	
 	bool isEncrypted () const;
@@ -44,12 +48,15 @@ public:
 	 * @brief Set the key for encryption and decryption, if not specified for the constructor
 	 * @param passphrase The passphrase to derive the key from
 	 * @param cipherName OpenSSL-name of the encryption cipher to use. Defaults to AES in CTR mode.
+	 * @param digestName Message-Digest algorithm to use. Defaults to SHA-256.
 	 * @param iv initialization vector to use. If empty, a random one will be generated
 	 * @param keyIterationCount number of iterations to derive the encryption key. If -1, defaults to DEFAULT_KEY_ITERATION_COUNT
 	 * 
 	 * This method uses PBKDF2 to derive the real encryption key from the passphrase
 	 */
-	void setEncryptionKey (std::string passphrase, const char *cipherName = nullptr, const char *iv = nullptr, int keyIterationCount = -1);
+	void setEncryptionKey (const std::string &passphrase, const char *cipherName = nullptr,
+			       const char *digestName = nullptr,
+			       const char *iv = nullptr, int keyIterationCount = -1);
 	
 private:
 	// overrides base class behaviour:
@@ -70,17 +77,18 @@ private:
 	CryptStream &operator= (const CryptStream &);
 	
 	std::vector<char> _buffer;
-	struct bio_st *_bio_chain;
-	struct bio_st *_crypt_bio;
-	struct bio_st *_file_bio;
-	struct bio_st *_base64_bio;
+	std::shared_ptr<evp_cipher_ctx_st> _cipherCtx;
+	struct bio_st *_bio_chain = 0;
+	struct bio_st *_file_bio = 0;
+	struct bio_st *_base64_bio = 0;
 	OperationMode _mode;
 	int _version;
-	bool _initialized;
+	bool _initialized = false;
 	//
-	int _pbkdfIterationCount;
+	int _pbkdfIterationCount = DEFAULT_KEY_ITERATION_COUNT;
 	std::string _iv;
-	const evp_cipher_st *_cipher;
+	const evp_cipher_st *_cipher = 0;
+	const env_md_st *_md = 0;
 };
 
 }

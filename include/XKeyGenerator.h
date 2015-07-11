@@ -5,7 +5,7 @@
 
 namespace XKey {
 
-static std::initializer_list<char> SpecialCharPool = {'!', '$', '%', '&', '/', '(', ')', '=', '?', '*', '+', '-',
+const std::initializer_list<char> SpecialCharPool = {'!', '$', '%', '&', '/', '(', ')', '=', '?', '*', '+', '-',
 	'_', '.', ',', ':', ';', '~', '{', '}', '[', ']', '^', '#', '<', '>'
 };
 

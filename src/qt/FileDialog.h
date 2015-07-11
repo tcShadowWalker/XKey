@@ -9,10 +9,12 @@ class SaveFilePassphraseDialog;
 
 const int DEFAULT_KEY_ITERATION_COUNT = 100000;
 extern const char *DEFAULT_CIPHER_ALGORITHM;
+extern const char *DEFAULT_DIGEST_ALGORITHM;
 
 struct SaveFileOptions {
 	bool use_encryption;
 	std::string cipher_name;
+	std::string digest_name;
 	bool use_encoding;
 	bool write_header;
 	bool always_ask_password;
@@ -21,7 +23,8 @@ struct SaveFileOptions {
 	int makeCryptStreamMode () const;
 	
 	inline SaveFileOptions() : use_encryption(true), cipher_name(DEFAULT_CIPHER_ALGORITHM),
-		use_encoding(true), write_header(true), always_ask_password(true), key_iteration_count(DEFAULT_KEY_ITERATION_COUNT) { }
+		digest_name(DEFAULT_DIGEST_ALGORITHM), use_encoding(true), write_header(true),
+		always_ask_password(true), key_iteration_count(DEFAULT_KEY_ITERATION_COUNT) { }
 	inline ~SaveFileOptions () {
 		// Clear passphrase on destruction
 		std::fill (_lastPassword.begin(), _lastPassword.end(), '\0');

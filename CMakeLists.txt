@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.6)
 
 set(CMAKE_PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
-set(CMAKE_CXX_FLAGS -std=c++11 )
+set(CMAKE_CXX_FLAGS "-std=c++11 -Wall")
 
 find_package(OpenSSL)
 
@@ -31,5 +31,8 @@ install(TARGETS XKey RUNTIME DESTINATION bin)
 
 add_executable(XTest EXCLUDE_FROM_ALL ${SrcDir}/test.cpp ${XKey_SRCS} ${TP_Json_SRCS} )
 target_link_libraries(XTest ${XKeyLibraries} ${Boost_PROGRAM_OPTIONS_LIBRARY}  )
+
+add_executable(WriteTest EXCLUDE_FROM_ALL ${SrcDir}/write_test.cpp ${XKey_SRCS} ${TP_Json_SRCS} )
+target_link_libraries(WriteTest ${XKeyLibraries} ${Boost_PROGRAM_OPTIONS_LIBRARY}  )
 
 add_subdirectory(src/qt)

@@ -235,7 +235,8 @@ void XKeyApplication::saveFile (const QString &filename, SaveFileOptions &sopt) 
 		XKey::Writer w;
 		XKey::CryptStream crypt_source (filename.toStdString(), XKey::CryptStream::WRITE, sopt.makeCryptStreamMode());
 		XKey::Writer::setRestrictiveFilePermissions (filename.toStdString());
-		crypt_source.setEncryptionKey (passwd.toStdString(), sopt.cipher_name.c_str(), nullptr, sopt.key_iteration_count);
+		crypt_source.setEncryptionKey (passwd.toStdString(), sopt.cipher_name.c_str(),
+					       sopt.digest_name.c_str(), nullptr, sopt.key_iteration_count);
 		// 
 		std::ostream osource (&crypt_source);
 		// If we don't use encryption, we want formatted output.
@@ -464,6 +465,7 @@ void XKeyApplication::aboutDialogClicked () {
 // SFO
 
 const char *DEFAULT_CIPHER_ALGORITHM = "AES-256-CTR";
+const char *DEFAULT_DIGEST_ALGORITHM = "SHA-256";
 
 int SaveFileOptions::makeCryptStreamMode () const {
 	int m = 0;
