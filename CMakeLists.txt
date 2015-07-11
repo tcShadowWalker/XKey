@@ -25,14 +25,17 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/include )
 
-add_executable(XKey ${SrcDir}/main.cpp ${XKey_SRCS} ${TP_Json_SRCS} )
+add_executable(XKey ${SrcDir}/main.cpp ${SrcDir}/UtilFunctions.cpp
+	${XKey_SRCS} ${TP_Json_SRCS} )
 target_link_libraries(XKey ${XKeyLibraries} ${Boost_PROGRAM_OPTIONS_LIBRARY}  )
 install(TARGETS XKey RUNTIME DESTINATION bin)
 
-add_executable(XTest EXCLUDE_FROM_ALL ${SrcDir}/test.cpp ${XKey_SRCS} ${TP_Json_SRCS} )
+add_executable(XTest EXCLUDE_FROM_ALL ${SrcDir}/test.cpp ${SrcDir}/UtilFunctions.cpp
+	${XKey_SRCS} ${TP_Json_SRCS} )
 target_link_libraries(XTest ${XKeyLibraries} ${Boost_PROGRAM_OPTIONS_LIBRARY}  )
 
-add_executable(WriteTest EXCLUDE_FROM_ALL ${SrcDir}/write_test.cpp ${XKey_SRCS} ${TP_Json_SRCS} )
+add_executable(WriteTest EXCLUDE_FROM_ALL ${SrcDir}/write_test.cpp ${SrcDir}/UtilFunctions.cpp
+	${XKey_SRCS} ${TP_Json_SRCS} )
 target_link_libraries(WriteTest ${XKeyLibraries} ${Boost_PROGRAM_OPTIONS_LIBRARY}  )
 
 add_subdirectory(src/qt)

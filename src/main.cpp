@@ -3,52 +3,18 @@
 #include <XKeyJsonSerialization.h>
 #include <iostream>
 #include <algorithm>
-#include <string>
 #include <vector>
 #include <cstring>
-
-// Needed for no-echo password query
-#include <termios.h>
-#include <stdio.h>
 
 #include <openssl/evp.h>
 #include <boost/program_options.hpp>
 
-std::string get_password () {
-	std::string pwd;
-	struct termios t;
-	tcgetattr(STDIN_FILENO, &t);
-	t.c_lflag &= ~ECHO;
-	tcsetattr(STDIN_FILENO, TCSANOW, &t);
-	std::cin >> pwd;
-	t.c_lflag |= ECHO;
-	tcsetattr(STDIN_FILENO, TCSANOW, &t);
-	return pwd;
-}
+std::string get_password ();
+void print_folder (const XKey::Folder &f, int print_options, int depth = 0, std::ostream &out = std::cout);
 
 enum PrintOptions {
 	PRINT_PASSWORD = 4
 };
-
-void print_folder (const XKey::Folder &f, int print_options, int depth = 0) {
-	if (depth != 0)
-		std::cout << std::string(depth*2, '-') << " " << f.name() << "\n";
-	for (const auto &it : f.entries()) {
-		std::cout << std::string(depth*2, '-') << "    # " << it.title();
-		if (it.username().size() > 0)
-			std::cout << ", User: " << it.username();
-		if (it.url().size() > 0) {
-			std::cout << ", " << it.url();
-		}
-		if (print_options & PRINT_PASSWORD) {
-			std::cout << ", Password: " << it.password() << " ";
-		}
-		std::cout << "\n";
-	}
-	for (const auto &it : f.subfolders()) {
-		print_folder(it, print_options, depth+1);
-	}
-}
 
 std::string input_file, output_file, search_path, key_file;
 bool output_no_encrypt = false, output_no_encode = false, output_no_header = false;

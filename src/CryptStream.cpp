@@ -263,19 +263,21 @@ CryptStream::int_type CryptStream::overflow (int_type ch) {
 	
 	BlockHead head;
 	head.length = n;
-	unsigned char cryptBlock[ EVP_MAX_BLOCK_LENGTH ];
-	int length;
+	unsigned char cryptBlock[ n + EVP_MAX_BLOCK_LENGTH ];
+	int length = EVP_MAX_BLOCK_LENGTH;
 	if (EVP_CipherUpdate(&*_cipherCtx, cryptBlock, &length, (const unsigned char*)pbase(), n) != 1)
 		throw std::runtime_error ("Failed to encrypt block");
+	assert (length == n);
 	
 	uint checkSumLength;
 	if (EVP_Digest(cryptBlock, length, &head.checksum[0], &checkSumLength, _md, nullptr) != 1)
 		throw std::runtime_error ("Failed to compute message digest");
+	assert (checkSumLength <= MaxCheckSumLength);
 	
 	size_t r = BIO_write(_bio_chain, &head, sizeof(head.length) + checkSumLength);
 	if (r <= 0)
 		throw std::runtime_error ("Error writing to OpenSSL BIO (1)");
-	r = BIO_write(_bio_chain, pbase(), n);
+	r = BIO_write(_bio_chain, cryptBlock, length);
 	if (r <= 0)
 		throw std::runtime_error ("Error writing to OpenSSL BIO (2)");
 	return r;
