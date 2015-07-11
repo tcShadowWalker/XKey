@@ -13,9 +13,10 @@
 std::string get_password ();
 void print_folder (const XKey::Folder &f, int print_options, int depth = 0, std::ostream &out = std::cout);
 
+const int WriteMode = XKey::EVALUATE_FILE_HEADER | XKey::BASE64_ENCODED | XKey::USE_ENCRYPTION;
+
 bool writeToFile (const XKey::Folder &root, const std::string &filename, const std::string &key) {
-	const int mode = XKey::EVALUATE_FILE_HEADER;
-	XKey::CryptStream crypt_source (filename, XKey::CryptStream::WRITE, mode);
+	XKey::CryptStream crypt_source (filename, XKey::CryptStream::WRITE, WriteMode);
 	crypt_source.setEncryptionKey(key);
 	std::ostream stream (&crypt_source);
 	stream.exceptions (std::ios_base::badbit);
@@ -29,7 +30,7 @@ bool writeToFile (const XKey::Folder &root, const std::string &filename, const s
 }
 
 bool readFromFile (XKey::RootFolder_Ptr *root, const std::string &filename, const std::string &key) {
-	XKey::CryptStream crypt_source (filename, XKey::CryptStream::READ);
+	XKey::CryptStream crypt_source (filename, XKey::CryptStream::READ, WriteMode);
 	crypt_source.setEncryptionKey(key);
 	std::istream stream (&crypt_source);
 	stream.exceptions (std::ios_base::badbit);
@@ -46,7 +47,7 @@ bool readFromFile (XKey::RootFolder_Ptr *root, const std::string &filename, cons
 using namespace XKey;
 int main (int argc, char** argv) {
 	if (argc < 2) {
-		std::cerr << "Usage: write_test keystore_file\n";
+		std::cerr << "Usage: WriteTest keystore_file\n";
 		return -1;
 	}
 	
@@ -59,11 +60,12 @@ int main (int argc, char** argv) {
 	std::string key = "ABC";
 	
 	XKey::RootFolder_Ptr root = XKey::createRootFolder();
-	root->addEntry (Entry{"SomeTitle1", "User", "Url", "PwdXXX", "E-Mail", "Comment"});
-	root->addEntry (Entry{"SomeTitle3", "User3", "Url3", "PwdXXX", "E-Mail3", "Comment3"});
-	XKey::Folder *f = root->createSubfolder ("SomeNewFolder");
+	XKey::Folder *f = root->createSubfolder ("First Subfolder");
+	f->addEntry (Entry{"SomeTitle1", "User", "Url", "PwdXXX", "E-Mail", "Comment"});
+	f->addEntry (Entry{"SomeTitle3", "User3", "Url3", "PwdXXX", "E-Mail3", "Comment3"});
+	f = root->createSubfolder ("Second Subfolder");
 	f->addEntry (Entry{"SubTitle2", "User2", "Url2", "PwdXXX2", "E-Mail2", "Comment2"});
-	root->addEntry (Entry{"SomeTitle4", "User4", "Url4", "PwdXXX", "E-Mail4", "Comment4"});
+	f->addEntry (Entry{"SomeSubTitle4", "User4", "Url4", "PwdXXX", "E-Mail4", "Comment4"});
 	
 	if (!writeToFile (*root, filename, key))
 		return 1;
