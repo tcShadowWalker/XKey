@@ -14,7 +14,7 @@ namespace XKey {
 struct ExceptionMaskReset
 {
 	ExceptionMaskReset (std::basic_ios<char> &ps) : s(ps), origState (s.exceptions()) {
-		s.exceptions(origState | std::ios::badbit);
+		s.exceptions(origState | std::ios::badbit | std::ios::failbit);
 	}
 	~ExceptionMaskReset () {
 		s.exceptions(origState);
@@ -32,8 +32,8 @@ bool Parser::read (std::istream &stream, Folder *new_folder_root) {
 		this->errorMsg = "Could not open file";
 		return false;
 	}
+	
 	ExceptionMaskReset excMaskReset (stream);
-
 	try {
 		Json::Reader r;
 		Json::Value json_root;
@@ -46,6 +46,7 @@ bool Parser::read (std::istream &stream, Folder *new_folder_root) {
 		}
 	} catch (const std::exception &e) {
 		this->errorMsg = e.what();
+		stream.clear();
 		return false;
 	}
 }
@@ -142,6 +143,7 @@ bool Writer::write (std::ostream &stream, const Folder &rootNode, bool write_for
 	}
 	if (!stream.good()) {
 		errorMsg = "Could not write to output filestream";
+		stream.clear();
 		return false;
 	}
 	return true;

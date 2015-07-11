@@ -73,6 +73,8 @@ public:
 	
 	/// Init crypto library after application startup
 	static void InitCrypto ();
+	
+	static int Version ();
 private:
 	// Get:
 	int_type underflow() override;

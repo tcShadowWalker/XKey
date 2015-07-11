@@ -18,6 +18,7 @@ void CryptStream::InitCrypto () {
 	OpenSSL_add_all_ciphers();
 	OpenSSL_add_all_digests();
 }
+int CryptStream::Version () { return CURRENT_XKEY_FORMAT_VERSION; }
 
 /// Unsigned char string to hexadecimal representation
 static std::string uc2hex (const unsigned char *in, int in_length) {

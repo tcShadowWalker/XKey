@@ -32,5 +32,8 @@ add_executable(XKey ${SrcDir}/main.cpp ${SrcDir}/UtilFunctions.cpp )
 target_link_libraries(XKey ${XKeyLibraries} ${Boost_PROGRAM_OPTIONS_LIBRARY}  )
 install(TARGETS XKey RUNTIME DESTINATION bin)
 
-add_subdirectory(test)
 add_subdirectory(src/qt)
+
+if(TEST)
+	add_subdirectory(test)
+endif()

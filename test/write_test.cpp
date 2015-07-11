@@ -1,47 +1,12 @@
 #include "XKey.h"
 #include "CryptStream.h"
 #include <iostream>
-#include <string>
-#include <cstring>
-// Needed for no-echo password query
-#include <termios.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <XKeyJsonSerialization.h>
 
 std::string get_password ();
 void print_folder (const XKey::Folder &f, int print_options, int depth = 0, std::ostream &out = std::cout);
 
-const int WriteMode = XKey::EVALUATE_FILE_HEADER | XKey::BASE64_ENCODED | XKey::USE_ENCRYPTION;
-
-bool writeToFile (const XKey::Folder &root, const std::string &filename, const std::string &key) {
-	XKey::CryptStream crypt_source (filename, XKey::CryptStream::WRITE, WriteMode);
-	crypt_source.setEncryptionKey(key);
-	std::ostream stream (&crypt_source);
-	stream.exceptions (std::ios_base::badbit);
-	
-	XKey::Writer writer;
-	if (!writer.write(stream, root, false)) {
-		std::cerr << "Write Error: " << writer.error() << "\n";
-		return false;
-	}
-	return true;
-}
-
-bool readFromFile (XKey::RootFolder_Ptr *root, const std::string &filename, const std::string &key) {
-	XKey::CryptStream crypt_source (filename, XKey::CryptStream::READ, WriteMode);
-	crypt_source.setEncryptionKey(key);
-	std::istream stream (&crypt_source);
-	stream.exceptions (std::ios_base::badbit);
-	
-	*root = XKey::createRootFolder();
-	XKey::Parser reader;
-	if (!reader.read(stream, root->get())) {
-		std::cerr << "Read Error: " << reader.error() << "\n";
-		return false;
-	}
-	return true;
-}
+bool writeToFile (const XKey::Folder &root, const std::string &filename, const std::string &key);
+bool readFromFile (XKey::RootFolder_Ptr *root, const std::string &filename, const std::string &key);
 
 using namespace XKey;
 int main (int argc, char** argv) {
@@ -69,7 +34,7 @@ int main (int argc, char** argv) {
 		return 1;
 	
 	XKey::RootFolder_Ptr cmpRoot;
-	if (!readFromFile (&cmpRoot, filename, "XXA"))
+	if (!readFromFile (&cmpRoot, filename, key))
 		return 1;
 
 	print_folder(*cmpRoot, 0);
