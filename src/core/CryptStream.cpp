@@ -42,15 +42,16 @@ static std::string hex2uc (const char *in, int in_length) {
 	return out;
 }
 
+const size_t BufSize = 256;
 CryptStream::CryptStream (const std::string &filename, OperationMode open_mode, int m_info)
-	: _buffer(std::max(256, put_back_) + put_back_),
+	: _buffer( BufSize + put_back_),
 	_cipherCtx(nullptr, &EVP_CIPHER_CTX_free),
 	_mdCtx(nullptr, &EVP_MD_CTX_destroy),
 	_mdKey(nullptr, &EVP_PKEY_free),
 	_bio_chain(nullptr, &BIO_free_all),
 	_mode(open_mode), _version(CURRENT_XKEY_FORMAT_VERSION)
 {	
-	char *end = &_buffer.front() + _buffer.size();
+	char *end = &_buffer.front() + BufSize;
 	setg(end, end, end);
 	
 	setp(&_buffer.front(), end - 2); // -1 to make overflow() easier, another -1 to terminate with null

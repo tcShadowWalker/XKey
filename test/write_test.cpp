@@ -26,9 +26,11 @@ int main (int argc, char** argv) {
 	XKey::Folder *f = root->createSubfolder ("First Subfolder");
 	f->addEntry (Entry{"SomeTitle1", "User", "Url", "PwdXXX", "E-Mail", "Comment"});
 	f->addEntry (Entry{"SomeTitle3", "User3", "Url3", "PwdXXX", "E-Mail3", "Comment3"});
-	f = root->createSubfolder ("Second Subfolder");
-	f->addEntry (Entry{"SubTitle2", "User2", "Url2", "PwdXXX2", "E-Mail2", "Comment2"});
-	f->addEntry (Entry{"SomeSubTitle4", "User4", "Url4", "PwdXXX", "E-Mail4", "Comment4"});
+	for (int i = 0; i < 10; ++i) {
+		f = f->createSubfolder ("New Subfolder");
+		f->addEntry (Entry{"SubTitle2", "User2", "Url2", "PwdXXX2", "E-Mail2", "Comment2"});
+		f->addEntry (Entry{"SomeSubTitle4", "User4", "Url4", "PwdXXX", "E-Mail4", "Comment4"});
+	}
 	
 	if (!writeToFile (*root, filename, key))
 		return 1;

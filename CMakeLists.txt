@@ -34,6 +34,6 @@ install(TARGETS XKey RUNTIME DESTINATION bin)
 
 add_subdirectory(src/qt)
 
-if(TEST)
+#if(TEST)
 	add_subdirectory(test)
-endif()
+#endif()
