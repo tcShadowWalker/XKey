@@ -5,14 +5,17 @@ A binary with command line interface can be built as well.
 
 ### Folder Structure
 
-    - src/              Source files for XKey core and command line interface
+    - src/              Source files for XKey command line interface binaries
+    - src/core          Source files for XKey core library
     - src/qt            Sources for QT user interface
     - ui/               QT user interface XML files
+    - test/             Test files and experimental code
     - ThirdParty        Included external libraries
  
 ### Encryption
 
-- AES-256-CTR Mode (configurable)
+- AES-256-CTR Mode with SHA256 as digest algorithm (configurable)
 - PBKDF2 Key derivation function with 100.000 iterations per default (configurable)
 - Using the vetted OpenSSL library (libcrypto)
 - Configurable passphrase generation algorithm (length, alphanumeric, special chars)
+
