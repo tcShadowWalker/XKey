@@ -1,10 +1,10 @@
 #include <QtWidgets/QApplication>
 #include <QSettings>
 #include "XKeyApplication.h"
-#include <openssl/evp.h>
+#include <CryptStream.h>
 
 int main (int argc, char** argv) {
-	SSLeay_add_all_algorithms();
+	XKey::CryptStream::InitCrypto();
 	QApplication app (argc, argv);
 	QSettings settings ("jp-dev.org", "XKey");
 	XKeyApplication xkey (&settings);
