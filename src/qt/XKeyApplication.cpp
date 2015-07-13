@@ -127,7 +127,6 @@ XKeyApplication::XKeyApplication(QSettings *sett)
 
 XKeyApplication::~XKeyApplication() {
 	saveApplicationState();
-	mMain->close();
 	delete mUi;
 }
 
@@ -214,6 +213,22 @@ void XKeyApplication::openFile (const QString &filename) {
 	}
 }
 
+class TmpFile
+{
+public:
+	TmpFile (const std::string &filenamePrefix) {
+		file = filenamePrefix + ".tmp";
+	}
+	~TmpFile () {
+		try {
+			XKey::Writer::removeFile (file);
+		} catch (...) { } // Drop exception
+	}
+	const std::string &name () const { return file; }
+private:
+	std::string file;
+};
+
 void XKeyApplication::saveFile (const QString &filename, SaveFileOptions &sopt) {
 	QString errorMsg;
 	bool success = false;
@@ -253,16 +268,19 @@ void XKeyApplication::saveFile (const QString &filename, SaveFileOptions &sopt) 
 				return;
 			}
 		}
+		const std::string targetFile = filename.toStdString();
+		TmpFile tmpFile (targetFile);
 		XKey::Writer w;
-		XKey::CryptStream crypt_source (filename.toStdString(), XKey::CryptStream::WRITE, sopt.makeCryptStreamMode());
-		XKey::Writer::setRestrictiveFilePermissions (filename.toStdString());
+		XKey::CryptStream crypt_source (tmpFile.name(), XKey::CryptStream::WRITE, sopt.makeCryptStreamMode());
+		XKey::Writer::setRestrictiveFilePermissions (tmpFile.name());
 		crypt_source.setEncryptionKey (passwd.toStdString(), sopt.cipher_name.c_str(),
 					       sopt.digest_name.c_str(), nullptr, sopt.key_iteration_count);
 		// 
 		std::ostream osource (&crypt_source);
 		// If we don't use encryption, we want formatted output.
-		bool writeFormatted = (sopt.use_encryption == false);
-		if (w.write(osource, *mRoot, writeFormatted)) {
+		int flags = (sopt.use_encryption == false) ? XKey::Writer::WRITE_FORMATTED : XKey::Writer::WRITE_NONE;
+		if (w.write(osource, *mRoot, flags)) {
+			XKey::Writer::moveFile (tmpFile.name(), targetFile);
 			success = true;
 			madeChanges = false;
 			addRecentFile (filename);
@@ -485,7 +503,7 @@ void XKeyApplication::aboutDialogClicked () {
 // SFO
 
 const char *DEFAULT_CIPHER_ALGORITHM = "AES-256-CTR";
-const char *DEFAULT_DIGEST_ALGORITHM = "SHA-256";
+const char *DEFAULT_DIGEST_ALGORITHM = "SHA256";
 
 int SaveFileOptions::makeCryptStreamMode () const {
 	int m = 0;

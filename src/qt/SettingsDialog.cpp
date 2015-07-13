@@ -74,6 +74,7 @@ const std::initializer_list<Option> configOptions = {
 	Option("keystore/include_header", true, &Diag::headerCheckBox, &SFO::write_header),
 	Option("keystore/key_iteration_count", DEFAULT_KEY_ITERATION_COUNT, &Diag::keyIterationSpinBox, &SFO::key_iteration_count),
 	Option("keystore/algorithm", DEFAULT_CIPHER_ALGORITHM, &Diag::cipherComboBox, &SFO::cipher_name),
+	Option("keystore/digest_algorithm", DEFAULT_DIGEST_ALGORITHM, &Diag::digestAlgoComboBox, &SFO::digest_name),
 	Option(GenerationSpecial, false, &Diag::specialCharCheckBox, nullptr),
 	Option(GenerationNumerics, true, &Diag::numericsCheckBox, nullptr),
 	Option(GenerationMixed, true, &Diag::uppercaseCheckBox, nullptr),

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>579</width>
-    <height>379</height>
+    <width>622</width>
+    <height>419</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -156,7 +156,7 @@
       <item>
        <widget class="QComboBox" name="cipherComboBox">
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The used encryption cipher from the OpenSSL library&lt;br/&gt;that is used to encrypt databases.&lt;/p&gt;&lt;p&gt;You can choose between a few different block modes.&lt;/p&gt;&lt;p&gt;Recommended: &lt;span style=&quot; font-weight:600;&quot;&gt;AES-256-CTR&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The used encryption cipher from the OpenSSL library that is used to encrypt databases.&lt;/p&gt;&lt;p&gt;You can choose between a few different block modes.&lt;/p&gt;&lt;p&gt;Recommended: &lt;span style=&quot; font-weight:600;&quot;&gt;AES-256-CTR&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="editable">
          <bool>false</bool>
@@ -177,6 +177,29 @@
         <item>
          <property name="text">
           <string>AES-256-OFB</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="digestAlgoComboBox">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The used digest algorithm from the OpenSSL library that is used to ensure file integrity.&lt;/p&gt;
+&lt;p&gt;Recommended: &lt;span style=&quot; font-weight:600;&quot;&gt;SHA256&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>SHA256</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>SHA384</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>SHA512</string>
          </property>
         </item>
        </widget>
