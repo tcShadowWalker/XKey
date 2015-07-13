@@ -164,7 +164,6 @@ void CryptStream::_evaluateHeader (int *headerMode) {
 void CryptStream::setEncryptionKey (const std::string &passphrase, const char *cipherName,
 				    const char *digestName, const char *ivParam, int keyIterationCount)
 {
-	printf ("PWD: %s, Ciph: %s, Dig: %s, keyIt: %i\n", passphrase.c_str(), cipherName, digestName, keyIterationCount);
 	if (!_cipherCtx)
 		throw std::logic_error ("CryptSteam was not set up to use encryption");
 	if (!_cipher) {

@@ -35,7 +35,13 @@ private:
 class Writer
 {
 public:
-	bool write (std::ostream &out, const Folder &root, bool write_formatted = false);
+	enum WriterFlags {
+		WRITE_NONE = 0,
+		/// Write formatted Json output
+		WRITE_FORMATTED = 1,
+	};
+
+	bool write (std::ostream &out, const Folder &root, int flags = WRITE_NONE);
 
 	const std::string& error () const;
 
@@ -50,6 +56,16 @@ public:
 
 	/// Make a file readable and writable only by it's owner
 	static void setRestrictiveFilePermissions (const std::string &filename);
+	
+	/**
+	 * @brief Move a file in the file-system, preserving it's attributes
+	 */
+	static void moveFile (const std::string &sourceFile, const std::string &targetFile);
+	
+	/**
+	 * @brief Remove a file from the filesystem
+	 */
+	static void removeFile (const std::string &file);
 private:
 	void serialize_folder (Json::Value &parent, const Folder &folder);
 	

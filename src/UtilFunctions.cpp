@@ -51,7 +51,7 @@ bool writeToFile (const XKey::Folder &root, const std::string &filename, const s
 	stream.exceptions (std::ios_base::badbit);
 	
 	XKey::Writer writer;
-	if (!writer.write(stream, root, false)) {
+	if (!writer.write(stream, root)) {
 		std::cerr << "Write Error: " << writer.error() << "\n";
 		return false;
 	}

@@ -151,7 +151,7 @@ int main (int argc, char** argv) {
 			XKey::Writer::setRestrictiveFilePermissions (output_file);
 			crypt_filter.setEncryptionKey (outkey);
 			XKey::Writer w;
-			if (!w.write(stream, *f, pretty_print)) {
+			if (!w.write(stream, *f, (pretty_print) ? XKey::Writer::WRITE_FORMATTED : XKey::Writer::WRITE_NONE)) {
 				std::cerr << "Error: " << w.error() << "\n";
 				return -1;
 			}

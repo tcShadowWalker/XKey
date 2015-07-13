@@ -6,6 +6,8 @@
 // Unix
 #include <sys/stat.h>
 #include <unistd.h>
+#include <errno.h>
+#include <string.h>
 
 namespace XKey {
 
@@ -120,7 +122,23 @@ void Writer::setRestrictiveFilePermissions (const std::string &filename) {
 		throw std::runtime_error ("Could not set permissions on file");
 }
 
-bool Writer::write (std::ostream &stream, const Folder &rootNode, bool write_formatted) {
+void Writer::moveFile (const std::string &sourceFile, const std::string &targetFile) {
+	int r = rename(sourceFile.c_str(), targetFile.c_str());
+	if (r != 0) {
+		throw std::runtime_error ("Failed to rename file " + sourceFile +  " to "
+			+ targetFile + ": " + std::string(strerror(errno)));
+	}
+}
+
+void Writer::removeFile (const std::string &file) {
+	int r = remove(file.c_str());
+	if (r != 0) {
+		throw std::runtime_error ("Failed to remove file "
+			+ file +  ": " + std::string(strerror(errno)));
+	}
+}
+
+bool Writer::write (std::ostream &stream, const Folder &rootNode, int flags) {
 	if (!stream.good()) {
 		this->errorMsg = "Could not open file";
 		return false;
@@ -130,7 +148,7 @@ bool Writer::write (std::ostream &stream, const Folder &rootNode, bool write_for
 	Json::Value jsonRoot;
 	serialize_folder (jsonRoot, rootNode);
 	std::unique_ptr<Json::Writer> wptr;
-	if (write_formatted)
+	if (flags & WRITE_FORMATTED)
 		wptr.reset(new Json::StyledWriter);
 	else
 		wptr.reset(new Json::FastWriter);
