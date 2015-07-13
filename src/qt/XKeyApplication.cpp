@@ -14,6 +14,8 @@
 #include <QShortcut>
 #include <QClipboard>
 #include <cassert>
+#include <QtWidgets/QMainWindow>
+#include <QCloseEvent>
 // UIs
 #include <ui_Main.h>
 #include <ui_About.h>
@@ -24,6 +26,23 @@ const char *UiRecentFiles = "ui/recentFileList", *UiExampleData = "ui/example_da
 	*UiCustomStyle = "ui/custom_stylesheet";
 }
 
+class MyMainWindow : public QMainWindow
+{
+public:
+	MyMainWindow (XKeyApplication &pApp) : app (pApp) { }
+	
+	void closeEvent (QCloseEvent *evt) override {
+		if (app.askClose() != true) {
+			evt->ignore();
+			return;
+		}
+		evt->accept();
+	}
+	
+private:
+	XKeyApplication &app;
+};
+
 XKeyApplication::XKeyApplication(QSettings *sett)
 	: mSettings(sett), mUi(0), mFolders(0), mKeys(0), madeChanges(false), mRecentFiles(0)
 {
@@ -31,9 +50,10 @@ XKeyApplication::XKeyApplication(QSettings *sett)
 	// Read application settings from hard disk
 	SettingsDialog::readSettings(mSettings, &mGenerator, &mSaveOptions);
 	// Init Ui
-	mMain.restoreGeometry( mSettings->value(UiMain).toByteArray() );
+	mMain.reset (new MyMainWindow {*this});
+	mMain->restoreGeometry( mSettings->value(UiMain).toByteArray() );
 	mUi = new Ui::MainWindow;
-	mUi->setupUi(&mMain);
+	mUi->setupUi(&*mMain);
 	// 
 	mFolders = new FolderListModel (this);
 	mKeys = new KeyListModel (this);
@@ -75,10 +95,10 @@ XKeyApplication::XKeyApplication(QSettings *sett)
 	
 	connect (mUi->keyTable, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(editKey(QModelIndex)));
 	// Search bar:
-	mSearchBar = new QLineEdit (&mMain);
+	mSearchBar = new QLineEdit (&*mMain);
 	mSearchBar->setMinimumWidth(100);
 	mUi->toolBar->addWidget(mSearchBar);
-	QPushButton *searchButton = new QPushButton (tr("Search"), &mMain);
+	QPushButton *searchButton = new QPushButton (tr("Search"), &*mMain);
 	searchButton->setObjectName("searchButton");
 	QShortcut *shCut = new QShortcut(QKeySequence("Return"), mSearchBar, 0, 0, Qt::WidgetShortcut);
 	connect (shCut, SIGNAL(activated()), this, SLOT(startSearch()));
@@ -88,7 +108,7 @@ XKeyApplication::XKeyApplication(QSettings *sett)
 	connect(searchButton, SIGNAL(clicked(bool)), this, SLOT(startSearch()));
 	mUi->toolBar->addWidget(searchButton);
 	
-	mRecentFiles = new QMenu (tr("Open recent"), &mMain);
+	mRecentFiles = new QMenu (tr("Open recent"), &*mMain);
 	loadRecentFileList();
 	QAction *act = mUi->menuFile->insertMenu(mUi->actionOpen, mRecentFiles);
 	act->setIcon(QIcon(tr(":/icons/document-open.png", "Icon for recent documents submenu")));
@@ -101,25 +121,25 @@ XKeyApplication::XKeyApplication(QSettings *sett)
 		mUi->menubar->setStyleSheet ("");
 		mUi->toolBar->setStyleSheet ("");
 		mUi->statusbar->setStyleSheet ("");
-		mMain.setStyleSheet ("");
+		mMain->setStyleSheet ("");
 	}
 }
 
 XKeyApplication::~XKeyApplication() {
 	saveApplicationState();
-	mMain.close();
+	mMain->close();
 	delete mUi;
 }
 
 void XKeyApplication::show() {
-	mMain.show();
+	mMain->show();
 }
 
 // 
 
 bool XKeyApplication::askClose () {
 	if (mFolders && madeChanges) {
-		int answer = QMessageBox::question(&mMain, tr("Close database"),
+		int answer = QMessageBox::question(&*mMain, tr("Close database"),
 				tr("Are you sure you want to close the current database "
 				   "and discard all changes you may have made?"),
 				QMessageBox::Abort | QMessageBox::Yes);
@@ -160,7 +180,7 @@ void XKeyApplication::openFile (const QString &filename) {
 		XKey::Parser p;
 		XKey::CryptStream crypt_source (filename.toStdString(), XKey::CryptStream::READ, mSaveOptions.makeCryptStreamMode());
 		if (crypt_source.isEncrypted()) {
-			FilePasswordDialog pwdDiag (FilePasswordDialog::READ, &mMain);
+			FilePasswordDialog pwdDiag (FilePasswordDialog::READ, &*mMain);
 			if (pwdDiag.exec() != QDialog::Accepted)
 				return;
 			crypt_source.setEncryptionKey(pwdDiag.password().toStdString());
@@ -189,7 +209,8 @@ void XKeyApplication::openFile (const QString &filename) {
 		errorMsg = e.what();
 	}
 	if (!success) {
-		QMessageBox::critical (&mMain, tr("Opening keystore failed"), tr("Opening the file failed:\n%1").arg(errorMsg));
+		QMessageBox::critical (&*mMain, tr("Opening keystore failed"),
+				       tr("Opening the file failed:\n%1").arg(errorMsg));
 	}
 }
 
@@ -199,7 +220,7 @@ void XKeyApplication::saveFile (const QString &filename, SaveFileOptions &sopt) 
 	try {
 		bool correctRead = false;
 		if (XKey::Writer::checkFilePermissions(filename.toStdString(), &correctRead) && !correctRead) {
-			int r = QMessageBox::critical (&mMain, tr("Wrong file permissions"),
+			int r = QMessageBox::critical (&*mMain, tr("Wrong file permissions"),
 				tr("The file has incorrect file permissions\n"
 				"It is probably readable for other users. Do you really want to continue?"),
 				QMessageBox::Save | QMessageBox::Abort);
@@ -214,14 +235,14 @@ void XKeyApplication::saveFile (const QString &filename, SaveFileOptions &sopt) 
 			if (!sopt.password().empty() && !sopt.always_ask_password) {
 				passwd = QString::fromStdString (sopt.password());
 			} else {
-				FilePasswordDialog pwdDiag (FilePasswordDialog::WRITE, &mMain);
+				FilePasswordDialog pwdDiag (FilePasswordDialog::WRITE, &*mMain);
 				if (pwdDiag.exec() != QDialog::Accepted)
 					return;
 				passwd = pwdDiag.password();
 			}
 		} else {
 			// Show warning
-			if (QMessageBox::critical (&mMain, tr("Encryption is disabled"),
+			if (QMessageBox::critical (&*mMain, tr("Encryption is disabled"),
 				tr("<p>You are saving this key database <b>without any encryption</b>.</p>"
 				"<p>Sensitive data will be readable by anyone who has access to the file.</p>"
 				"<p>If you want to re-enable file-encryption, you can do so in the Tools > Settings menu.</p>"
@@ -253,7 +274,7 @@ void XKeyApplication::saveFile (const QString &filename, SaveFileOptions &sopt) 
 		errorMsg = e.what();
 	}
 	if (!success) {
-		QMessageBox::critical (&mMain, tr("Saving keystore failed"), tr("Saving the keystore file failed:\n%1").arg(errorMsg));
+		QMessageBox::critical (&*mMain, tr("Saving keystore failed"), tr("Saving the keystore file failed:\n%1").arg(errorMsg));
 	}
 }
 
@@ -296,7 +317,7 @@ void XKeyApplication::startSearch () {
 
 void XKeyApplication::editKey (const QModelIndex & index) {
 	XKey::Entry &entry = static_cast<XKey::Entry&> (mKeys->folder()->entries().at(index.row()));
-	KeyEditDialog diag (&entry, mKeys->folder(), &mMain, &mGenerator, false);
+	KeyEditDialog diag (&entry, mKeys->folder(), &*mMain, &mGenerator, false);
 	if (diag.exec () == QDialog::Accepted) {
 		diag.makeChanges ();
 		madeChanges = true;
@@ -304,13 +325,13 @@ void XKeyApplication::editKey (const QModelIndex & index) {
 }
 
 void XKeyApplication::showOpenFile () {
-	 QString fileName = QFileDialog::getOpenFileName(&mMain, tr("Open Keystore"), "", tr("Keystore Files (*.xkey)"));
+	 QString fileName = QFileDialog::getOpenFileName(&*mMain, tr("Open Keystore"), "", tr("Keystore Files (*.xkey)"));
 	 if (!fileName.isEmpty()) {
 		 openFile(fileName);
 	 }
 }
 void XKeyApplication::showSaveAsFile () {
-	SaveFileDialog saveDiag (&mMain, mSaveOptions);
+	SaveFileDialog saveDiag (&*mMain, mSaveOptions);
 	if (!currentFileName.isEmpty())
 		saveDiag.setDefaultFile(currentFileName);
 	if (saveDiag.exec () != QDialog::Accepted || saveDiag.selectedFiles().size() == 0)
@@ -341,7 +362,7 @@ void XKeyApplication::addFolderClicked () {
 void XKeyApplication::deleteFolderClicked () {
 	QModelIndexList indexes = mUi->keyTree->selectionModel()->selectedRows();
 	if (indexes.size() > 0) {
-		if (QMessageBox::question(&mMain, tr("Confirm folder deletion"), tr("Are you sure you want to delete the selected folder(s)?"),
+		if (QMessageBox::question(&*mMain, tr("Confirm folder deletion"), tr("Are you sure you want to delete the selected folder(s)?"),
 			QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
 		{
 			if (mFolders->removeRow (indexes.at(0).row(), indexes.at(0).parent())) {
@@ -356,7 +377,7 @@ void XKeyApplication::deleteFolderClicked () {
 }
 
 void XKeyApplication::setEnabled (bool enabled) {
-	QWidget *widgetList[] = { mUi->keyTable, mUi->keyTree, mMain.findChild<QPushButton*> ("searchButton"), mSearchBar
+	QWidget *widgetList[] = { mUi->keyTable, mUi->keyTree, mMain->findChild<QPushButton*> ("searchButton"), mSearchBar
 	};
 	QAction *actionList[] = { mUi->actionSave, mUi->actionSave_As,
 		mUi->actionAddEntry, mUi->actionEditEntry, mUi->actionDeleteEntry, mUi->actionAddFolder, mUi->actionDeleteFolder
@@ -378,19 +399,18 @@ void XKeyApplication::addEntryClicked () {
 						tr("example.org", "NewKeyEntryDomain").toStdString(), tr("", "NewKeyEntryPassword").toStdString(), 
 						tr("user@example.org", "NewKeyEntryEmail").toStdString(), tr("", "NewKeyEntryComment").toStdString() );
 	}
-	KeyEditDialog diag (&entry, mKeys->folder(), &mMain, &mGenerator, true);
+	KeyEditDialog diag (&entry, mKeys->folder(), &*mMain, &mGenerator, true);
 	if (diag.exec () == QDialog::Accepted) {
 		diag.makeChanges ();
+		madeChanges = true;
 		this->mKeys->addEntry(std::move(entry));
 	}
-	madeChanges = true;
 }
 
 void XKeyApplication::editEntryClicked () {
 	QModelIndexList indexes = mUi->keyTable->selectionModel()->selectedRows();
 	if (indexes.size() == 1) {
 		editKey (indexes.at(0));
-		madeChanges = true;
 	}
 }
 
@@ -399,7 +419,7 @@ void XKeyApplication::deleteEntryClicked () {
 	if (indexes.size() == 1) {
 		const int row = indexes.at(0).row();
 		QString entryName = QString::fromStdString (this->mKeys->folder()->getEntryAt(row).title());
-		int rv = QMessageBox::question(&mMain, tr("Confirm deletion"), tr("Do you really want to remove the entry '%1'?").arg(entryName), QMessageBox::Yes | QMessageBox::Cancel);
+		int rv = QMessageBox::question(&*mMain, tr("Confirm deletion"), tr("Do you really want to remove the entry '%1'?").arg(entryName), QMessageBox::Yes | QMessageBox::Cancel);
 		if (rv == QMessageBox::Yes) {
 			this->mKeys->removeEntry(row);
 			madeChanges = true;
@@ -408,7 +428,7 @@ void XKeyApplication::deleteEntryClicked () {
 }
 
 void XKeyApplication::showSettingsDialog () {
-	SettingsDialog diag (mSettings, &mGenerator, &mSaveOptions, &mMain);
+	SettingsDialog diag (mSettings, &mGenerator, &mSaveOptions, &*mMain);
 	diag.exec();
 }
 
@@ -428,7 +448,7 @@ void XKeyApplication::saveApplicationState () {
 	using namespace Settings;
 	mSettings->setValue(UiKeyTable, mUi->keyTable->horizontalHeader()->saveState());
 	mSettings->setValue(UiKeyTree, mUi->keyTree->header()->saveState());
-	mSettings->setValue(UiMain, mMain.saveGeometry());
+	mSettings->setValue(UiMain, mMain->saveGeometry());
 	mSettings->sync();
 }
 
@@ -455,7 +475,7 @@ void XKeyApplication::openRecentFile() {
 }
 
 void XKeyApplication::aboutDialogClicked () {
-	QDialog dialog (&this->mMain);
+	QDialog dialog (&*this->mMain);
 	Ui::AboutDialog about;
 	about.setupUi (&dialog);
 	dialog.exec();

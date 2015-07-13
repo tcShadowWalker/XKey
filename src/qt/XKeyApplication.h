@@ -1,9 +1,9 @@
 #pragma once
 
-#include <QtWidgets/QMainWindow>
 #include <XKey.h>
 #include <XKeyGenerator.h>
 #include "FileDialog.h"
+#include <memory>
 
 class QMenu;
 class QSettings;
@@ -17,7 +17,7 @@ class FolderListModel;
 namespace Ui {
 class MainWindow;
 }
-
+class QMainWindow;
 
 class XKeyApplication
 	: public QObject
@@ -62,7 +62,7 @@ public slots:
 	void aboutDialogClicked ();
 	
 private:
-	QMainWindow mMain;
+	std::unique_ptr<QMainWindow> mMain;
 	QSettings *mSettings;
 	Ui::MainWindow *mUi;
 	FolderListModel *mFolders;
@@ -90,5 +90,7 @@ private:
 	void addRecentFile (QString filename);
 	/// Message timeout for minor notifications in the status bar (in milli-seconds)
 	const int statusBarMessageTimeout = 5000;
+	
+	friend class MyMainWindow;
 };
 
