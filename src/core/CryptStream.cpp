@@ -91,6 +91,8 @@ CryptStream::CryptStream (const std::string &filename, OperationMode open_mode, 
 }
 
 CryptStream::~CryptStream () {
+	if (!_initialized)
+		return;
 	sync();
 	if (_mode == WRITE)
 		(void)BIO_flush(bioChain());
@@ -133,10 +135,10 @@ void CryptStream::_evaluateHeader (int *headerMode) {
 	int r = BIO_read(_file_bio, buf, HeaderBufSize);
 	buf[r] = '\0';
 	int offset = 0;
-	const int ciphNameLen = 30;
+	const int ciphNameLen = 30, ivLen = 64;;
 	char cipherName[ciphNameLen + 1];
 	char digestName[ciphNameLen + 1];
-	char iv[64 + 1];
+	char iv[ivLen + 1];
 	int useEncryption, useBase64Encode;
 	r = sscanf (buf, "*167110* # v:%i # c:%i # e:%i # o:%i # ciph:%30s # iv:%64s # count:%i # md:%30s #",
 	            &this->_version, &useEncryption, &useBase64Encode, &offset, cipherName,
@@ -145,13 +147,11 @@ void CryptStream::_evaluateHeader (int *headerMode) {
 		throw std::runtime_error ("Invalid file header. The file is probably not a valid XKey keystore.");
 	}
 	cipherName[ciphNameLen] = digestName[ciphNameLen] = '\0';
-	this->_cipher = EVP_get_cipherbyname(cipherName);
-	if (!_cipher)
+	if (!(this->_cipher = EVP_get_cipherbyname(cipherName)))
 		throw std::runtime_error ("OpenSSL library does not provide requested Cipher mode from file header");
-	this->_md = EVP_get_digestbyname(digestName);
-	if (!_md)
+	if (!(this->_md = EVP_get_digestbyname(digestName)))
 		throw std::runtime_error ("OpenSSL library does not provide requested Digest algorithm from file header");
-	if (strnlen((const char*)iv, 256) != (size_t)_cipher->iv_len * 2)
+	if (strnlen((const char*)iv, ivLen) != (size_t)_cipher->iv_len * 2)
 		throw std::runtime_error ("Invalid initialization vector length");
 	if (_pbkdfIterationCount <= 0)
 		throw std::runtime_error ("Invalid key iteration count");
@@ -164,6 +164,7 @@ void CryptStream::_evaluateHeader (int *headerMode) {
 void CryptStream::setEncryptionKey (const std::string &passphrase, const char *cipherName,
 				    const char *digestName, const char *ivParam, int keyIterationCount)
 {
+	printf ("PWD: %s, Ciph: %s, Dig: %s, keyIt: %i\n", passphrase.c_str(), cipherName, digestName, keyIterationCount);
 	if (!_cipherCtx)
 		throw std::logic_error ("CryptSteam was not set up to use encryption");
 	if (!_cipher) {
@@ -184,6 +185,8 @@ void CryptStream::setEncryptionKey (const std::string &passphrase, const char *c
 		}
 	}
 	this->_md = (digestName) ? EVP_get_digestbyname(digestName) : EVP_sha256();
+	if (!this->_md)
+		throw std::runtime_error ("OpenSSL library does not provide requested digest algorithm");
 	_pbkdfIterationCount = (keyIterationCount != -1) ? keyIterationCount : DEFAULT_KEY_ITERATION_COUNT;
 	if (_iv.length() != (size_t)_cipher->iv_len)
 		throw std::runtime_error ("Invalid initialization vector length does not match cipher");
@@ -198,7 +201,6 @@ void CryptStream::setEncryptionKey (const std::string &passphrase, const char *c
 	const int enc = (_mode == READ) ? 0 : 1;
 	if (EVP_CipherInit(&*_cipherCtx, _cipher, raw_key, (const unsigned char*)_iv.c_str(), enc) != 1)
 		throw std::runtime_error ("Failed to initialize cipher context");
-
 	if (_mode == WRITE) {
 		_writeHeader();
 	}
@@ -225,6 +227,8 @@ void CryptStream::makeMessageDigest (const unsigned char *data, size_t length, u
 CryptStream::int_type CryptStream::underflow() {
 	if (_mode != READ)
 		throw std::logic_error ("underflow unexpected on write-only CryptStream");
+	if (!_initialized)
+		throw std::logic_error ("CryptStream not fully initialized");
 	if (gptr() < egptr()) // buffer not exhausted
 		return traits_type::to_int_type(*gptr());
 
@@ -237,7 +241,6 @@ CryptStream::int_type CryptStream::underflow() {
 		start += put_back_;
 	}
 	// start is now the start of the buffer, proper.
-
 	BlockHead head;
 	int n = BIO_read(bioChain(), &head, sizeof(head.length) + EVP_MD_size(_md));
 	if (n <= 0) {
@@ -247,6 +250,7 @@ CryptStream::int_type CryptStream::underflow() {
 	}
 	
 	if (_cipherCtx) {
+		assert (_md);
 		// Read to the provided buffer
 		unsigned char bytes[head.length];
 		n = BIO_read(bioChain(), bytes, head.length);
@@ -284,6 +288,8 @@ CryptStream::int_type CryptStream::underflow() {
 CryptStream::int_type CryptStream::overflow (int_type ch) {
 	if (_mode != WRITE)
 		throw std::logic_error ("overflow unexpected on read-only CryptStream");
+	if (!_initialized)
+		throw std::logic_error ("CryptStream not fully initialized");
 	
 	if (ch != traits_type::eof()) {
 		*pptr() = ch;
@@ -296,6 +302,7 @@ CryptStream::int_type CryptStream::overflow (int_type ch) {
 	size_t r;
 	
 	if (_cipherCtx) {
+		assert (_md);
 		BlockHead head;
 		head.length = n;
 		unsigned char cryptBlock[ n + EVP_MAX_BLOCK_LENGTH ];
