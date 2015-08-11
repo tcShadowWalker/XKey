@@ -46,7 +46,7 @@
          <number>256</number>
         </property>
         <property name="value">
-         <number>10</number>
+         <number>12</number>
         </property>
        </widget>
       </item>
@@ -69,7 +69,7 @@
          <number>256</number>
         </property>
         <property name="value">
-         <number>14</number>
+         <number>16</number>
         </property>
        </widget>
       </item>
@@ -108,7 +108,7 @@
       <item row="4" column="0" colspan="2">
        <widget class="QCheckBox" name="specialCharCheckBox">
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Include 'special' characters into generated passphrases.&lt;/p&gt;&lt;p&gt;This greatly improves the strength of passwords,&lt;br/&gt;but makes them also hard to remember.&lt;/p&gt;&lt;p&gt;If you don't need to memorize passwords (because you're always using XKeystore) the recommended value is &lt;span style=&quot; font-weight:600;&quot;&gt;On&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;'Special' characters include:&lt;/p&gt;&lt;p&gt;! $ % &amp;amp; / ( ) = ? * + - _ . , : ; ~ { } [ ] ^ # &amp;lt; &amp;gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Include 'special' characters into generated passphrases.&lt;/p&gt;&lt;p&gt;This greatly improves the strength of passwords,&lt;br/&gt;but not all sites allow special characters in passwords.&lt;br/&gt;It also makes them hard to remember.&lt;/p&gt;&lt;p&gt;If you don't need to memorize passwords (because you're always using XKeystore) the recommended value is &lt;span style=&quot; font-weight:600;&quot;&gt;On&lt;/span&gt;.&lt;br/&gt;Otherweise, just pick a sufficient length for passwords.&lt;/p&gt;&lt;p&gt;'Special' characters include:&lt;/p&gt;&lt;p&gt;! $ % &amp;amp; / ( ) = ? * + - _ . , : ; ~ { } [ ] ^ # &amp;lt; &amp;gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Special chars</string>
@@ -211,19 +211,6 @@
         </property>
         <property name="text">
          <string>ASCII armor</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="headerCheckBox">
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Include a cleartext header file into keystores.&lt;/p&gt;&lt;p&gt;Normally, all keystore have a plaintext ascii header,&lt;br/&gt;which indicates the files to be passphrase keystores.&lt;/p&gt;&lt;p&gt;This header helps XKey to recognize the encryption and version settings used for encryption and you might encounter problems when that header ist not present.&lt;/p&gt;&lt;p&gt;Strongly recommended to be &lt;span style=&quot; font-weight:600;&quot;&gt;On&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="text">
-         <string>Include header</string>
         </property>
         <property name="checked">
          <bool>true</bool>

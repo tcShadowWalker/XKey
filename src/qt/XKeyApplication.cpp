@@ -506,11 +506,9 @@ const char *DEFAULT_CIPHER_ALGORITHM = "AES-256-CTR";
 const char *DEFAULT_DIGEST_ALGORITHM = "SHA256";
 
 int SaveFileOptions::makeCryptStreamMode () const {
-	int m = 0;
+	int m = XKey::EVALUATE_FILE_HEADER;
 	if (use_encoding)
 		m |= XKey::BASE64_ENCODED;
-	if (write_header)
-		m |= XKey::EVALUATE_FILE_HEADER;
 	if (use_encryption)
 		m |= XKey::USE_ENCRYPTION;
 	return m;

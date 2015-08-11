@@ -26,8 +26,11 @@ include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/include )
 
 add_library(XKeyLib ${XKey_SRCS} ${TP_Json_SRCS} )
 
+# TODO: REMOVE
+add_definitions(-std=c++11)
+
 add_executable(XKey ${SrcDir}/main.cpp ${SrcDir}/UtilFunctions.cpp )
-target_compile_options(XKey PUBLIC -std=c++11 -Wall -Weffc++ )
+target_compile_options(XKey PUBLIC -std=c++11 -Wall )
 target_link_libraries(XKey ${XKeyLibraries} ${Boost_PROGRAM_OPTIONS_LIBRARY}  )
 install(TARGETS XKey RUNTIME DESTINATION bin)
 

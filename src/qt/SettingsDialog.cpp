@@ -71,7 +71,6 @@ const char *GenerationSpecial = "generation/special_chars", *GenerationNumerics 
 const std::initializer_list<Option> configOptions = {
 	Option("keystore/encrypt", true, &Diag::encryptionCheckBox, &SFO::use_encryption),
 	Option("keystore/base64_encode", true, &Diag::asciiArmorCheckBox, &SFO::use_encoding),
-	Option("keystore/include_header", true, &Diag::headerCheckBox, &SFO::write_header),
 	Option("keystore/key_iteration_count", DEFAULT_KEY_ITERATION_COUNT, &Diag::keyIterationSpinBox, &SFO::key_iteration_count),
 	Option("keystore/algorithm", DEFAULT_CIPHER_ALGORITHM, &Diag::cipherComboBox, &SFO::cipher_name),
 	Option("keystore/digest_algorithm", DEFAULT_DIGEST_ALGORITHM, &Diag::digestAlgoComboBox, &SFO::digest_name),
@@ -79,7 +78,7 @@ const std::initializer_list<Option> configOptions = {
 	Option(GenerationNumerics, true, &Diag::numericsCheckBox, nullptr),
 	Option(GenerationMixed, true, &Diag::uppercaseCheckBox, nullptr),
 	Option(GenerationMin, 12, &Diag::minLengthSpinBox, nullptr),
-	Option(GenerationMax, 15, &Diag::maxLengthSpinBox, nullptr),
+	Option(GenerationMax, 16, &Diag::maxLengthSpinBox, nullptr),
 	// UI
 	Option(UiAlwaysExpand, false, &Diag::expandFoldersCheckBox, nullptr),
 	Option(UiExampleData, true, &Diag::exampleEntriesCheckBox, nullptr),
