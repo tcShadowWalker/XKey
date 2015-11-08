@@ -87,8 +87,8 @@ XKeyApplication::XKeyApplication(QSettings *sett)
 	connect (mUi->actionCopyPassphrase, SIGNAL(triggered()), this, SLOT(copyPassphraseToClipboard()));
 	
 	mUi->keyTree->setSelectionMode (QAbstractItemView::SingleSelection);
-	connect (mUi->keyTree->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
-			 this, SLOT(folderSelectionChanged(const QItemSelection &, const QItemSelection &)));
+	connect (mUi->keyTree->selectionModel(), &QItemSelectionModel::selectionChanged,
+			 this, &XKeyApplication::folderSelectionChanged);
 	
 	mUi->keyTable->setSelectionMode (QAbstractItemView::SingleSelection);
 	mUi->keyTable->setSelectionBehavior (QAbstractItemView::SelectRows);
@@ -100,12 +100,12 @@ XKeyApplication::XKeyApplication(QSettings *sett)
 	mUi->toolBar->addWidget(mSearchBar);
 	QPushButton *searchButton = new QPushButton (tr("Search"), &*mMain);
 	searchButton->setObjectName("searchButton");
-	QShortcut *shCut = new QShortcut(QKeySequence("Return"), mSearchBar, 0, 0, Qt::WidgetShortcut);
-	connect (shCut, SIGNAL(activated()), this, SLOT(startSearch()));
-	shCut = new QShortcut(QKeySequence("Enter"), mSearchBar, 0, 0, Qt::WidgetShortcut);
-	connect (shCut, SIGNAL(activated()), this, SLOT(startSearch()));
+	QShortcut *shCut = new QShortcut(QKeySequence("Return"), mSearchBar, 0, 0, Qt::WindowShortcut);
+	connect (shCut, &QShortcut::activated, this, &XKeyApplication::startSearch);
+	shCut = new QShortcut(QKeySequence(mSettings->value("shortcut/Search", "Ctrl+F").toString()), &*mMain, 0, 0, Qt::WidgetShortcut);
+	connect (shCut, &QShortcut::activated, [this] () { mSearchBar->setFocus(Qt::ShortcutFocusReason); });
 	
-	connect(searchButton, SIGNAL(clicked(bool)), this, SLOT(startSearch()));
+	connect(searchButton, &QPushButton::clicked, this, &XKeyApplication::startSearch);
 	mUi->toolBar->addWidget(searchButton);
 	
 	mRecentFiles = new QMenu (tr("Open recent"), &*mMain);
@@ -304,7 +304,7 @@ void XKeyApplication::folderSelectionChanged (const QItemSelection &l, const QIt
 		XKey::Folder *f = static_cast<XKey::Folder *> (indexes.at(0).internalPointer());
 		mKeys->setCurrentFolder(f);
 	} else {
-		mKeys->setCurrentFolder(0);
+		mKeys->setCurrentFolder(nullptr);
 	}
 }
 
@@ -323,6 +323,10 @@ void XKeyApplication::startSearch () {
 		if (sr.match()) {
 			// Show all keys of this folder:
 			mKeys->setCurrentFolder( const_cast<XKey::Folder*> (sr.parentFolder()) );
+			QModelIndex fIndex;
+			if (!mFolders->getModelIndex(sr.parentFolder(), &fIndex))
+				throw std::runtime_error ("Failed to get folder modelIndex");
+			mUi->keyTree->setCurrentIndex( fIndex );
 			mUi->keyTable->selectRow( sr.index() );
 		} else {
 			mUi->statusbar->showMessage(tr("No match was found for your search keywords"), statusBarMessageTimeout);

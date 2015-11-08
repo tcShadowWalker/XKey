@@ -50,7 +50,7 @@ QModelIndex FolderListModel::index ( int row, int column, const QModelIndex &par
 	return ind;
 }
 
-bool FolderListModel::getModelIndex (XKey::Folder *folder, QModelIndex *ind) {
+bool FolderListModel::getModelIndex (const XKey::Folder *folder, QModelIndex *ind) {
 	QModelIndex parentIndex;
 	// Recursive up-call
 	if (folder->parent()) {
@@ -65,9 +65,8 @@ bool FolderListModel::getModelIndex (XKey::Folder *folder, QModelIndex *ind) {
 }
 
 int FolderListModel::rowCount (const QModelIndex &parent) const {
-	if (!root) {
+	if (!root)
 		return 0;
-	}
 	if (parent.column() > 0) {
 		return 0;
 	}

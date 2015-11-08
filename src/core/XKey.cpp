@@ -60,7 +60,9 @@ static SearchResult search_down_recursive (const std::vector<std::string> &token
 static SearchResult search_up_recursive (const std::vector<std::string> &tokens, const Folder *lastFolder) {
 	const XKey::Folder *p = lastFolder->parent();
 	// Start with the first SIBLING of lastFolder
-	for (std::deque<Folder>::const_iterator folderIt = p->subfolders().begin() + lastFolder->row()+1; folderIt < p->subfolders().end(); ++folderIt) {
+	for (std::deque<Folder>::const_iterator folderIt = p->subfolders().begin() + lastFolder->row()+1;
+	     folderIt < p->subfolders().end(); ++folderIt)
+	{
 		SearchResult e = search_down_recursive(tokens, &*folderIt);
 		if (e.hasMatch())
 			return e;

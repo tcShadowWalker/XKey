@@ -10,6 +10,7 @@ include_directories(SYSTEM ${Qt5Widgets_INCLUDES} ${CMAKE_CURRENT_BINARY_DIR} )
 set(XKey_Qt_SRCS KeyListModel.cpp FileDialog.cpp FolderListModel.cpp KeyEditDialog.cpp XKeyApplication.cpp SettingsDialog.cpp qt_main.cpp)
 
 QT_WRAP_CPP(XKey_MOC XKeyApplication.h KeyListModel.h FolderListModel.h KeyEditDialog.h FileDialog.h SettingsDialog.h )
+
 set(UiPath "${CMAKE_PROJECT_ROOT}/ui")
 QT5_WRAP_UI(XKey_UI ${UiPath}/Main.ui ${UiPath}/Entry.ui ${UiPath}/Settings.ui
 	${UiPath}/SaveKeystorePassphrase.ui ${UiPath}/OpenKeystorePassphrase.ui ${UiPath}/About.ui )

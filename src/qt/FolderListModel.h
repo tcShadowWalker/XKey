@@ -32,10 +32,10 @@ public:
 	bool dropMimeData ( const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent );
 	
 	void setRootFolder (XKey::Folder *r);
+	
+	bool getModelIndex (const XKey::Folder *folder, QModelIndex *ind);
 protected:
 	Qt::DropActions supportedDropActions () const;
-	
-	bool getModelIndex (XKey::Folder *folder, QModelIndex *ind);
 	
 private:
 	XKey::Folder *root;
