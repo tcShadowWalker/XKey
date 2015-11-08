@@ -100,9 +100,9 @@ XKeyApplication::XKeyApplication(QSettings *sett)
 	mUi->toolBar->addWidget(mSearchBar);
 	QPushButton *searchButton = new QPushButton (tr("Search"), &*mMain);
 	searchButton->setObjectName("searchButton");
-	QShortcut *shCut = new QShortcut(QKeySequence("Return"), mSearchBar, 0, 0, Qt::WindowShortcut);
+	QShortcut *shCut = new QShortcut(QKeySequence("Return"), mSearchBar, 0, 0, Qt::WidgetShortcut);
 	connect (shCut, &QShortcut::activated, this, &XKeyApplication::startSearch);
-	shCut = new QShortcut(QKeySequence(mSettings->value("shortcut/Search", "Ctrl+F").toString()), &*mMain, 0, 0, Qt::WidgetShortcut);
+	shCut = new QShortcut(QKeySequence(mSettings->value("shortcut/Search", "Ctrl+F").toString()), &*mMain, 0, 0, Qt::WindowShortcut);
 	connect (shCut, &QShortcut::activated, [this] () { mSearchBar->setFocus(Qt::ShortcutFocusReason); });
 	
 	connect(searchButton, &QPushButton::clicked, this, &XKeyApplication::startSearch);
