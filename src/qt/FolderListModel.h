@@ -7,35 +7,35 @@ namespace XKey {
 }
 
 class FolderListModel
-	: public QAbstractTableModel
+	: public QAbstractItemModel
 {
 	Q_OBJECT
 public:
 	FolderListModel(QObject *parent);
 	~FolderListModel();
 
-	int rowCount(const QModelIndex &parent = QModelIndex()) const;
-	int columnCount(const QModelIndex &parent = QModelIndex()) const;
-	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+	int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+	int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 	
-	Qt::ItemFlags flags ( const QModelIndex & index ) const;
-	QModelIndex index ( int row, int column, const QModelIndex &parent = QModelIndex()) const;
-	QModelIndex parent (const QModelIndex &index) const;
+	Qt::ItemFlags flags ( const QModelIndex & index ) const override;
+	QModelIndex index ( int row, int column, const QModelIndex &parent = QModelIndex()) const override;
+	QModelIndex parent (const QModelIndex &index) const override;
 	
-	bool insertRow (int row, const QModelIndex &parent = QModelIndex());
-	bool removeRows ( int row, int count, const QModelIndex & parent = QModelIndex() );
+	bool insertRows (int row, int count, const QModelIndex &parent = QModelIndex()) override;
+	bool removeRows ( int row, int count, const QModelIndex & parent = QModelIndex() ) override;
 	
-	bool setData (const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
+	bool setData (const QModelIndex & index, const QVariant & value, int role = Qt::EditRole) override;
 
-	QStringList mimeTypes () const;
-	QMimeData *mimeData (const QModelIndexList &indexes) const;
-	bool dropMimeData ( const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent );
+	QStringList mimeTypes () const override;
+	QMimeData *mimeData (const QModelIndexList &indexes) const override;
+	bool dropMimeData ( const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent ) override;
 	
 	void setRootFolder (XKey::Folder *r);
 	
 	bool getModelIndex (const XKey::Folder *folder, QModelIndex *ind);
 protected:
-	Qt::DropActions supportedDropActions () const;
+	Qt::DropActions supportedDropActions () const override;
 	
 private:
 	XKey::Folder *root;

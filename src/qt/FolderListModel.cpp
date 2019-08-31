@@ -10,7 +10,7 @@
 #include <iostream>
 
 FolderListModel::FolderListModel(QObject *parent)
-	: QAbstractTableModel(parent), root(0)
+	: QAbstractItemModel(parent), root(0)
 { }
 
 FolderListModel::~FolderListModel() { }
@@ -46,7 +46,7 @@ QModelIndex FolderListModel::index ( int row, int column, const QModelIndex &par
 		return QModelIndex();
 	}
 	const XKey::Folder *f = &parentItem->subfolders().at(row);
-	QModelIndex ind = createIndex(row, 0, (void*)f );
+	QModelIndex ind = createIndex(row, column, (void*)f );
 	return ind;
 }
 
@@ -71,7 +71,6 @@ int FolderListModel::rowCount (const QModelIndex &parent) const {
 		return 0;
 	}
 	if (!parent.isValid()) {
-		//return 1;
 		return root->subfolders().size();
 	}
 	const XKey::Folder *parentItem = static_cast<const XKey::Folder *> (parent.internalPointer());
@@ -82,19 +81,23 @@ int FolderListModel::columnCount (const QModelIndex &parent) const {
 	return 1;
 }
 
-bool FolderListModel::insertRow (int row, const QModelIndex &parent) {
+bool FolderListModel::insertRows (int row, int count, const QModelIndex &parent) {
 	XKey::Folder *parentItem = (!parent.isValid()) ? root : static_cast<XKey::Folder *> (parent.internalPointer());
 	assert (parentItem);
 	const int num = parentItem->subfolders().size();
-	beginInsertRows(parent, num, num);
-	XKey::Folder *created = 0;
-	for (int i = 1; !created && i <= 3; ++i) {
-		try {
-			created = parentItem->createSubfolder( QString("New Folder %1").arg(num+i).toStdString() );
-		} catch (const std::exception&) { }
+	beginInsertRows(parent, num, num + count);
+	bool ok = false;
+	for(int c = 0; c < count; ++c) {
+		XKey::Folder *created = 0;
+		for (int i = 1; !created && i <= 3; ++i) {
+			try {
+				created = parentItem->createSubfolder( QString("New Folder %1").arg(num+i).toStdString() );
+			} catch (const std::exception&) { }
+		}
+		ok |= (created != 0);
 	}
 	endInsertRows();
-	return (created != 0);
+	return ok;
 }
 
 bool FolderListModel::removeRows (int row, int count, const QModelIndex &parent) {
