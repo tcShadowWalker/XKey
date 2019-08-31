@@ -10,12 +10,15 @@
 
 std::string get_password ();
 void print_folder (const XKey::Folder &f, int print_options, int depth = 0, std::ostream &out = std::cout);
+void print_entry (const XKey::Entry &entry, int print_options, int depth = 0, std::ostream &out = std::cout);
 
 enum PrintOptions {
-	PRINT_PASSWORD = 4
+	PRINT_PASSWORD = 4,
+	PRINT_COMMENT = 8,
 };
 
 std::string input_file, output_file, search_path, key_file;
+std::vector<std::string> entry_names;
 bool output_no_encrypt = false, output_no_encode = false, output_no_header = false;
 bool input_no_header = false, input_not_encoded = false, input_not_encrypted = false;
 bool print_passwords = false;
@@ -29,6 +32,7 @@ int parse_commandline (int argc, char** argv) {
 		("keyfile", po::value<std::string>(&key_file), "File that contains the password to open a databse."
 			"If not given, the password will be read from standard input")
 		("search_root,s", po::value<std::string>(&search_path), "Search path, specifying the root-folder within the key-database")
+		("entry,e", po::value<std::vector<std::string> >(&entry_names)->multitoken(), "Entry names to print")
 		("output_file,o", po::value<std::string>(&output_file), "Output key-database")
 		("print-passwords,p", po::bool_switch(&print_passwords), "Print passwords in cleartext on the console. "
 			"(Default: no passwords printed)")
@@ -50,6 +54,7 @@ int parse_commandline (int argc, char** argv) {
 	po::positional_options_description positionalOptions; 
 		positionalOptions.add("input_file", 1); 
 		positionalOptions.add("search_root", 1); 
+		positionalOptions.add("entry", 1); 
 	
 	po::variables_map vm; 
 	try { 
@@ -161,7 +166,18 @@ int main (int argc, char** argv) {
 				print_options |= PRINT_PASSWORD;
 			// No options. Just show a list
 			std::cout << f->fullPath() << "\n";
-			print_folder (*f, print_options);
+			if (entry_names.empty()) {
+				print_folder (*f, print_options);
+			}
+			else {
+				print_options |= PRINT_COMMENT;
+				
+				for (const auto &it : f->entries()) {
+					if (std::find(entry_names.begin(), entry_names.end(), it.title()) == entry_names.end())
+						continue;
+					print_entry(it, print_options, 0);
+				}
+			}
 		}
 	} catch (const std::exception &e) {
 		std::cerr << "Error: " << e.what() << "\n";

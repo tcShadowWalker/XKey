@@ -20,23 +20,32 @@ std::string get_password () {
 }
 
 enum PrintOptions {
-	PRINT_PASSWORD = 4
+	PRINT_PASSWORD = 4,
+	PRINT_COMMENT = 8,
 };
+
+void print_entry (const XKey::Entry &entry, int print_options, int depth = 0, std::ostream &out = std::cout)
+{
+	out << std::string(depth*2, '-') << "    # " << entry.title();
+	if (entry.username().size() > 0)
+		out << ", User: " << entry.username();
+	if (entry.url().size() > 0) {
+		out << ", " << entry.url();
+	}
+	if (print_options & PRINT_PASSWORD) {
+		out << ", Password: " << entry.password() << " ";
+	}
+	if (print_options & PRINT_COMMENT) {
+		out << "\n" << entry.comment() << " ";
+	}
+	out << "\n";
+}
 
 void print_folder (const XKey::Folder &f, int print_options, int depth = 0, std::ostream &out = std::cout) {
 	if (depth != 0)
 		out << std::string(depth*2, '-') << " " << f.name() << "\n";
 	for (const auto &it : f.entries()) {
-		out << std::string(depth*2, '-') << "    # " << it.title();
-		if (it.username().size() > 0)
-			out << ", User: " << it.username();
-		if (it.url().size() > 0) {
-			out << ", " << it.url();
-		}
-		if (print_options & PRINT_PASSWORD) {
-			out << ", Password: " << it.password() << " ";
-		}
-		out << "\n";
+		print_entry(it, print_options, depth, out);
 	}
 	for (const auto &it : f.subfolders()) {
 		print_folder(it, print_options, depth+1);
