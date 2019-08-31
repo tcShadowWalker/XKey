@@ -8,6 +8,7 @@
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
+#include <openssl/ossl_typ.h>
 
 namespace XKey {
 
@@ -46,7 +47,7 @@ const size_t BufSize = 256;
 CryptStream::CryptStream (const std::string &filename, OperationMode open_mode, int m_info)
 	: _buffer( BufSize + put_back_),
 	_cipherCtx(nullptr, &EVP_CIPHER_CTX_free),
-	_mdCtx(nullptr, &EVP_MD_CTX_destroy),
+	_mdCtx(nullptr, &EVP_MD_CTX_free),
 	_mdKey(nullptr, &EVP_PKEY_free),
 	_bio_chain(nullptr, &BIO_free_all),
 	_mode(open_mode), _version(CURRENT_XKEY_FORMAT_VERSION)
@@ -151,11 +152,11 @@ void CryptStream::_evaluateHeader (int *headerMode) {
 		throw std::runtime_error ("OpenSSL library does not provide requested Cipher mode from file header");
 	if (!(this->_md = EVP_get_digestbyname(digestName)))
 		throw std::runtime_error ("OpenSSL library does not provide requested Digest algorithm from file header");
-	if (strnlen((const char*)iv, ivLen) != (size_t)_cipher->iv_len * 2)
+	if (strnlen((const char*)iv, ivLen) != (size_t)EVP_CIPHER_iv_length(_cipher) * 2)
 		throw std::runtime_error ("Invalid initialization vector length");
 	if (_pbkdfIterationCount <= 0)
 		throw std::runtime_error ("Invalid key iteration count");
-	this->_iv.assign( hex2uc(iv, _cipher->iv_len * 2) );
+	this->_iv.assign( hex2uc(iv, EVP_CIPHER_iv_length(_cipher) * 2) );
 	(void)BIO_seek (_file_bio, offset);
 	*headerMode = ((useEncryption) ? (*headerMode | USE_ENCRYPTION) : (*headerMode & ~USE_ENCRYPTION));
 	*headerMode = ((useBase64Encode) ? (*headerMode | BASE64_ENCODED) : (*headerMode & ~BASE64_ENCODED));
@@ -178,8 +179,8 @@ void CryptStream::setEncryptionKey (const std::string &passphrase, const char *c
 		this->_iv = ivParam;
 	} else {
 		if (this->_iv.size() == 0) {
-			this->_iv.resize(_cipher->iv_len);
-			if (!RAND_bytes((unsigned char*)&_iv[0], _cipher->iv_len))
+			this->_iv.resize(EVP_CIPHER_iv_length(_cipher));
+			if (!RAND_bytes((unsigned char*)&_iv[0], EVP_CIPHER_iv_length(_cipher)))
 				throw std::runtime_error ("Could not generate random bytes to create initialization vector");
 		}
 	}
@@ -187,15 +188,15 @@ void CryptStream::setEncryptionKey (const std::string &passphrase, const char *c
 	if (!this->_md)
 		throw std::runtime_error ("OpenSSL library does not provide requested digest algorithm");
 	_pbkdfIterationCount = (keyIterationCount != -1) ? keyIterationCount : DEFAULT_KEY_ITERATION_COUNT;
-	if (_iv.length() != (size_t)_cipher->iv_len)
+	if (_iv.length() != (size_t)EVP_CIPHER_iv_length(_cipher))
 		throw std::runtime_error ("Invalid initialization vector length does not match cipher");
 	// Use PBKDF2 to derive the encryption key from the passphrase. Use iv as Salt.
-	unsigned char raw_key[_cipher->key_len + 1];
+	unsigned char raw_key[EVP_CIPHER_key_length(_cipher) + 1];
 	int r = PKCS5_PBKDF2_HMAC_SHA1(passphrase.c_str(), passphrase.size(), (const unsigned char*)_iv.c_str(), _iv.length(),
-									_pbkdfIterationCount, _cipher->key_len, raw_key);
+									_pbkdfIterationCount, EVP_CIPHER_key_length(_cipher), raw_key);
 	if (r != 1)
 		throw std::runtime_error ("PBKDF2 algorithm to derive encryption key failed");
-	_mdKey.reset(EVP_PKEY_new_mac_key(EVP_PKEY_HMAC, nullptr, raw_key, _cipher->key_len));
+	_mdKey.reset(EVP_PKEY_new_mac_key(EVP_PKEY_HMAC, nullptr, raw_key, EVP_CIPHER_key_length(_cipher)));
 	// enc should be set to 1 for encryption and 0 for decryption.
 	const int enc = (_mode == READ) ? 0 : 1;
 	if (EVP_CipherInit(&*_cipherCtx, _cipher, raw_key, (const unsigned char*)_iv.c_str(), enc) != 1)

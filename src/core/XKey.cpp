@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <memory>
 #include <cassert>
+#include <vector>
 
 namespace XKey {
 

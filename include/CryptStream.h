@@ -7,8 +7,8 @@
 struct bio_st;
 struct evp_cipher_st;
 struct evp_cipher_ctx_st;
-struct env_md_st;
-struct env_md_ctx_st;
+struct evp_md_st;
+struct evp_md_ctx_st;
 struct evp_pkey_st;
 
 namespace XKey {
@@ -101,7 +101,7 @@ private:
 	
 	std::vector<char> _buffer;
 	std::unique_ptr<evp_cipher_ctx_st, void(*)(evp_cipher_ctx_st*)> _cipherCtx;
-	std::unique_ptr<env_md_ctx_st, void(*)(env_md_ctx_st*)> _mdCtx;
+	std::unique_ptr<evp_md_ctx_st, void(*)(evp_md_ctx_st*)> _mdCtx;
 	std::unique_ptr<evp_pkey_st, void(*)(evp_pkey_st*)> _mdKey;
 	std::unique_ptr<bio_st, void(*)(bio_st*)> _bio_chain;
 	struct bio_st *_file_bio = 0;
@@ -113,7 +113,7 @@ private:
 	int _pbkdfIterationCount = DEFAULT_KEY_ITERATION_COUNT;
 	std::string _iv;
 	const evp_cipher_st *_cipher = 0;
-	const env_md_st *_md = 0;
+	const evp_md_st *_md = 0;
 	
 	struct BlockHead;
 	void makeMessageDigest (const unsigned char *data, size_t length, unsigned char *mdOut);
