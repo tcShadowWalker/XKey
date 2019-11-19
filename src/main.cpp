@@ -23,21 +23,22 @@ bool output_no_encrypt = false, output_no_encode = false, output_no_header = fal
 bool input_no_header = false, input_not_encoded = false, input_not_encrypted = false;
 bool print_passwords = false;
 
-int parse_commandline (int argc, char** argv) {
+int parse_commandline (int argc, const char** argv) {
 	namespace po = boost::program_options; 
 	po::options_description desc("Options"); 
 	desc.add_options() 
 		("help", "Print help messages")
 		("input_file,i", po::value<std::string>(&input_file), "Input key-database")
 		("keyfile", po::value<std::string>(&key_file), "File that contains the password to open a databse."
-			"If not given, the password will be read from standard input")
+			"If not given, the password will be read from standard input or from the environment variable XKEY_PASSPHRASE")
 		("search_root,s", po::value<std::string>(&search_path), "Search path, specifying the root-folder within the key-database")
 		("entry,e", po::value<std::vector<std::string> >(&entry_names)->multitoken(), "Entry names to print")
 		("output_file,o", po::value<std::string>(&output_file), "Output key-database")
 		("print-passwords,p", po::bool_switch(&print_passwords), "Print passwords in cleartext on the console. "
 			"(Default: no passwords printed)")
 		
-		("out-no-encrypt", po::bool_switch(&output_no_encrypt), "Do not encrypt output file (Default: do encrypt)")
+		("out-no-encrypt", po::bool_switch(&output_no_encrypt), "Do not encrypt output file (Default: do encrypt)."
+			"Passphrase will be read from environment variable XKEY_OUT_PASSPHRASE if given")
 		("out-no-encode", po::bool_switch(&output_no_encode), "Do not base64-encode output file, "
 			"so that it contains only ascii characters (Default: do encode)")
 		("out-no-header", po::bool_switch(&output_no_header), "Do not include keyfile header in output file"
@@ -75,7 +76,8 @@ int parse_commandline (int argc, char** argv) {
 	return 0; 
 }
 
-int main (int argc, char** argv) {
+int main (int argc, const char** argv)
+{
 	if (parse_commandline (argc, argv) != 0) {
 		return -1;
 	}
@@ -109,8 +111,15 @@ int main (int argc, char** argv) {
 				}
 				key = std::string(std::istreambuf_iterator<char>(keystream), std::istreambuf_iterator<char>());
 			} else {
-				std::cout << "Password: ";
-				key = get_password();
+				const char *envPw = getenv("XKEY_PASSPHRASE");
+				if (envPw && *envPw != '\0') {
+					std::cout << "Using passphrase from Environment variable XKEY_PASSPHRASE\n";
+					key = envPw;
+				} else {
+					std::cout << "Password: ";
+					key = get_password();
+					std::cout << "\n";
+				}
 			}
 			crypt_streambuf.setEncryptionKey(key);
 		}
@@ -145,16 +154,27 @@ int main (int argc, char** argv) {
 			
 			bool pretty_print = (output_no_encrypt && output_no_encode);
 
-			std::string outkey;
-			if (!output_no_encrypt) {
-				std::cout << "Output passphrase: ";
-				outkey = get_password();
+			XKey::CryptStream crypt_filter (output_file, XKey::CryptStream::WRITE, m);
+			XKey::Writer::setRestrictiveFilePermissions (output_file);
+			
+			std::ostream stream (&crypt_filter);
+			if (crypt_streambuf.isEncrypted()) {
+				std::string outkey;
+				if (!output_no_encrypt) {
+					const char *envPw = getenv("XKEY_OUT_PASSPHRASE");
+					if (envPw && *envPw != '\0') {
+						std::cout << "Using passphrase from Environment variable XKEY_OUT_PASSPHRASE\n";
+						outkey = envPw;
+					} else {
+						std::cout << "Output passphrase: ";
+						outkey = get_password();
+						std::cout << "\n";
+					}
+				}
+				crypt_filter.setEncryptionKey (outkey);
 			}
 			std::cout << "Writing...\n";
-			XKey::CryptStream crypt_filter (output_file, XKey::CryptStream::WRITE, m);
-			std::ostream stream (&crypt_filter);
-			XKey::Writer::setRestrictiveFilePermissions (output_file);
-			crypt_filter.setEncryptionKey (outkey);
+			
 			XKey::Writer w;
 			if (!w.write(stream, *f, (pretty_print) ? XKey::Writer::WRITE_FORMATTED : XKey::Writer::WRITE_NONE)) {
 				std::cerr << "Error: " << w.error() << "\n";
