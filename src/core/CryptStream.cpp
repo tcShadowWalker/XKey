@@ -9,7 +9,8 @@
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 #include <openssl/ossl_typ.h>
-
+#include <openssl/err.h>
+ 
 namespace XKey {
 
 static int CURRENT_XKEY_FORMAT_VERSION = 14;
@@ -320,8 +321,8 @@ CryptStream::int_type CryptStream::overflow (int_type ch) {
 			throw std::runtime_error ("Error writing to OpenSSL BIO (2)");
 	} else {
 		r = BIO_write(bioChain(), pbase(), n);
-		if (r <= 0)
-			throw std::runtime_error ("Error writing to OpenSSL BIO (2)");
+		if (r < 0 || (r == 0 && n != 0))
+			throw std::runtime_error ("Error writing to OpenSSL BIO (3): " + std::to_string(r) + ", " + std::to_string(ERR_get_error()));
 	}
 	return r;
 }

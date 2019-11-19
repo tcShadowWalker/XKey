@@ -158,18 +158,16 @@ int main (int argc, const char** argv)
 			XKey::Writer::setRestrictiveFilePermissions (output_file);
 			
 			std::ostream stream (&crypt_filter);
-			if (crypt_streambuf.isEncrypted()) {
+			if (!output_no_encrypt) {
 				std::string outkey;
-				if (!output_no_encrypt) {
-					const char *envPw = getenv("XKEY_OUT_PASSPHRASE");
-					if (envPw && *envPw != '\0') {
-						std::cout << "Using passphrase from Environment variable XKEY_OUT_PASSPHRASE\n";
-						outkey = envPw;
-					} else {
-						std::cout << "Output passphrase: ";
-						outkey = get_password();
-						std::cout << "\n";
-					}
+				const char *envPw = getenv("XKEY_OUT_PASSPHRASE");
+				if (envPw && *envPw != '\0') {
+					std::cout << "Using passphrase from Environment variable XKEY_OUT_PASSPHRASE\n";
+					outkey = envPw;
+				} else {
+					std::cout << "Output passphrase: ";
+					outkey = get_password();
+					std::cout << "\n";
 				}
 				crypt_filter.setEncryptionKey (outkey);
 			}
