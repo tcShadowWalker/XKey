@@ -181,6 +181,7 @@ void Writer::serialize_folder (Json::Value &parent, const Folder &folder) {
 			key["url"] = it.url();
 			key["password"] = it.password();
 			key["comment"] = it.comment();
+			key["email"] = it.email();
 			keys.append(key);
 		}
 		parent["keys"] = keys;
