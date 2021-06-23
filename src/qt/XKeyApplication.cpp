@@ -16,6 +16,7 @@
 #include <cassert>
 #include <QtWidgets/QMainWindow>
 #include <QCloseEvent>
+#include <sys/acl.h>
 // UIs
 #include <ui_Main.h>
 #include <ui_About.h>
@@ -229,6 +230,15 @@ private:
 	std::string file;
 };
 
+void copyAclIfPossible (const std::string &sourceFile, const std::string &targetFile)
+{
+	acl_t acl = acl_get_file(sourceFile.c_str(), ACL_TYPE_ACCESS);
+	if (acl) {
+		acl_set_file(targetFile.c_str(), ACL_TYPE_ACCESS, acl);
+		acl_free(acl);
+	}
+}
+
 void XKeyApplication::saveFile (const QString &filename, SaveFileOptions &sopt) {
 	QString errorMsg;
 	bool success = false;
@@ -272,7 +282,8 @@ void XKeyApplication::saveFile (const QString &filename, SaveFileOptions &sopt) 
 		TmpFile tmpFile (targetFile);
 		XKey::Writer w;
 		XKey::CryptStream crypt_source (tmpFile.name(), XKey::CryptStream::WRITE, sopt.makeCryptStreamMode());
-		XKey::Writer::setRestrictiveFilePermissions (tmpFile.name());
+		copyAclIfPossible (filename.toStdString(), tmpFile.name());
+		
 		crypt_source.setEncryptionKey (passwd.toStdString(), sopt.cipher_name.c_str(),
 					       sopt.digest_name.c_str(), nullptr, sopt.key_iteration_count);
 		// 

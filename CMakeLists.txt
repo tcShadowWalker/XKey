@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 2.8.12)
 
 set(CMAKE_PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
+# sudo apt-get install libacl1-dev
+
 find_package(OpenSSL)
 
 set(Boost_USE_STATIC_LIBS True)
@@ -25,6 +27,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/include )
 
 add_library(XKeyLib ${XKey_SRCS} ${TP_Json_SRCS} )
+target_link_libraries(XKeyLib libacl.a)
 
 add_definitions( -std=c++11 )
 

@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cstring> 
 #include <stdexcept>
+#include <sys/stat.h>
 
 #include <openssl/bio.h>
 #include <openssl/evp.h>
@@ -57,6 +58,8 @@ CryptStream::CryptStream (const std::string &filename, OperationMode open_mode, 
 	setg(end, end, end);
 	
 	setp(&_buffer.front(), end - 2); // -1 to make overflow() easier, another -1 to terminate with null
+	
+	umask(0700);
 	
 	_file_bio = BIO_new_file(filename.c_str(), (_mode == READ) ? "rb" : "wb");
 	if (!_file_bio) {

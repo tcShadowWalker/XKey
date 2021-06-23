@@ -111,12 +111,13 @@ bool Writer::checkFilePermissions (const std::string &filename, bool *correctRea
 	}
 	if (canWrite)
 		*canWrite = (access (filename.c_str(), W_OK) == 0);
-	// Not readable or writable by group or others
-	*correctReadPermissions = ( (st.st_mode & (S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)) == 0);
+	// Not readable or writable by others (Ignore group. It interferes with ACLs)
+	*correctReadPermissions = ( (st.st_mode & (S_IROTH | S_IWOTH)) == 0);
 	return true; // File exists
 }
 
-void Writer::setRestrictiveFilePermissions (const std::string &filename) {
+void Writer::setRestrictiveFilePermissions (const std::string &filename)
+{
 	int r = chmod(filename.c_str(), S_IRUSR | S_IWUSR);
 	if (r != 0)
 		throw std::runtime_error ("Could not set permissions on file");
